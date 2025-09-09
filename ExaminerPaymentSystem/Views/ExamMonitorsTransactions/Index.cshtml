@@ -1,0 +1,1115 @@
+﻿@inject SignInManager<ApplicationUser> SignInManager
+@{
+    ViewData["Title"] = "Deploy Exam Monitors";
+
+    string regionCode = ViewBag.RegionCode ?? "";
+}
+
+<link href="/css/monitorlist.css" rel="stylesheet" />
+<style>
+    .badge.bg-pink {
+        background-color: #ff69b4;
+        color: white;
+    }
+
+    .btn-sm .fa-icon {
+        font-size: 0.9em;
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .display-6 {
+        font-size: 1.5rem;
+    }
+    /* Make Select2 match Bootstrap form control height */
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px !important;
+    }
+
+    .region-badge {
+        font-size: 0.6em;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        vertical-align: middle;
+    }
+</style>
+
+
+<div class="container-fluid px-4 mt-3">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2">
+        <div>
+            <div class="header-container mb-4">
+                <h5 class="display-6 fw-bold text-gradient mb-1">
+                    @ViewData["Title"]
+                    @if (User.IsInRole("RegionalManager"))
+                    {
+                        <span class="region-badge">Region: @regionCode</span>
+                    }
+                </h5>
+                <div class="accent-line"></div>
+            </div>
+
+        </div>
+            @if (User.IsInRole("RegionalManager"))
+                {
+        <div class="mt-3 mt-md-0">
+            <a href="/ExamMonitorsTransactions/AssignMonitors" class="btn text-white" style="background-color:#153355;">
+                <i class="fas fa-plus me-2"></i>Assign to Cluster/Centre
+            </a>
+                
+        </div>
+                }
+                  @if (User.IsInRole("HR"))
+                {
+            <div class="mt-3 mt-md-0">
+                <button class="btn text-white mb-3" style="background-color:#153355;" data-bs-toggle="modal" data-bs-target="#bulkDownloadModal">
+            <i class="fas fa-download me-2"></i> Bulk Download Contracts
+        </button>
+            </div>
+                }
+    </div>
+
+    <style>
+        .btn-custom {
+            background-color: #153355;
+            color: white;
+            border: 1px solid #153355;
+        }
+
+            .btn-custom:hover {
+                background-color: #0f2642;
+                border-color: #0f2642;
+                color: white;
+            }
+
+        .btn-outline-custom {
+            color: #153355;
+            border-color: #153355;
+            background-color: transparent;
+        }
+
+            .btn-outline-custom:hover {
+                color: white;
+                background-color: #153355;
+                border-color: #153355;
+            }
+    </style>
+
+    <!-- Filters Card -->
+    <div class="card border-0 shadow-sm mb-2 p-2">
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Region Filter - 2 columns on md screens (1/5 = 20%) -->
+                @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+                {
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="regionFilter" class="form-label mb-1">Region</label>
+                            <select id="regionFilter" class="form-select" required>
+                                <option value="All">All Regions</option>
+                                <option value="01">01 - Harare</option>
+                                <option value="02">02 - Manicaland</option>
+                                <option value="03">03 - Mashonaland East</option>
+                                <option value="04">04 - Matabeleland North</option>
+                                <option value="05">05 - Midlands</option>
+                                <option value="06">06 - Masvingo</option>
+                                <option value="07">07 - Mashonaland Central</option>
+                                <option value="08">08 - Mashonaland West</option>
+                                <option value="09">09 - Matabeleland South</option>
+                                <option value="10">10 - Bulawayo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="districtFilter" class="form-label mb-1">District</label>
+                            <select id="districtFilter" class="form-select" required>
+                                <option value="All">All Districts</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+
+
+                @if (User.IsInRole("RegionalManager"))
+                {
+                    <div class="col-md-3">
+                        <label for="districtFilter" class="form-label">District</label>
+                        <select id="districtFilter" class="form-select select2">
+                            <option value="">All Districts</option>
+                            @if (ViewBag.Districts != null)
+                            {
+                                @foreach (var district in ViewBag.Districts)
+                                {
+                                    <option value="@district.Value">@district.Text</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="" disabled>No venues available</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="centreFilter" class="form-label">Centre Number</label>
+                        <select class="form-select select2" id="centreFilter">
+                            <option value="">All Centres</option>
+                            @if (ViewBag.Centres != null)
+                            {
+                                @foreach (var centre in ViewBag.Centres)
+                                {
+                                    <option value="@centre.Value">@centre.Text (@centre.Value)</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="" disabled>No venues available</option>
+                            }
+                        </select>
+                    </div>
+                }
+
+                <!-- Status Filter - 2 columns -->
+                <div class="col-md-2">
+                    <label for="statusFilter" class="form-label">Status</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="Resident Monitor">Resident Monitor</option>
+                        <option value="Assistant Cluster Manager">Assistant Cluster Manager</option>
+                        <option value="Cluster Manager">Cluster Manager</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="sessionFilter" class="form-label">Session</label>
+                    <select id="sessionFilter" class="form-select">
+                        <option value="">All Sessions</option>
+                        @if (ViewBag.Sessions != null)
+                        {
+                            @foreach (var session in ViewBag.Sessions)
+                            {
+                                <option value="@session.Value">@session.Text</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="" disabled>No sessions available</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Gender Filter - 2 columns -->
+                <div class="col-md-2">
+                    <label for="phaseFilter" class="form-label">Phase</label>
+                    <select id="phaseFilter" class="form-select">
+                        <option value="">All Phases</option>
+                        @if (ViewBag.Phases != null)
+                        {
+                            @foreach (var phase in ViewBag.Phases)
+                            {
+                                <option value="@phase.Value">@phase.Text</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="" disabled>No phases available</option>
+                        }
+                    </select>
+                </div>
+
+
+
+                <!-- Reset Button - 3 columns (matches input width) -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <button id="resetFiltersBtn" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-undo me-2"></i>Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        $(document).ready(function() {
+            // Initialize all Select2 elements
+            $('.select2').select2({
+                width: '100%',
+                placeholder: function() {
+                    return $(this).data('placeholder') || "Select an option";
+                },
+                allowClear: true
+            });
+        });
+    </script>
+
+    <!-- Data Table Card -->
+    <div class="card border-0 shadow-sm p-2">
+        <!-- Table Container with Forced Visibility -->
+        <div id="monitorTransactionDataContainer" style="display: block; visibility: visible; opacity: 1;">
+            <!-- Basic Table Structure -->
+            <table id="monitorsTransactionsTable" class="table table-striped" style="width:100%; visibility: visible !important;">
+                <thead style="display: table-header-group !important;">
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>National ID</th>
+                        <th>Status</th>
+                        <th>Region</th>
+                        <th>Centre</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody style="display: table-row-group !important;">
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+ 
+
+
+    </div>
+
+
+    <div class="modal fade" id="bulkDownloadModal" tabindex="-1" aria-labelledby="bulkDownloadLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color:#153355; color:white;">
+                    <h5 class="modal-title" id="bulkDownloadLabel">Bulk Download Contracts</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bulkDownloadForm">
+                        <div class="mb-3">
+                            <label for="modalSession" class="form-label">Session *</label>
+                            <select id="modalSession" class="form-select" required>
+                                <option value="">Select Session</option>
+                                @if (ViewBag.Sessions != null)
+                                {
+                                    @foreach (var session in ViewBag.Sessions)
+                                    {
+                                        <option value="@session.Value">@session.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="modalPhase" class="form-label">Phase *</label>
+                            <select id="modalPhase" class="form-select" required>
+                                <option value="">Select Phase</option>
+                                @if (ViewBag.Phases != null)
+                                {
+                                    @foreach (var phase in ViewBag.Phases)
+                                    {
+                                        <option value="@phase.Value">@phase.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="region" class="form-label">Region*</label>
+                            <select class="form-select form-select-lg" id="region" name="region" required>
+                                <option value="">Select Region</option>
+                                <option value="01">01 - Harare</option>
+                                <option value="02">02 - Manicaland</option>
+                                <option value="03">03 - Mashonaland East</option>
+                                <option value="04">04 - Matabeleland North</option>
+                                <option value="05">05 - Midlands</option>
+                                <option value="06">06 - Masvingo</option>
+                                <option value="07">07 - Mashonaland Central</option>
+                                <option value="08">08 - Mashonaland West</option>
+                                <option value="09">09 - Matabeleland South</option>
+                                <option value="10">10 - Bulawayo</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="bulkDownloadBtn" class="btn btn-success">
+                        <i class="fas fa-file-archive me-2"></i> Download ZIP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Edit Monitor Modal -->
+    <div class="modal fade" id="editMonitorTransactionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color:#153355;">
+                    <h5 class="modal-title">Edit Monitor Transaction</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editMonitorTransactionForm">
+                        <input type="hidden" id="editSubKey">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="editCentre" class="form-label">Centre Attached</label>
+                                <input type="text" class="form-control" id="editCentre" required>
+                            </div>
+                          
+                            <div class="col-md-6">
+                                <label for="editStatus" class="form-label">Status</label>
+                                <select class="form-select" id="editStatus" required>
+                                    <option value="Resident Monitor">Resident Monitor</option>
+                                    <option value="Assistant Cluster Manager">Assistant Cluster Manager</option>
+                                    <option value="Cluster Manager">Cluster Manager</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editRegion" class="form-label">Region</label>
+                                <select class="form-select" id="editRegion" required>
+                                    <option value="01">01 - Harare</option>
+                                    <option value="02">02 - Manicaland</option>
+                                    <option value="03">03 - Mashonaland East</option>
+                                    <option value="04">04 - Matabeleland North</option>
+                                    <option value="05">05 - Midlands</option>
+                                    <option value="06">06 - Masvingo</option>
+                                    <option value="07">07 - Mashonaland Central</option>
+                                    <option value="08">08 - Mashonaland West</option>
+                                    <option value="09">09 - Matabeleland South</option>
+                                    <option value="10">10 - Bulawayo</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editSession" class="form-label">Session</label>
+                                <select class="form-select" id="editSession" required>
+                                    <option value="">Select Session</option>
+                                    @if (ViewBag.Sessions != null)
+                                    {
+                                        @foreach (var session in ViewBag.Sessions)
+                                        {
+                                            <option value="@session.Value">@session.Text</option>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <option value="" disabled>No sessions available</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editPhase" class="form-label">Phase</label>
+                                <select class="form-select" id="editPhase" required>
+                                    <option value="">Select Phase</option>
+                                    @if (ViewBag.Phases != null)
+                                    {
+                                        @foreach (var phase in ViewBag.Phases)
+                                        {
+                                            <option value="@phase.Value">@phase.Text</option>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <option value="" disabled>No phases available</option>
+                                    }
+                                </select>
+                            </div>
+                     
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="saveEditBtn" class="btn text-white" style="background-color:#153355;">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  
+    </div>
+
+
+           @if (User.IsInRole("RegionalManager"))
+{
+
+
+
+    @section Scripts {
+        <script>
+                        $(document).ready(function() {
+                    console.log("Starting data load...");
+
+                    // Initialize Select2 first
+                    $('#centreFilter').select2({
+                        placeholder: "Select a centre",
+                        allowClear: true,
+                        width: '100%'
+                    });
+
+                    // Initialize table variable only once
+                    var table = initializeDataTable();
+                    var currentFilters = {
+                        regionFilter: '',
+                        statusFilter: '',
+                        centreFilter: '',
+                        districtFilter: '',
+                        phaseFilter : '',
+                        sessionFilter:''
+                    };
+
+                    // Load data initially
+                    loadAndRenderTable();
+
+                    function initializeDataTable() {
+                        return $('#monitorsTransactionsTable').DataTable({
+                              paging: true,
+                            searching: true,
+                            ordering: true,
+                            info: true,
+                            responsive: true,
+                            serverSide: false,
+                            ajax: null,
+                                         language: {
+                            emptyTable: "No records found"
+                        }
+                        });
+                    }
+
+                    function loadAndRenderTable() {
+                        console.log("Loading monitor data with filters:", currentFilters);
+                        currentFilters.centreFilter = $('#centreFilter').val();
+
+                        $.ajax({
+                            url: '/ExamMonitorsTransactions/GetExamMonitorsTransactions',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(currentFilters),
+                            success: function(response) {
+                                console.log("Data received:", response);
+                                var data = response.data || response;
+
+                                if (!Array.isArray(data)) {
+                                    console.error("Data is not an array:", data);
+
+                                    return;
+                                }
+
+                                table.clear().draw();
+
+                                         if (data.length === 0) {
+                        table.draw(); // DataTables will auto show "No records found"
+                        return;
+                    }
+
+                                data.forEach(function(item) {
+                                    table.row.add([
+                                        item.firstName || '-',
+                                        item.lastName || '-',
+                                        item.nationalId || '-',
+
+                                        item.status || '-',
+                                        item.region || '-',
+                                    item.centre || '-',
+
+                                    ` <div class="d-flex flex-nowrap gap-2">
+                <button class="btn btn-sm text-white edit-btn px-3 py-1 d-flex align-items-center"
+                       style="background-color:#153355;" data-id="${item.subKey || ''}">
+                    <i class="fas fa-edit me-2"></i>
+                    <span>Edit</span>
+                </button>
+          
+            </div>`
+                                    ]);
+                                });
+
+                                table.draw();
+                                $('#monitorTransactionDataContainer').show();
+                                $('#monitorsTransactionsTable').show().css('visibility', 'visible');
+                            },
+                            error: function(xhr) {
+                                console.error("Failed to load data:", xhr.responseText);
+
+                            }
+                        });
+                    }
+
+                    // Filter handlers
+                    function applyFilters() {
+                        currentFilters = {
+                            regionFilter: $('#regionFilter').val(),
+                            statusFilter: $('#statusFilter').val(),
+
+                            centreFilter: $('#centreFilter').val(),
+                            districtFilter: $('#districtFilter').val(),
+                        phaseFilter :  $('#phaseFilter').val(),
+                       sessionFilter :  $('#sessionFilter').val(),
+                    };
+                        loadAndRenderTable();
+                    }
+
+                    $('#regionFilter, #statusFilter, #districtFilter,#phaseFilter,#sessionFilter').on('change', applyFilters);
+                    $('#centreFilter').on('select2:select select2:unselect', applyFilters);
+
+                    $('#resetFiltersBtn').on('click', function() {
+                    $('#regionFilter, #statusFilter, #districtFilter,#phaseFilter,#sessionFilter').val('').trigger('change');
+                        $('#centreFilter').val(null).trigger('change.select2');
+                        currentFilters = {
+                            regionFilter: '',
+                            statusFilter: '',
+                            genderFilter: '',
+                            centreFilter: '',
+                            districtFilter: '',
+                            phaseFilter:'',
+                            sessionFilter: ''
+                        };
+                        loadAndRenderTable();
+                    });
+
+                    // Edit button handler
+                    $(document).on('click', '.edit-btn', function(e) {
+                        e.preventDefault();
+                        var subKey = $(this).data('id');
+
+                        Swal.fire({
+                            title: 'Loading...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                    $.get('/ExamMonitorsTransactions/GetExamMonitorTransaction', { subKey: subKey })
+                            .done(function(data) {
+                                Swal.close();
+                            $('#editSubKey').val(data.subKey || data.SubKey);
+                                $('#editStatus').val(data.status || data.Status);
+                                $('#editRegion').val(data.region || data.Region);
+                                $('#editCentre').val(data.centre || data.Centre);
+                                $('#editPhase').val(data.phase || data.Phase);
+                             $('#editSession').val(data.session || data.Session);
+                            $('#editMonitorTransactionModal').modal('show');
+                            })
+                            .fail(function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: xhr.status === 404 ? 'Transaction not found' : 'Error loading transaction data',
+                                    confirmButtonColor: '#153355'
+                                });
+                            });
+                    });
+
+                    // Save edit handler
+                    $('#saveEditBtn').click(function() {
+                        Swal.fire({
+                            title: 'Saving...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        $.ajax({
+                            url: '@Url.Action("UpdateMonitorTransaction", "ExamMonitorsTransactions")',
+                            type: 'POST',
+                            data: {
+                                subKey:$('#editSubKey').val(),
+                                status: $('#editStatus').val(),
+                                region: $('#editRegion').val(),
+
+                                centreAttached: $('#editCentre').val(),
+                                phase: $('#editPhase').val(),
+                            session : $('#editSession').val(),
+                            },
+                            success: function(response) {
+                                Swal.close();
+                                if (response && response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: response.message,
+                                        confirmButtonColor: '#153355'
+                                    });
+                                $('#editMonitorTransactionModal').modal('hide');
+                                    loadAndRenderTable(); // Refresh the table
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: (response && response.message) || 'Unknown error occurred',
+                                        confirmButtonColor: '#153355'
+                                    });
+                                }
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: (xhr.responseJSON && xhr.responseJSON.message) || 'Error updating transaction',
+                                    confirmButtonColor: '#153355'
+                                });
+                            }
+                        });
+                    });
+
+                    // Delete button handler - using document for delegation
+                    $(document).on('click', '.delete-btn', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        var subKey = $(this).data('id');
+                        var $button = $(this);
+
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "You won't be able to revert this!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#153355',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, delete it!',
+                            allowOutsideClick: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Swal.fire({
+                                    title: 'Deleting...',
+                                    allowOutsideClick: false,
+                                    didOpen: () => Swal.showLoading()
+                                });
+
+                                $.ajax({
+                                    url: '/ExamMonitorsTransactions/DeleteMonitorTransaction',
+                                    type: 'POST',
+                                    data: {
+                                        subkey: subkey,
+                                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                                    },
+                                    success: function(response) {
+                                        Swal.close();
+                                        if (response && response.success) {
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'Deleted!',
+                                                text: response.message || 'Transaction deleted successfully',
+                                                confirmButtonColor: '#153355'
+                                            }).then(() => {
+                                                $button.closest('tr').fadeOut(400, function() {
+                                                    table.row(this).remove().draw(false);
+                                                });
+                                            });
+                                        } else {
+                                            showError(response?.message || 'Failed to delete transaction');
+                                        }
+                                    },
+                                    error: function(xhr) {
+                                        Swal.close();
+                                        showError(xhr.responseJSON?.message || xhr.statusText);
+                                    }
+                                });
+                            }
+                        });
+                    });
+
+                    function showError(message) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: message,
+                            confirmButtonColor: '#153355'
+                        });
+                    }
+
+
+                });
+
+        </script>
+
+
+        <script>
+            $(document).ready(function () {
+                $("#regionFilter").change(function () {
+                    var regionCode = $(this).val();
+                    var districtDropdown = $("#districtFilter");
+
+                    districtDropdown.empty();
+                    districtDropdown.append('<option value="">All Districts</option>');
+
+                    if (regionCode) {
+                        $.getJSON('/ExamMonitorsReports/GetDistrictsByRegion', { regionCode: regionCode }, function (data) {
+                            $.each(data, function (i, district) {
+                                districtDropdown.append('<option value="' + district.value + '">' + district.text + '</option>');
+                            });
+                        });
+                    }
+                });
+            });
+        </script>
+
+        }
+
+    }
+
+
+
+                    
+
+
+@if (User.IsInRole("HR"))
+{
+
+    @section Scripts {
+        <script>
+                        $(document).ready(function() {
+                    console.log("Starting data load...");
+
+                    // Initialize Select2 first
+                    $('#centreFilter').select2({
+                        placeholder: "Select a centre",
+                        allowClear: true,
+                        width: '100%'
+                    });
+
+                    // Initialize table variable only once
+                    var table = initializeDataTable();
+                    var currentFilters = {
+                        regionFilter: '',
+                        statusFilter: '',
+                        centreFilter: '',
+                        districtFilter: '',
+                        phaseFilter : '',
+                        sessionFilter:''
+                    };
+
+                    // Load data initially
+                    loadAndRenderTable();
+
+                    function initializeDataTable() {
+                        return $('#monitorsTransactionsTable').DataTable({
+                              paging: true,
+                            searching: true,
+                            ordering: true,
+                            info: true,
+                            responsive: true,
+                            serverSide: false,
+                            ajax: null,
+                                         language: {
+                            emptyTable: "No records found"
+                        }
+                        });
+                    }
+
+                    function loadAndRenderTable() {
+                        console.log("Loading monitor data with filters:", currentFilters);
+                        currentFilters.centreFilter = $('#centreFilter').val();
+
+                        $.ajax({
+                            url: '/ExamMonitorsTransactions/GetExamMonitorsTransactions',
+                            type: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify(currentFilters),
+                            success: function(response) {
+                                console.log("Data received:", response);
+                                var data = response.data || response;
+
+                                if (!Array.isArray(data)) {
+                                    console.error("Data is not an array:", data);
+
+                                    return;
+                                }
+
+                                table.clear().draw();
+
+                                         if (data.length === 0) {
+                        table.draw(); // DataTables will auto show "No records found"
+                        return;
+                    }
+
+                                data.forEach(function(item) {
+                                    table.row.add([
+                                        item.firstName || '-',
+                                        item.lastName || '-',
+                                        item.nationalId || '-',
+
+                                        item.status || '-',
+                                        item.region || '-',
+                                    item.centre || '-',
+
+                                    ` <div class="d-flex flex-nowrap gap-2">
+                <button class="btn btn-sm text-white edit-btn px-3 py-1 d-flex align-items-center"
+                       style="background-color:#153355;" data-id="${item.subKey || ''}">
+                    <i class="fas fa-edit me-2"></i>
+                    <span>Edit</span>
+                </button>
+                                   <a href="/Contract/DownloadContract?nationalId=${item.nationalId}&category=${item.status}"
+               class="btn btn-success btn-sm px-3 py-1 d-flex align-items-center">
+                <i class="fas fa-file-contract me-2"></i>
+                <span>Generate Contract</span>
+            </a>
+                <button class="btn btn-sm btn-danger delete-btn px-3 py-1 d-flex align-items-center"
+                        data-id="${item.subKey}">
+                    <i class="fas fa-trash-alt me-2"></i>
+                    <span>Remove</span>
+                </button>
+            </div>`
+                                    ]);
+                                });
+
+                                table.draw();
+                                $('#monitorTransactionDataContainer').show();
+                                $('#monitorsTransactionsTable').show().css('visibility', 'visible');
+                            },
+                            error: function(xhr) {
+                                console.error("Failed to load data:", xhr.responseText);
+
+                            }
+                        });
+                    }
+
+                    // Filter handlers
+                    function applyFilters() {
+                        currentFilters = {
+                            regionFilter: $('#regionFilter').val(),
+                            statusFilter: $('#statusFilter').val(),
+
+                            centreFilter: $('#centreFilter').val(),
+                            districtFilter: $('#districtFilter').val(),
+                        phaseFilter :  $('#phaseFilter').val(),
+                       sessionFilter :  $('#sessionFilter').val(),
+                    };
+                        loadAndRenderTable();
+                    }
+
+                    $('#regionFilter, #statusFilter, #districtFilter,#phaseFilter,#sessionFilter').on('change', applyFilters);
+                    $('#centreFilter').on('select2:select select2:unselect', applyFilters);
+
+                    $('#resetFiltersBtn').on('click', function() {
+                    $('#regionFilter, #statusFilter, #districtFilter,#phaseFilter,#sessionFilter').val('').trigger('change');
+                        $('#centreFilter').val(null).trigger('change.select2');
+                        currentFilters = {
+                            regionFilter: '',
+                            statusFilter: '',
+                            genderFilter: '',
+                            centreFilter: '',
+                            districtFilter: '',
+                            phaseFilter:'',
+                            sessionFilter: ''
+                        };
+                        loadAndRenderTable();
+                    });
+
+                    // Edit button handler
+                    $(document).on('click', '.edit-btn', function(e) {
+                        e.preventDefault();
+                        var subKey = $(this).data('id');
+
+                        Swal.fire({
+                            title: 'Loading...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                    $.get('/ExamMonitorsTransactions/GetExamMonitorTransaction', { subKey: subKey })
+                            .done(function(data) {
+                                Swal.close();
+                            $('#editSubKey').val(data.subKey || data.SubKey);
+                                $('#editStatus').val(data.status || data.Status);
+                                $('#editRegion').val(data.region || data.Region);
+                                $('#editCentre').val(data.centre || data.Centre);
+                                $('#editPhase').val(data.phase || data.Phase);
+                             $('#editSession').val(data.session || data.Session);
+                            $('#editMonitorTransactionModal').modal('show');
+                            })
+                            .fail(function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: xhr.status === 404 ? 'Transaction not found' : 'Error loading transaction data',
+                                    confirmButtonColor: '#153355'
+                                });
+                            });
+                    });
+
+                    // Save edit handler
+                    $('#saveEditBtn').click(function() {
+                        Swal.fire({
+                            title: 'Saving...',
+                            allowOutsideClick: false,
+                            didOpen: () => Swal.showLoading()
+                        });
+
+                        $.ajax({
+                            url: '@Url.Action("UpdateMonitorTransaction", "ExamMonitorsTransactions")',
+                            type: 'POST',
+                            data: {
+                                subKey:$('#editSubKey').val(),
+                                status: $('#editStatus').val(),
+                                region: $('#editRegion').val(),
+
+                                centreAttached: $('#editCentre').val(),
+                                phase: $('#editPhase').val(),
+                            session : $('#editSession').val(),
+                            },
+                            success: function(response) {
+                                Swal.close();
+                                if (response && response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: response.message,
+                                        confirmButtonColor: '#153355'
+                                    });
+                                $('#editMonitorTransactionModal').modal('hide');
+                                    loadAndRenderTable(); // Refresh the table
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: (response && response.message) || 'Unknown error occurred',
+                                        confirmButtonColor: '#153355'
+                                    });
+                                }
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: (xhr.responseJSON && xhr.responseJSON.message) || 'Error updating transaction',
+                                    confirmButtonColor: '#153355'
+                                });
+                            }
+                        });
+                    });
+
+                    // Delete button handler - using document for delegation
+                    $(document).on('click', '.delete-btn', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        var subKey = $(this).data('id');
+                        var $button = $(this);
+
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "You won't be able to revert this!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#153355',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, delete it!',
+                            allowOutsideClick: false
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Swal.fire({
+                                    title: 'Deleting...',
+                                    allowOutsideClick: false,
+                                    didOpen: () => Swal.showLoading()
+                                });
+
+                                $.ajax({
+                                    url: '/ExamMonitorsTransactions/DeleteMonitorTransaction',
+                                    type: 'POST',
+                                    data: {
+                                        subKey: subKey,
+                                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                                    },
+                                    success: function(response) {
+                                        Swal.close();
+                                        if (response && response.success) {
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'Deleted!',
+                                                text: response.message || 'Transaction deleted successfully',
+                                                confirmButtonColor: '#153355'
+                                            }).then(() => {
+                                                $button.closest('tr').fadeOut(400, function() {
+                                                    table.row(this).remove().draw(false);
+                                                });
+                                            });
+                                        } else {
+                                            showError(response?.message || 'Failed to delete transaction');
+                                        }
+                                    },
+                                    error: function(xhr) {
+                                        Swal.close();
+                                        showError(xhr.responseJSON?.message || xhr.statusText);
+                                    }
+                                });
+                            }
+                        });
+                    });
+
+                    function showError(message) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: message,
+                            confirmButtonColor: '#153355'
+                        });
+                    }
+
+
+                });
+
+        </script>
+
+
+        <script>
+            $(document).ready(function () {
+                $("#regionFilter").change(function () {
+                    var regionCode = $(this).val();
+                    var districtDropdown = $("#districtFilter");
+
+                    districtDropdown.empty();
+                    districtDropdown.append('<option value="">All Districts</option>');
+
+                    if (regionCode) {
+                        $.getJSON('/ExamMonitorsReports/GetDistrictsByRegion', { regionCode: regionCode }, function (data) {
+                            $.each(data, function (i, district) {
+                                districtDropdown.append('<option value="' + district.value + '">' + district.text + '</option>');
+                            });
+                        });
+                    }
+                });
+            });
+        </script>
+        }
+
+}
+
+
+
+
+<script>
+        document.getElementById("bulkDownloadBtn").addEventListener("click", function () {
+        let region = document.getElementById("region").value;
+        let session = document.getElementById("modalSession").value;
+        let phase = document.getElementById("modalPhase").value;
+
+        if (!region || !session || !phase) {
+            alert("Please select all filters.");
+            return;
+        }
+
+        var modal = bootstrap.Modal.getInstance(document.getElementById('bulkDownloadModal'));
+        modal.hide();
+
+        // redirect triggers file download
+        window.location.href = `/Contract/BulkDownloadContracts?region=${region}&session=${session}&phase=${phase}`;
+    });
+
+</script>
+
+
+

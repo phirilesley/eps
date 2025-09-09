@@ -1,0 +1,139 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model ApportionScriptsViewModel
+
+@{
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+}
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-file-import" style="color: #2a5a8a;"></i> <!-- Changed icon -->
+        <h4 class="fw-bold mb-0" style="color: #153355;">
+            Apportion Scripts :
+            <span style="color: #2a5a8a;">@subjectCode / @paperCode</span>
+        </h4>
+    </div>
+    <hr style="border-top: 1px solid black; 
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+
+<div class="card shadow-sm p-4 " style="background-color: #ffffff;">
+
+
+    <form id="apportionScriptsForm" method="post" asp-action="SaveApportionment">
+        <input type="hidden" name="examCode" value="@examCode" />
+        <input type="hidden" name="subjectCode" value="@subjectCode" />
+        <input type="hidden" name="paperCode" value="@paperCode" />
+        <input type="hidden" name="regionCode" value="@regionCode" />
+        <input type="hidden" name="activity" value="@activity" />
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text">Total Entries</span>
+                    <input type="number" class="form-control" name="totalEntries" readonly value="@Model.TotalEntries" />
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text">Allowed Examiners</span>
+                    <input type="number" class="form-control" name="allowedExaminers" readonly value="@Model.AllowedExaminers" />
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category</th>
+                        <th>Selected</th>
+                        <th>Max Scripts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PMS</td>
+                        <td><input type="number" class="form-control" name="SelectedPMS" value="@Model.SelectedPMS" readonly /></td>
+                        <td><input type="number" class="form-control" name="MaxScriptsPMS" value="@Model.MaxScriptsPMS" /></td>
+                    </tr>
+                    <tr>
+                        <td>RPMS</td>
+                        <td><input type="number" class="form-control" name="SelectedRPMS" value="@Model.SelectedRPMS" readonly /></td>
+                        <td><input type="number" class="form-control" name="MaxScriptsRPMS" value="@Model.MaxScriptsRPMS" /></td>
+                    </tr>
+                    <tr>
+                        <td>DPMS</td>
+                        <td><input type="number" class="form-control" name="SelectedDPMS" value="@Model.SelectedDPMS" readonly /></td>
+                        <td><input type="number" class="form-control" name="MaxScriptsDPMS" value="@Model.MaxScriptsDPMS" /></td>
+                    </tr>
+                    <tr>
+                        <td>BMS</td>
+                        <td><input type="number" class="form-control" name="SelectedBMS" value="@Model.SelectedBMS" readonly /></td>
+                        <td><input type="number" class="form-control" name="MaxScriptsBMS" value="@Model.MaxScriptsBMS" /></td>
+                    </tr>
+                    <tr>
+                        <td>E</td>
+                        <td><input type="number" class="form-control" name="SelectedE" value="@Model.SelectedE" readonly /></td>
+                        <td><input type="number" class="form-control" name="MaxScriptsE" value="@Model.MaxScriptsE" /></td>
+                    </tr>
+                    <tr class="fw-bold">
+                        <td>Total</td>
+                        <td><input type="number" id="totalSelected" name="TotalSelected" class="form-control" readonly /></td>
+                        <td><input type="number" id="totalMaxScripts" name="TotalMaxScripts" class="form-control" readonly /></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center mt-3">
+            <button type="submit" class="btn px-4 text-white" style="background-color: #153355;">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                Submit</button>
+            <a href="@Url.Action("SelectTeam")"  class="btn btn-outline-danger  px-4">
+                <i class="bi bi-x-circle-fill me-2"></i>
+                Cancel</a>
+        </div>
+    </form>
+
+
+
+    </div>
+<script>
+    function calculateTotals() {
+        let totalSelected = 0;
+        let totalMaxScripts = 0;
+
+        totalSelected += parseInt($('input[name="SelectedPMS"]').val()) || 0;
+        totalSelected += parseInt($('input[name="SelectedRPMS"]').val()) || 0;
+        totalSelected += parseInt($('input[name="SelectedDPMS"]').val()) || 0;
+        totalSelected += parseInt($('input[name="SelectedBMS"]').val()) || 0;
+        totalSelected += parseInt($('input[name="SelectedE"]').val()) || 0;
+
+        totalMaxScripts += parseInt($('input[name="MaxScriptsPMS"]').val()) || 0;
+        totalMaxScripts += parseInt($('input[name="MaxScriptsRPMS"]').val()) || 0;
+        totalMaxScripts += parseInt($('input[name="MaxScriptsDPMS"]').val()) || 0;
+        totalMaxScripts += parseInt($('input[name="MaxScriptsBMS"]').val()) || 0;
+        totalMaxScripts += parseInt($('input[name="MaxScriptsE"]').val()) || 0;
+
+        $('#totalSelected').val(totalSelected);
+        $('#totalMaxScripts').val(totalMaxScripts);
+    }
+
+    $(document).ready(function () {
+        calculateTotals(); // Calculate on page load
+        $('input[name^="MaxScripts"]').on('input', calculateTotals); // Recalculate when values change
+    });
+</script>
+
+
+
+

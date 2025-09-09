@@ -1,0 +1,606 @@
+﻿@model MonitorDetailsViewModel
+
+@{
+    ViewData["Title"] = "Monitor Details";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 mt-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="display-6">
+                    <i class="fas fa-user-tie me-2"></i>@Model.FirstName @Model.LastName
+                </h2>
+
+                <!-- Center section for main status badge -->
+                <div class="text-center flex-grow-1 mx-4">
+                    @if (Model.AcceptStatus?.ToLower() == "accepted")
+                    {
+                        <div class="mb-2">
+                            <span class="badge bg-success fs-5 p-3">
+                                <i class="fas fa-check-circle me-2"></i>ACCEPTED
+                            </span>
+                        </div>
+                    }
+                    else if (Model.AcceptStatus?.ToLower() == "rejected")
+                    {
+                        <div class="mb-2">
+                            <span class="badge bg-danger fs-5 p-3">
+                                <i class="fas fa-times-circle me-2"></i>REJECTED
+                            </span>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Comment))
+                        {
+                            <div class="alert alert-danger mt-2 mb-0">
+                                <i class="fas fa-comment-exclamation me-2"></i>
+                                <strong>Rejection Reason:</strong> @Model.Comment
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="mb-2">
+                            <span class="badge bg-warning fs-5 p-3 text-dark">
+                                <i class="fas fa-clock me-2"></i>PENDING REVIEW
+                            </span>
+                        </div>
+                    }
+                </div>
+
+                <!-- Right section for other badges -->
+                <div class="text-end">
+                    <span class="badge bg-primary">@Model.Status</span>
+                    <span class="badge bg-secondary ms-2">@Model.Region Region</span>
+                </div>
+            </div>
+            <hr class="mt-2 mb-4">
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Personal Information Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header  text-white" style="background-color:#153355;">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-id-card me-2"></i>Personal Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">National ID</label>
+                                <p class="fw-bold">@Model.NationalId</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">First Name</label>
+                                <p class="fw-bold">@Model.FirstName</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Gender</label>
+                                <p class="fw-bold">@(Model.Sex == "M" ? "Male" : Model.Sex == "F" ? "Female" : "Other")</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Monitor ID</label>
+                                <p class="fw-bold">@Model.MonitorId</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Last Name</label>
+                                <p class="fw-bold">@Model.LastName</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Age</label>
+                                <p class="fw-bold">@Model.Age</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact & Assignment Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header text-white" style="background-color:#153355;">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>Assignment & Contact
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Region</label>
+                                <p class="fw-bold">@Model.Region</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">District</label>
+                                <p class="fw-bold">@Model.District</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Centre Number</label>
+                                <p class="fw-bold">@Model.Centre</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Station</label>
+                                <p class="fw-bold">@Model.Station</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Phone</label>
+                                <p class="fw-bold">@Model.Phone</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Experience</label>
+                                <p class="fw-bold">@Model.Experience</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Qualifications Card -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header text-white" style="background-color:#153355;">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>Professional Qualifications
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ProfessionalQualifications != null && Model.ProfessionalQualifications.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Programme Name</th>
+                                        <th>Institution</th>
+                                        <th>Start Year</th>
+                                        <th>End Year</th>
+                                        <th>Date Added</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var qualification in Model.ProfessionalQualifications.OrderByDescending(q => q.Date))
+                                    {
+                                        <tr>
+                                            <td>@qualification.ProgrammeName</td>
+                                            <td>@qualification.InstitutionName</td>
+                                            <td>@qualification.StartYear</td>
+                                            <td>@qualification.EndYear</td>
+                                            <td>@qualification.Date.ToString("yyyy-MM-dd")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>No professional qualifications added yet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents Card -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header text-white" style="background-color:#153355;">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>Documents & Attachments
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Attachments != null && Model.Attachments.Any())
+                    {
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>Academic Qualifications
+                                        </h6>
+                                        @if (!string.IsNullOrEmpty(Model.Attachments.First().AcademicQualifications))
+                                        {
+                                            <p class="card-text">@Model.Attachments.First().AcademicQualifications</p>
+                                            <a href="@Url.Action("DownloadFile", "ExamMonitors", new { nationalId = Model.NationalId, fileType = "academic" })"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-download me-1"></i>Download
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <p class="card-text text-muted">No academic qualifications document uploaded</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-id-card text-info me-2"></i>National ID Document
+                                        </h6>
+                                        @if (!string.IsNullOrEmpty(Model.Attachments.First().NationalIdDocs))
+                                        {
+                                            <p class="card-text">@Model.Attachments.First().NationalIdDocs</p>
+                                            <a href="@Url.Action("DownloadFile", "ExamMonitors", new { nationalId = Model.NationalId, fileType = "nationalId" })"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-download me-1"></i>Download
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <p class="card-text text-muted">No national ID document uploaded</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>No documents uploaded yet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banking Information Row -->
+   
+
+       
+
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between">
+                <a href="/ExamMonitors/Recruitment" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+                <div>
+                    <a href="@Url.Action("EditHR", "ExamMonitors", new { nationalId = Model.NationalId })"
+                       class="btn text-white me-2" style="background-color:#153355;">
+                        <i class="fas fa-edit me-2"></i>Edit
+                    </a>
+
+                    @if(Model.AcceptStatus?.ToLower() == "pending")
+                    {
+                        <button class="btn  me-2 text-white" style="background-color:#153355;" onclick="confirmAccept('@Model.NationalId')">
+                            <i class="fas fa-check me-2"></i>Accept Application
+                        </button>
+
+                     
+                    }else if(Model.AcceptStatus?.ToLower() == "accepted")
+                    {
+                        <button class="btn btn-danger me-2" onclick="confirmReject('@Model.NationalId')">
+                            <i class="fas fa-times me-2"></i>Reject Application
+                        </button>
+                    }else if(Model.AcceptStatus?.ToLower() == "rejected")
+                    {
+                        <button class="btn  me-2 text-white" style="background-color:#153355;" onclick="confirmAccept('@Model.NationalId')">
+                            <i class="fas fa-check me-2"></i>Accept Application
+                        </button>
+                    }
+
+                
+                    <button class="btn btn-danger" onclick="confirmDelete('@Model.NationalId')">
+                        <i class="fas fa-trash me-2"></i>Delete
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+@section Scripts {
+    <script>
+     function confirmDelete(nationalId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // AJAX call to delete the record
+            fetch(`/ExamMonitors/DeleteRecruitment/${nationalId}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        'Deleted!',
+                        data.message,
+                        'success'
+                    ).then(() => {
+                        // Redirect to recruitment page after success
+                        window.location.href = '/ExamMonitors/Recruitment';
+                    });
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        data.message,
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                Swal.fire(
+                    'Error!',
+                    'An error occurred during deletion.',
+                    'error'
+                );
+            });
+        }
+    });
+}
+
+        function confirmAccept(nationalId) {
+                Swal.fire({
+                    title: 'Accept Application',
+                    text: "Are you sure you want to accept this application?",
+                    icon: 'question',
+                    showCancelButton: true,
+                            confirmButtonColor: '#153355',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, Accept',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading
+                        Swal.fire({
+                            title: 'Processing...',
+                            text: 'Accepting application',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Submit acceptance
+                        $.ajax({
+                            url: '/ExamMonitors/AcceptApplication',
+                            type: 'POST',
+                            contentType: 'application/x-www-form-urlencoded',
+                            data: {
+                                nationalId: nationalId,
+                                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Accepted',
+                                        text: 'Application has been accepted successfully.',
+                                                confirmButtonColor: '#153355',
+                                    }).then(() => {
+                                        window.location.href = '/ExamMonitors/Recruitment';
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: response.message || 'Failed to accept application',
+                                        confirmButtonColor: '#3085d6',
+                                    });
+                                }
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'An error occurred while accepting the application.',
+                                    confirmButtonColor: '#3085d6',
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+        function confirmReject(nationalId) {
+            Swal.fire({
+                title: 'Reject Application',
+                html: `
+                    <textarea id="rejectionReason" class="swal2-textarea" placeholder="Please provide the reason for rejection..." rows="4" required></textarea>
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="notifyApplicant">
+                        <label class="form-check-label" for="notifyApplicant">
+                            Notify applicant via email
+                        </label>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Confirm Rejection',
+                cancelButtonText: 'Cancel',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const reason = Swal.getPopup().querySelector('#rejectionReason').value;
+                    const notify = Swal.getPopup().querySelector('#notifyApplicant').checked;
+
+                    if (!reason.trim()) {
+                        Swal.showValidationMessage('Please provide a reason for rejection');
+                        return false;
+                    }
+
+                    return { reason: reason, notify: notify };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Rejecting application',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Submit rejection
+                    $.ajax({
+                        url: '/ExamMonitors/RejectApplication',
+                        type: 'POST',
+                        contentType: 'application/x-www-form-urlencoded',
+                        data: {
+                            nationalId: nationalId,
+                            rejectionReason: result.value.reason,
+                            notifyApplicant: result.value.notify,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Rejected',
+                                    text: 'Application has been rejected successfully.',
+                                    confirmButtonColor: '#3085d6',
+                                }).then(() => {
+                                    window.location.href = '/ExamMonitors/Recruitment';
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message || 'Failed to reject application',
+                                    confirmButtonColor: '#3085d6',
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred while rejecting the application.',
+                                confirmButtonColor: '#3085d6',
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+        @if (TempData["SuccessMessage"] != null)
+        {
+                        <text>
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: '@TempData["SuccessMessage"]',
+                                    showConfirmButton: false,
+                                    timer: 2000
+                                });
+                        </text>
+        }
+        else if (TempData["ErrorMessage"] != null)
+        {
+                        <text>
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: '@TempData["ErrorMessage"]',
+                                    showConfirmButton: true
+                                });
+                        </text>
+        }
+
+
+                                });
+    </script>
+
+}
+
+  @*   <script>
+        function confirmDelete(nationalId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/ExamMonitors/DeleteRecruitment/${nationalId}`;
+                }
+            });
+        }
+    </script> *@
+
+   @*  <script>
+        function showRejectForm(nationalId) {
+            Swal.fire({
+                title: 'Reject Application',
+                html: `
+                    <textarea id="rejectionReason" class="swal2-textarea" placeholder="Please provide the reason for rejection..." rows="4" required></textarea>
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="notifyApplicant">
+                        <label class="form-check-label" for="notifyApplicant">
+                            Notify applicant via email
+                        </label>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Confirm Rejection',
+                cancelButtonText: 'Cancel',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const reason = Swal.getPopup().querySelector('#rejectionReason').value;
+                    const notify = Swal.getPopup().querySelector('#notifyApplicant').checked;
+
+                    if (!reason.trim()) {
+                        Swal.showValidationMessage('Please provide a reason for rejection');
+                        return false;
+                    }
+
+                    return { reason: reason, notify: notify };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Set form values and submit
+                    document.getElementById('rejectionReasonInput').value = result.value.reason;
+                    document.getElementById('notifyApplicantInput').value = result.value.notify;
+                    document.getElementById('rejectForm').submit();
+                }
+            });
+        }
+    </script> *@

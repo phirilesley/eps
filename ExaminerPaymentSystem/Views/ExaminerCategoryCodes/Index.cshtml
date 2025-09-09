@@ -1,0 +1,577 @@
+﻿@{
+    ViewBag.Title = "Update Examiner Category";
+}
+
+<style>
+    /* Styles from previous code snippet */
+    .form-container {
+        max-width: 1200px; /* Increased width of the form */
+        margin: auto;
+        padding: 30px; /* Increased padding for a bigger form */
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 25px; /* Increased margin between form groups */
+        display: flex; /* Use flexbox for aligning items */
+        align-items: center; /* Align items vertically */
+    }
+
+    label {
+        font-weight: bold;
+        width: 200px; /* Increased width for labels */
+        margin-right: 20px; /* Increased spacing between label and input */
+    }
+
+    input[type="text"],
+    select {
+        flex: 1; /* Allow text fields to grow */
+        padding: 10px; /* Increased padding for text fields */
+        border: 2px solid #ccc; /* Increased border thickness */
+        border-radius: 4px;
+        box-sizing: border-box;
+        width: 200px; /* Set width to match Select Subject and National ID Number */
+        margin-right: 20px; /* Increased spacing between fields */
+    }
+
+    button[type="button"],
+    button[type="submit"] { /* Style for both search and submit buttons */
+
+        color: white;
+        padding: 10px 15px; /* Increased padding for buttons */
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+        button[type="button"]:hover,
+        button[type="submit"]:hover { /* Hover effect for both buttons */
+            background-color: #153355;
+        }
+
+    /* Style for horizontal line */
+    .separator {
+        width: 100%;
+        height: 4px; /* Increased height for separator lines */
+        background-color: red; /* Set color to orange */
+        margin: 30px 0; /* Increased margin between separator lines */
+    }
+
+    /* Style for flex container */
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    /* Style for form group within flex container */
+    .flex-item {
+        width: calc(33.33% - 10px); /* Adjusted width for three fields in a row */
+    }
+
+    /* Style for search button container */
+    .search-button-container {
+        display: flex;
+        align-items: center; /* Align items vertically */
+    }
+
+    /* Table styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+        /* Set column widths */
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 20%; /* Adjust width for the first column */
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 20%; /* Adjust width for the second column */
+        }
+
+    /* Adjust width for other columns as needed */
+
+    /* Hover effect */
+    tbody tr:hover {
+        background-color: #f2f2f2; /* Light gray background on hover */
+    }
+</style>
+
+@using (Html.BeginForm("Index", "ExaminerScriptsMarked", FormMethod.Get, new { id = "searchForm" }))
+{
+    <div class="form-container">
+        <h2>Update Examiner Category</h2>
+
+        <div class="separator"></div>
+
+        <div class="form-group">
+            @Html.Label("ExaminerCode", "Exam Session: ")
+            @Html.DropDownList("ExaminerCode", new SelectList(ViewBag.ExamCodes, "EXM_EXAM_CODE", "ExamCaption"), "", new { @class = "form-control", id = "ddlExamSession" })
+            @Html.Label("SubjectCode", "Subject: ")
+            <select id="ddlSubject" name="SubjectCode" class="form-control"></select>
+
+        </div>
+
+        <div class="form-group">
+            @Html.Label("PaperCode", "Paper Code: ")
+            <select id="ddlPaperCode" name="paperCode" class="form-control"></select>
+            @Html.Label("searchBmsCode", "BMS Code: ")
+            @Html.TextBox("searchBmsCode", null, new { @class = "form-control", id = "searchBmsCode" })
+            <input type="hidden" id="holdMySubjectCode" name="holdMySubjectCodeValue" value=" " />
+            <div class="form-group">
+                <!-- Other form inputs -->
+                <button type="button" class="btn text-white" style="background-color: #153355;" onclick="searchExaminers()">
+                    <i class="fas fa-search mr-2"></i>
+                    Search Team
+                </button> <!-- Change type to button -->
+            </div>
+        </div>
+
+        <div class="separator"></div>
+
+
+        <div class="form-group" id="examinerTable">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Examiner Number</th>
+                        @* <th>Examiner Code</th> *@
+                        <th>Examiner Name</th>
+                        <th>National ID</th>
+                        <th>Marking Region Code</th>
+                        <th>Supervisor</th>
+                        <th>Status</th>
+
+
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="separator"></div>
+        <div class="form-group">
+            <!---<button type="button" onclick="saveData()">Save</button>-->
+            <button type="submit" class="btn text-white" style="background-color: #153355;" onclick=" javascript:validateBeforeSave();" id="saveButton" disabled>
+                <i class="fas fa-save mr-2"></i>
+                Save
+            </button>
+        </div>
+
+    </div>
+}
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    var globalExamCode = null;
+    $(document).ready(function () {
+        $('#ddlExamSession').change(function () {
+            var examcode = $(this).val();
+            globalExamCode = examcode;
+            if (examcode) {
+                $.ajax({
+                    url: '@Url.Action("GetSubjectsByExamSession", "PaperMarkingRate")',
+                    type: 'GET',
+                    data: { examcode: examcode },
+                    success: function (response) {
+                        var jsonData = response;//JSON.stringify(response);
+                        //alert(jsonData);
+                        var subjects = [];
+                        //alert('subject list declared');
+                        for (var i = 0; i < jsonData.length; i++) {
+                            var item = jsonData[i];
+                            if (item.hasOwnProperty('suB_SUBJECT_DESC') && item.hasOwnProperty('suB_SUBJECT_CODE')) {
+                                subjects.push(item.suB_SUBJECT_CODE + " " + item.suB_SUBJECT_DESC);
+                            }
+                            else {
+                                alert('property not found');
+                            }
+                        }
+                        var uniqueSubjects = new Set(subjects);
+
+                        // Convert the Set back to an array
+                        subjects = Array.from(uniqueSubjects);
+
+                        //alert(subjects);
+
+                        var dropdown = document.getElementById('ddlSubject');
+                        dropdown.innerHTML = "";
+                        var option1 = document.createElement('option');
+                        option1.text = "Select Subject";
+                        option1.value = "select_examtype";
+                        dropdown.appendChild(option1);
+                        //alert('default option appended');
+                        subjects.forEach(function (subject) {
+                            //alert('in loop');
+                            var option = document.createElement('option');
+                            //alert('option created');
+                            option.text = subject;
+                            //alert('option text added');
+                            option.value = subject.substring(0, 4);
+                            //alert('option value added')
+                            dropdown.appendChild(option);
+                            //alert('value appended');
+                        });
+                        // $('#examinerTable').hide();
+                    }
+                });
+            }
+        });
+
+        $('#ddlSubject').change(function () {
+            event.preventDefault();
+            //alert("form submission haulted");
+            var selectedSubjectFull = $(this).val();
+            var selectedSubject = selectedSubjectFull.substring(0, 4);
+            //alert(selectedSubject);
+            if (selectedSubject) {
+                //alert("value found");
+                $.ajax({
+                    url: '@Url.Action("GetPaperCodesBySubject", "PaperMarkingRate")',
+                    type: 'GET',
+                    data: {
+                        subject: selectedSubject,
+                        examcode: globalExamCode
+                    },
+                    success: function (response) {
+
+                        var jsonData = response;//JSON.stringify(response);
+                        //alert(jsonData);
+                        var paperCodes = [];
+                        //alert('subject list declared');
+                        for (var i = 0; i < jsonData.length; i++) {
+                            var item = jsonData[i];
+                            if (item.hasOwnProperty('ppR_PAPER_CODE')) {
+                                paperCodes.push(item.ppR_PAPER_CODE);
+                            }
+                            else {
+                                alert('property not found');
+                            }
+                        }
+
+                        var uniquePaperCodes = new Set(paperCodes);
+
+                        // Convert the Set back to an array
+                        paperCodes = Array.from(uniquePaperCodes);
+
+                        //here Toddy!
+
+                        var dropdown = document.getElementById('ddlPaperCode');
+                        dropdown.innerHTML = "";
+                        var option1 = document.createElement('option');
+                        option1.text = "Select Paper Code";
+                        option1.value = "select_papercode";
+                        dropdown.appendChild(option1);
+                        paperCodes.forEach(function (papercode) {
+                            var option = document.createElement('option');
+                            option.text = papercode;
+                            option.value = papercode;
+                            dropdown.appendChild(option);
+                        });
+
+                    },
+
+                });
+            }
+        });
+
+        // $('#ddlPaperCode').change(function () {
+
+        //     //add logic to choose paper here
+        // }
+
+    });
+
+
+    function validateBeforeSave() {
+        var ddlExamSession = document.getElementById("ddlExamSession").value;
+        var ddlSubject = document.getElementById("ddlSubject").value;
+        var ddlPaperCode = document.getElementById("ddlPaperCode").value;
+        var searchBms = document.getElementById("searchBmsCode").value;
+
+        const table = document.querySelector('#examinerTable');
+
+        // Get the tbody element within the table
+        const tbody = table.querySelector('tbody');
+
+        // Check if any rows are empty after trimming
+        var rowsEmpty = false;
+        tbody.querySelectorAll('tr').forEach(row => {
+            let isEmpty = !Array.from(row.cells).some(cell => {
+                if (cell.querySelector('input')) {
+                    const inputValue = cell.querySelector('input').value.trim();
+                    if (inputValue === '') {
+                        rowsEmpty = true;
+                        return true; // Terminate execution when input value is empty
+                    }
+                }
+                else {
+                    const cellContent = cell.textContent.trim();
+                    if (cellContent === '') {
+                        rowsEmpty = true;
+                        return true; // Terminate execution when cell content is empty
+                    }
+                }
+                return false; // Continue checking other cells
+            });
+
+
+        });
+        /* if (rowsEmpty) {
+             //alert('Some cells have empty values. Execution terminated.');
+             Swal.fire({
+                 title: "Empty fields!",
+                 text: "Some cells have empty values. Execution terminated.",
+                 icon: "error"
+             });
+             event.preventDefault();
+             return;
+         } else {
+             //alert('all values available.');
+             postToController(); // Call postToController function if all values are not empty
+         }*/
+        postToController();
+    }
+
+
+    function postToController() {
+        event.preventDefault();
+        var ddlExamSession = document.getElementById("ddlExamSession").value;
+        var ddlSubject = document.getElementById("ddlSubject").value;
+        var ddlPaperCode = document.getElementById("ddlPaperCode").value;
+        var searchBms = document.getElementById("searchBmsCode").value;
+
+        // Get the table element
+        const table = document.querySelector('#examinerTable');
+
+        // Get the thead and tbody elements within the table
+        const thead = table.querySelector('thead');
+        const tbody = table.querySelector('tbody');
+
+        // Extract the column headers
+        const headers = Array.from(thead.querySelectorAll('th')).map(header => header.textContent.trim());
+
+
+        headers[0] = "EMS_EXAMINER_NUMBER";
+        //headers[1] = "EMS_EXAMINER_CODE";
+        headers[1] = "EMS_EXAMINER_NAME";
+        headers[2] = "EMS_NATIONAL_ID";
+        headers[3] = "EMS_MARKING_REG_CODE";
+        headers[4] = "EMS_EXM_SUPERORD";
+        headers[5] = "EMS_ECT_EXAMINER_CAT_CODE";
+
+
+
+
+        var proceed = true;
+        // Extract the cell values and format into JSON
+        const tableData = [];
+        tbody.querySelectorAll('tr').forEach(row => {
+            const rowData = {};
+            Array.from(row.cells).forEach((cell, index) => {
+                if (cell.querySelector('input')) {
+                    //if (cell.querySelector('input').value.trim() % 1 == 0)
+                    if (isNaN(cell.querySelector('input').value.trim())) {
+                        proceed = false;
+                        //alert("value " + cell.querySelector('input').value.trim() + " is not a valid number");
+                        //if (isNaN(cell.querySelector('input').value.trim())) {
+                    }
+                    else {
+                        rowData[headers[index]] = cell.querySelector('input').value.trim();
+                        proceed = true;
+                        //alert("value " + cell.querySelector('input').value.trim() + " is a valid number");
+                    }
+                }
+                else if (cell.querySelector('select')) {
+                    //alert("A select has been found");
+                    rowData[headers[index]] = cell.querySelector('select').options[cell.querySelector('select').selectedIndex].value.trim();
+                }
+                else {
+                    rowData[headers[index]] = cell.textContent.trim();
+                }
+            });
+            tableData.push(rowData);
+        });
+
+        var newEMS_SUB_SUB_ID = globalExamCode + "" + ddlSubject.slice(0, 4);
+
+        // Add the values from the select elements to the JSON data
+        const jsonData = {
+            SUBJECT_CODE: ddlSubject.substring(0, 4),
+            PAPER_CODE: ddlPaperCode,
+            Exam_Code: ddlExamSession,
+            /*tableData: tableData.map(item => ({
+                ...item,
+                SCRIPTS_MARKED: parseInt(item.SCRIPTS_MARKED) || null // Convert to integer or null
+            }))*/
+            tableData: tableData
+        };
+
+        // Stringify the JSON data
+        const jsonString = JSON.stringify(jsonData);
+        //alert(jsonString);
+
+        // AJAX to save to DB
+
+        if (proceed) {
+            $.ajax({
+                url: '@Url.Action("UpdateExaminerCategory", "Examiner")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: jsonString, // Ensure that the JSON data is stringified before sending
+                success: function (response) {
+                    //alert(jsonString);
+                    // Check if response has success and message properties
+                    if (response.success) {
+                        //alert(response.message); // Display the message from the response
+                        Swal.fire({
+                            title: "Information updated!",
+                            text: "Information for examiners has been successfully updated",
+                            icon: "success"
+                        });
+                        searchExaminers();
+                    } else {
+                        //alert(response.message);
+                        Swal.fire({
+                            title: "Information not updated!",
+                            text: "Information not updated, please try again",
+                            icon: "error"
+                        });
+                    }
+                },
+                error: function () {
+                    //alert("Error occurred while saving data!");
+                    Swal.fire({
+                        title: "Error!",
+                        text: "An error occured whilst servicing request, please try again.",
+                        icon: "error"
+                    });
+                }
+            });
+        }
+        else {
+            event.preventDefault();
+            Swal.fire({
+                title: "input value not allowed!",
+                text: "Please ensure that values put are valid numbers",
+                icon: "error"
+            });
+            return;
+        }
+
+    }
+</script>
+
+<script>
+    function searchExaminers() {
+        // Prevent default form submission
+
+        //alert(document.getElementById("holdMySubjectCode").value);
+        document.getElementById("holdMySubjectCode").value = (document.getElementById("ddlSubject").value.trim()).substring(0, 4);
+        //document.getElementById("ddlSubject").value = document.getElementById("holdMySubjectCode").value;
+        //alert(document.getElementById("holdMySubjectCode").value);
+        event.preventDefault();
+        //alert($(searchForm).serialize());
+        // Perform AJAX request to fetch examiners
+        $.ajax({
+            url: '@Url.Action("GetTeamByBmsForExaminerCategory", "ExaminerScriptsMarked")', // Adjust URL as needed
+            type: 'GET',
+            dataType: 'json',
+            data: $(searchForm).serialize(), // Serialize form data
+            success: function (response) {
+                /*alert(response);
+                Handle success response, update UI with examiners data
+                //console.log(response);  Log response for debugging*/
+                const table = document.querySelector('#examinerTable');
+                const tbody = table.querySelector('tbody');
+                // Check if the tbody has rows
+                if (tbody.rows.length > 0) {
+                    while (tbody.firstChild) {
+                        tbody.removeChild(tbody.firstChild);
+                    }
+                }
+                var tempVar = JSON.stringify(response);
+                var examiners = JSON.parse(tempVar);
+
+                if (examiners && examiners.length > 0) {
+                    $('#examinerTable').show();
+                    examiners.forEach(Examiners => {
+
+                        var emS_ECT_EXAMINER_CAT_CODE = Examiners.emS_ECT_EXAMINER_CAT_CODE;
+                        var emS_EXM_SUPERORD = Examiners.emS_EXM_SUPERORD;
+                        var emS_EXAMINER_NUMBER = Examiners.emS_EXAMINER_NUMBER;
+
+
+                        // Creating the select element with options
+                        var newRow = "<tr>" +
+    @* "<td>" + Examiners.emS_EXAMINER_NUMBER + ' ' + "</td>" + *@
+                            "<td>" + '<input type="text" name="EMS_EXAMINER_NUMBER" class="form-control" value="' + (Examiners.emS_EXAMINER_NUMBER || '') + '"/>' + "</td>" +
+                            //"<td>" + Examiners.emS_EXAMINER_CODE + ' ' + "</td>" +
+                            "<td>" + Examiners.emS_EXAMINER_NAME + "</td>" +
+                            "<td>" + Examiners.emS_NATIONAL_ID + "</td>" +
+                            "<td>" + Examiners.emS_MARKING_REG_CODE + "</td>" +
+    @* "<td>" + Examiners.emS_EXM_SUPERORD + ' ' + "</td>" + *@
+                            "<td>" + '<input type="text" name="EMS_EXM_SUPERORD" class="form-control" value="' + (Examiners.emS_EXM_SUPERORD || '') + '"/>' + "</td>" +
+                            "<td><select class='editableDropdown'>";
+
+                        // Options with values and labels
+                        var options = [
+                            { value: 'PMS', label: 'PMS' },
+                            { value: 'DPMS', label: 'DPMS' },
+                            { value: 'RPMS', label: 'RPMS' },
+                            { value: 'BMS', label: 'BMS' },
+                            { value: 'E', label: 'E' }
+                        ];
+
+                        // Loop through options to create select options
+                        options.forEach(option => {
+                            if (option.value === emS_ECT_EXAMINER_CAT_CODE) {
+                                newRow += "<option value='" + option.value + "' selected>" + option.label + "</option>";
+                            } else {
+                                newRow += "<option value='" + option.value + "'>" + option.label + "</option>";
+                            }
+                        });
+
+                        newRow += "</select></td></tr>";
+
+
+                        $("#examinerTable tbody").append(newRow);
+                        $('#saveButton').prop('disabled', false);
+                    });
+                } else {
+                    var newRow1 = "<tr>" +
+                        "<td> No data for this BMS Code</td>" +
+                        "</tr>"
+                    $("#examinerTable tbody").append(newRow1);
+                    $('#saveButton').prop('disabled', true);
+                }
+
+            },
+            error: function () {
+                // Handle error
+                console.error("Error occurred while searching for examiners!");
+            }
+        });
+    }
+</script>

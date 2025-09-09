@@ -1,0 +1,524 @@
+﻿@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+@inject IVenueRepository venueRepo
+
+@{
+    ViewBag.Title = "Approve Scripts Marked";
+
+
+
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+}
+
+
+<style>
+
+
+    .rectangle {
+        padding: 10px;
+        border-radius: 5px;
+        margin-right: 10px;
+        color: white;
+    }
+
+    .stat-box {
+        border-radius: 8px;
+        padding: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .red {
+        background-color: #dc3545; /* Red color */
+    }
+
+    .green {
+        background-color: #28a745; /* Green color */
+    }
+
+
+     .count-box {
+        background: #153355;
+        border-radius: 10px;
+        padding: 8px 12px;
+        transition: background 0.3s ease;
+    }
+
+        .stat-box:hover, .count-box:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+    .btn-light {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        color: #153355;
+        transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+        .btn-light:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.05);
+        }
+
+    .fs-5 {
+        font-size: 1.25rem !important;
+    }
+
+    .stat-box, .count-box {
+        background: linear-gradient(145deg, #f3f6fa, #e2e8f0);
+        border-radius: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        min-width: 80px;
+    }
+
+    .stat-icon {
+        font-size: 0.9rem;
+        color: #4a5568;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-title {
+        font-size: 0.7rem;
+        font-weight: 500;
+        color: #6b7280;
+        margin-bottom: 0.1rem;
+    }
+
+    .stat-value {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #1a202c;
+    }
+
+    .stat-row {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.75rem;
+    }
+
+    .circle-percentage {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--circle-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin: auto;
+        transition: background 0.4s ease;
+    }
+
+        .circle-percentage span {
+            position: absolute;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #212529; /* or #ffffff */
+        }
+
+    .btn-approve {
+        background-color: #0d6efd;
+        color: white;
+        font-size: 0.75rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 0.4rem;
+    }
+
+        .btn-approve:hover {
+            background-color: #084298;
+        }
+
+    .count-box span {
+        font-size: 0.9rem;
+    }
+
+    .count-box h6 {
+        font-size: 0.7rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .bg-light-gradient {
+        background: linear-gradient(to right, #ffffff, #f8f9fa);
+    }
+
+    .card {
+        border: 1px solid #dee2e6;
+    }
+
+    .stat-box.red {
+        background: linear-gradient(145deg, #ffe5e5, #f8d7da);
+        color: #842029;
+        border: 1px solid #f5c2c7;
+    }
+
+    .stat-box.green {
+        background: linear-gradient(145deg, #d1e7dd, #cff4fc);
+        color: #0f5132;
+        border: 1px solid #badbcc;
+    }
+
+    .stat-box.orange {
+        background: linear-gradient(145deg, #fff3cd, #ffeeba);
+        color: #664d03;
+        border: 1px solid #ffecb5;
+    }
+
+
+</style>
+
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-file-signature" style="color: #2a5a8a;"></i>
+        <h5 class="fw-bold mb-0" style="color: #153355;">
+            Approve Script Marked  :     <span style="color: #2a5a8a;">@subjectCode.Substring(3) / @paperCode</span>
+            
+        </h5>
+    </div>
+    <hr style="border-top: 1px solid black;
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+
+
+
+<div class="card bg-light-gradient p-3 shadow-sm">
+    <div class="row align-items-center">
+
+        <!-- Left Stats -->
+        <div class="col-md-5">
+            <div class="stat-row">
+                <div class="stat-box" id="apportionedContainer">
+                    <div class="stat-icon"><i class="fas fa-puzzle-piece"></i></div>
+                    <div class="stat-title">Apportioned</div>
+                    <div class="stat-value" id="apportioned">0</div>
+                </div>
+
+                <div class="stat-box" id="enteredContainer">
+                    <div class="stat-icon"><i class="fas fa-pen-nib"></i></div>
+                    <div class="stat-title">Marked</div>
+                    <div class="stat-value" id="totalscripts">0</div>
+                </div>
+
+                <div class="stat-box" id="absentContainer">
+                    <div class="stat-icon"><i class="fas fa-user-slash"></i></div>
+                    <div class="stat-title">Absent</div>
+                    <div class="stat-value" id="absent">0</div>
+                </div>
+
+                <div class="stat-box" id="piratesContainer">
+                    <div class="stat-icon"><i class="fas fa-skull-crossbones"></i></div>
+                    <div class="stat-title">Pirates</div>
+                    <div class="stat-value" id="pirates">0</div>
+                </div>
+
+                <div class="stat-box" id="exceptionsContainer">
+                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="stat-title">Exceptions</div>
+                    <div class="stat-value" id="exceptions">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center: Pending % -->
+        <div class="col-md-2 text-center">
+            <div class="circle-percentage" style="--percentage: 0; --circle-gradient: conic-gradient(#fd7e14 0%, #dee2e6 0);" id="pendingCircle">
+                <span id="pendingPercentText">0%</span>
+            </div>
+            <div id="percentLabel" class="mt-1 fw-semibold" style="font-size: 0.75rem; color: #fd7e14;">Pending</div>
+        </div>
+
+
+        <!-- Right Side: Totals & Approve -->
+        <div class="col-md-5 text-end">
+            <div class="d-flex justify-content-end align-items-center">
+                <button id="saveButton" class="btn btn-outline-custom btn-lg text-white" style="background-color: #153355;">
+                    <i class="fas fa-check me-1" style="font-size: 0.75rem;"></i>
+                    <span>Approve</span>
+                </button>
+            </div>
+            <div class="d-flex justify-content-end align-items-center mt-2">
+                <div class="count-box me-2">
+                    <h6>Total Present</h6>
+                    <span id="totalCount">0</span>
+                </div>
+                <div class="count-box me-2">
+                    <h6>Approved</h6>
+                    <span id="approvedCount">0</span>
+                </div>
+                <div class="count-box me-2">
+                    <h6>Pending</h6>
+                    <span id="pendingCount">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card  mt-2 shadow-lg border-0" style=" overflow: hidden;">
+
+    <!-- Card Header -->
+  
+
+    <!-- Card Body (if needed) -->
+    <div class="card-body bg-light">
+        <div class="table-responsive">
+            <table id="appTable" class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Examiner Number</th>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+                        <th>Category</th>
+                        <th>BMS Code</th>
+                        <th>Activity</th>
+                        <th>Perfomance</th>
+                        <th>Scripts Marked</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Retrieve values from ViewBag
+        const totalCount = '@Html.Raw(ViewBag.totalCount)';
+        const approvedtands = '@Html.Raw(ViewBag.approvedtands)';
+        const pendingtands = '@Html.Raw(ViewBag.pendingtands)';
+
+        // Update DOM elements with retrieved values
+        document.getElementById('totalCount').innerText = totalCount;
+        document.getElementById('approvedCount').innerText = approvedtands;
+        document.getElementById('pendingCount').innerText = pendingtands;
+    });
+</script>
+
+
+
+<script>
+    $(document).ready(function () {
+        var table = $('#appTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "lengthMenu": [
+                [10, 25, 50, 100, 250, 500, 1000],
+                [10, 25, 50, 100, 250, 500, 1000]
+            ],
+            "pageLength": 20,
+            "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                '<t>' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            "buttons": [
+                {
+                    extend: 'excelHtml5',
+                    className: 'btn btn-sm btn-success',
+                    text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'btn btn-sm btn-info',
+                    text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: 'btn btn-sm btn-danger',
+                    text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF',
+                    exportOptions: { columns: ':visible' }
+                }
+            ],
+            "ajax": {
+                url: "/ExaminerScriptsMarked/GetApprovalData",
+                type: "POST",
+                data: function (d) {
+                
+
+                          d.examCode = "@examCode"; // Pass examCode from ViewBag
+                    d.subjectCode = "@subjectCode"; // Pass subjectCode from ViewBag
+                    d.paperCode = "@paperCode"; // Pass paperCode from ViewBag
+          
+                    d.regionCode = "@regionCode"; // Pass regionCode from ViewBag
+                },
+                dataSrc: function (json) {
+                    
+
+                    $('#totalCount').text(json.totalCount);
+                    $('#approvedCount').text(json.approved);
+                    $('#pendingCount').text(json.pending);
+                    $('#apportioned').text(json.apportioned);
+                    $('#absent').text(json.absent);
+                    $('#pirates').text(json.pirates);
+                    $('#totalscripts').text(json.totalscripts);
+                    $('#exceptions').text(json.exceptions);
+
+                   let percent = parseFloat(json.pendingPercentageString.replace('%', '')) || 0;
+    let circle = document.getElementById('pendingCircle');
+    let label = document.getElementById('percentLabel');
+
+    $('#pendingPercentText').text(percent.toFixed(1) + '%');
+
+    // Change appearance based on approval %
+    if (percent >= 100) {
+        // Blue circle, green label, label text = Approved
+        circle.style.setProperty('--circle-gradient', `conic-gradient(#0d6efd ${percent}%, #dee2e6 0)`);
+        label.textContent = 'Approved';
+        label.style.color = '#198754'; // Bootstrap green
+    } else {
+        // Orange circle, orange label, label text = Pending
+        circle.style.setProperty('--circle-gradient', `conic-gradient(#fd7e14 ${percent}%, #dee2e6 0)`);
+        label.textContent = 'Pending';
+        label.style.color = '#fd7e14'; // Bootstrap orange
+    }
+                 
+        updateColors(); // <-- Move it here
+
+
+                    toggleApproveButton(json.data.length > 0);
+                 
+                    return json.data;
+                }
+            },
+            "columns": [
+                { "data": "examinerNumber", "name": "ExaminerNumber", "autoWidth": true },
+                { "data": "lastName", "name": "LastName", "autoWidth": true },
+                { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                { "data": "category", "name": "Category", "autoWidth": true },
+                { "data": "bms", "name": "BMS", "autoWidth": true },
+                { "data": "activity", "name": "Activity", "autoWidth": true },
+                { "data": "perfomance", "name": "Perfomance", "autoWidth": true },
+                { "data": "scriptMarked", "name": "ScriptsMarked", "autoWidth": true },
+                { "data": "status", "name": "Status", "autoWidth": true },
+            ]
+        });
+
+        // Handle form submission to trigger DataTable reload
+        $('#searchForm').submit(function (event) {
+            event.preventDefault(); // Prevent default form submission
+            console.log("Form submitted. Reloading DataTable..."); // Debugging
+            table.ajax.reload(); // Reload DataTable with new filters
+        });
+
+        // Function to enable/disable the approve button
+        function toggleApproveButton(hasData) {
+            if (hasData) {
+                $('#saveButton').removeClass('disabled');
+            } else {
+                $('#saveButton').addClass('disabled');
+            }
+        }
+
+        // Initially disable the button
+        toggleApproveButton(false);
+    });
+</script>
+
+
+
+
+<script>
+    $('#saveButton').click(function () {
+        var examCode = "@examCode";
+        var subjectCode = "@subjectCode";
+        var paperCode = "@paperCode";
+        var regionCode = "@regionCode" ?? '';
+
+        // Get data from DataTable
+        var tableData = $('#appTable').DataTable().rows({ search: 'applied', page: 'all' }).data().toArray();
+
+
+        // Send data to the server
+        $.ajax({
+            url: '/ExaminerScriptsMarked/ApproveExaminers1',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                examCode: examCode,
+                subjectCode: subjectCode,
+                paperCode: paperCode,
+                regionCode: regionCode,
+                examiners: tableData // Send all rows from DataTable
+            }),
+            success: function (response) {
+                if (response.success) {
+                    Swal.fire({
+                        title: 'Approved!',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(function () {
+                        location.reload();
+                    });
+                } else {
+                        Swal.fire({
+        icon: 'warning',
+        title: 'Critical Error!',
+        html: `
+            <div style="color:#dc3545; font-weight: 600;">${response.message}</div>
+            <br><strong style="color:#dc3545;">Supervisors:</strong><br>
+            <span style="color:#444;">${response.superords || 'None'}</span>
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#dc3545'
+    });
+
+
+                }
+            },
+            error: function (xhr, status, error) {
+                Swal.fire('Error!', 'An error occurred: ' + error, 'error');
+            }
+        });
+    });
+
+</script>
+
+
+<script>
+    function updateColors() {
+        const apportioned = parseInt($('#apportioned').text(), 10) || 0;
+        const entered = parseInt($('#totalscripts').text(), 10) || 0;
+        const absent = parseInt($('#absent').text(), 10) || 0;
+        const exceptions = parseInt($('#exceptions').text(), 10) || 0;
+        const pirates = parseInt($('#pirates').text(), 10) || 0;
+
+        const totalEntered = entered + absent + exceptions + pirates;
+
+        // Always green for apportioned
+        $('#apportionedContainer').removeClass('red green').addClass('green');
+
+        // Default others to red
+        ['#enteredContainer', '#absentContainer', '#exceptionsContainer', '#piratesContainer'].forEach(id => {
+            $(id).removeClass('green red').addClass('red');
+        });
+
+        // If total is OK, turn green
+        if (totalEntered >= apportioned && apportioned > 0) {
+            ['#enteredContainer', '#absentContainer', '#exceptionsContainer', '#piratesContainer'].forEach(id => {
+                $(id).removeClass('red').addClass('green');
+            });
+        }
+    }
+
+    $(document).ready(function () {
+        setTimeout(updateColors, 1000); // Delay to let values load if needed
+    });
+</script>
+
+
+

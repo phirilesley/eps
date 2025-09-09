@@ -1,0 +1,1033 @@
+﻿@model ExamMonitorTandSsViewModel
+<!-- Add this at the top -->
+@{
+    var isReadOnly = ViewBag.IsReadOnly ?? false;
+    var subKey = ViewBag.SubKey ?? "";
+    var nationalId = ViewBag.NationalId ?? "";
+    var claimId = ViewBag.ClaimId ?? "";
+}
+
+<style>
+    /* Slimmed down but still awesome styling */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .daily-advance-entry {
+        transition: all 0.3s ease;
+        border-left: 3px solid #153355;
+        ;
+    }
+
+        .daily-advance-entry:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);
+        }
+
+    .form-control-sm {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.875rem;
+        border-width: 1px;
+    }
+
+    .day-total-display {
+        font-size: 0.9rem;
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .grand-totals {
+        background: linear-gradient(135deg, #e2eaeb, #e2eaeb);
+    }
+
+    .total-amount {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        min-width: 70px;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .text-uppercase {
+        letter-spacing: 0.5px;
+    }
+
+    /* Mobile responsiveness */
+    @@media (max-width: 768px) {
+        .daily-advance-entry {
+            padding: 0.75rem;
+        }
+
+        .top-section, .bank-section {
+            flex-direction: column;
+        }
+
+        .form-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .reference-section {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .examiner-details, .bank-accounts {
+            flex-direction: column;
+        }
+
+        .personal-info, .address-info, .bank-account {
+            padding: 10px 0;
+        }
+
+        .zimsec-claim-form {
+            border: none;
+        }
+
+        .calculation-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .multiply-symbol {
+            padding: 0;
+            transform: rotate(90deg);
+        }
+    }
+
+    /* ZIMSEC Official Styling */
+    .zimsec-claim-form {
+        margin: 0 auto;
+        border: 2px solid #153355; /* ZIMSEC green */
+        font-family: 'Times New Roman', serif;
+        background: white;
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        background-color: #f8f8f8;
+        border-bottom: 2px solid #153355;
+    }
+
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .logo {
+        height: 70px;
+        width: auto;
+    }
+
+    .header-text {
+        line-height: 1.2;
+    }
+
+    .organization {
+        font-weight: bold;
+        font-size: 16px;
+        color: #153355;
+        text-transform: uppercase;
+    }
+
+    .form-title {
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .reference-section {
+        text-align: right;
+        font-size: 12px;
+    }
+
+    .reference-number {
+        font-weight: bold;
+    }
+
+    .examiner-details {
+        display: flex;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .personal-info, .address-info {
+        flex: 1;
+        padding: 0 10px;
+    }
+
+    .bank-accounts {
+        display: flex;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        gap: 15px;
+    }
+
+    .bank-account {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .usd-account {
+        border-left: 3px solid #153355;
+    }
+
+    .zig-account {
+        border-left: 3px solid #153355;
+    }
+
+    .account-header {
+        font-weight: bold;
+        color: black;
+        padding: 5px;
+        margin: -10px -10px 10px -10px;
+        text-align: center;
+    }
+
+    .usd-account .account-header {
+        background-color: #e2eaeb; /* Blue for USD */
+    }
+
+    .zig-account .account-header {
+        background-color: #e2eaeb; /* Green for ZIG */
+    }
+
+    .detail-row {
+        margin-bottom: 8px;
+        display: flex;
+    }
+
+    .detail-label {
+        font-weight: bold;
+        min-width: 120px;
+        color: #153355;
+    }
+
+    .detail-value {
+        border-bottom: 1px dotted #999;
+        flex: 1;
+        padding-left: 5px;
+    }
+
+    .claim-phase {
+        padding: 10px 15px;
+        background-color: #f0f7f0;
+    }
+
+    .phase-selector {
+        display: flex;
+        align-items: center;
+    }
+
+        .phase-selector label {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #007bff;
+        }
+
+        .phase-selector select {
+            flex: 1;
+            max-width: 400px;
+            padding: 5px;
+            border: 1px solid #153355;
+            background-color: white;
+        }
+
+    .stipend-invoice {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    .invoice-header {
+        background: #e2eaeb;
+        color: white;
+        padding: 12px 16px;
+    }
+
+        .invoice-header h3 {
+            margin: 0;
+            font-size: 16px;
+            letter-spacing: 0.5px;
+        }
+
+    .invoice-body {
+        padding: 20px;
+    }
+
+    .calculation-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .rate-display, .days-input {
+        flex: 1;
+    }
+
+    .multiply-symbol {
+        font-size: 24px;
+        color: #7f8c8d;
+        padding-top: 18px;
+    }
+
+    .label {
+        font-size: 12px;
+        color: #7f8c8d;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        letter-spacing: 0.5px;
+    }
+
+    .rate-display .value {
+        font-size: 24px;
+        font-weight: 600;
+        color: #007bff;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .days-input input {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 18px;
+        font-weight: 600;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    .total-row {
+        border-top: 2px dashed #ddd;
+        padding-top: 15px;
+        text-align: right;
+    }
+
+        .total-row .label {
+            font-size: 11px;
+        }
+
+        .total-row .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2980b9;
+            margin-top: 5px;
+        }
+
+    .combined-total {
+        font-size: 1.1rem;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+        .combined-total .total-amount {
+            font-size: 1.2rem;
+            display: inline-block;
+            min-width: 100px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .combined-total:hover {
+            background-color: #343a40 !important;
+            transition: background-color 0.3s ease;
+        }
+
+</style>
+<div class="d-flex justify-content-between mt-4 p-3 bg-light rounded">
+    <!-- Persistent Download Button -->
+    <!-- Conditional Edit Button -->
+ 
+        <button onclick="SendClaim('@claimId', '@nationalId', '@subKey')"
+            class="btn text-white" style="background-color:#153355;">
+            <i class="bi bi-pencil-square"></i> Approve Claim
+        </button>
+
+    <button onclick="rejectClaim('@claimId', '@nationalId', '@subKey')"
+            class="btn btn-warning">
+        <i class="bi bi-pencil-square"></i> Return Claim
+    </button>
+
+</div>
+
+<form asp-action="SaveDailyAdvances" method="post" id="dailyAdvancesForm">
+    <div class="zimsec-claim-form mt-3">
+        <div class="form-header">
+            <div class="logo-section">
+                <img src="~/Images/logo.jpeg" alt="ZIMSEC Logo" class="logo">
+                <div class="header-text">
+                    <div class="organization">ZIMBABWE SCHOOL EXAMINATIONS COUNCIL</div>
+                    <div class="form-title">EXAM MONITOR 'S  CLAIM FORM</div>
+                </div>
+            </div>
+            <div class="reference-section">
+                <div class="reference-number">Ref: ZIMSEC/DAILY/2025/</div>
+                <div class="date-claimed">Date: <span id="current-date"></span></div>
+            </div>
+        </div>
+
+        <div class="examiner-details">
+            <div class="personal-info">
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <span class="detail-value">@Model.FullName</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">National ID:</span>
+                    <span class="detail-value">@Model.NationalId</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">@Model.RoleStatus</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Centre Attached:</span>
+                    <span class="detail-value">@Model.CentreAttached</span>
+                </div>
+            </div>
+
+            <div class="address-info">
+                <div class="detail-row">
+                    <span class="detail-label">Phone:</span>
+                    <span class="detail-value">@Model.PhoneNumber</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Station:</span>
+                    <span class="detail-value">@Model.Station</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">District:</span>
+                    <span class="detail-value">@Model.District</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Region:</span>
+                    <span class="detail-value">@Model.Region</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank Accounts Section -->
+        <div class="bank-accounts">
+            <div class="bank-account usd-account">
+                <div class="account-header">USD ACCOUNT DETAILS</div>
+                <div class="detail-row">
+                    <span class="detail-label">Bank Name:</span>
+                    <span class="detail-value">@Model.BankNameUsd</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Branch:</span>
+                    <span class="detail-value">@Model.BranchUsd</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Account Number:</span>
+                    <span class="detail-value">@Model.AccountNumberUsd</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Account Type:</span>
+                    <span class="detail-value">USD</span>
+                </div>
+            </div>
+
+            <div class="bank-account zig-account">
+                <div class="account-header">ZIG ACCOUNT DETAILS</div>
+                <div class="detail-row">
+                    <span class="detail-label">Bank Name:</span>
+                    <span class="detail-value">@Model.BankNameZwg</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Branch:</span>
+                    <span class="detail-value">@Model.BranchZwg</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Account Number:</span>
+                    <span class="detail-value">@Model.AccountNumberZwg</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Account Type:</span>
+                    <span class="detail-value">ZIG</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="claim-phase">
+            <div class="phase-selector">
+                <label>EXAMINATION PHASE:</label>
+           
+                <select name="PhaseCode" class="form-control" required disabled="@isReadOnly">
+                    <option value="">-- Select Phase -</option>
+                    @if (ViewBag.Phases != null)
+                    {
+                        foreach (var phase in ViewBag.Phases)
+                        {
+                            <option value="@phase.Value"
+                                    selected="@(Model.PhaseCode == phase.Value ? "selected" : null)">
+                                @phase.Text
+                            </option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="" disabled>No venues available</option>
+                    }
+                </select>
+                <span asp-validation-for="PhaseCode" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="stipend-invoice mt-3">
+        <div class="invoice-header  text-black p-2 rounded-top">
+            <h5 class="mb-0">Stipend Advance</h5>
+        </div>
+        <div class="invoice-body bg-light p-3 rounded-bottom">
+            <div class="calculation-row row align-items-center mb-2">
+                <div class="rate-display col-md-4">
+                    <div class="label small text-muted">DAILY RATE</div>
+                    <div class="value fw-bold">$<span id="stipendRate">@Model.Rate.ToString("0.00")</span></div>
+                </div>
+                <div class="multiply-symbol col-md-1 text-center">
+                    <i class="bi bi-x-lg"></i>
+                </div>
+                <div class="days-input col-md-4">
+                    <div class="label small text-muted">NUMBER OF DAYS</div>
+                    <input type="number" id="dayss"
+                           name="Days"
+                           asp-for="Days"
+                           min="1"
+                           value="@Model.Days" min="1" class="form-control form-control-sm" disabled="@isReadOnly">
+                </div>
+                <div class="equals-symbol col-md-1 text-center">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+                <div class="total-display col-md-2">
+                    <div class="label small text-muted">TOTAL AMOUNT</div>
+                    <div class="value fw-bold" id="stipendTotal">$@((Model.Rate * Model.Days).ToString("0.00"))</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dailyAdvancesContainer" class="mb-3 mt-2">
+        <div class="invoice-header  text-black p-2 rounded-top">
+            <h5 class="mb-0">Daily Advance</h5>
+        </div>
+
+
+        <input type="hidden" asp-for="@Model.ClaimID" />
+        <input type="hidden" asp-for="@Model.SubKey" />
+        <input type="hidden" asp-for="@Model.Rate" />
+
+
+        @for (int i = 0; i < Model.DailyAdvances.Count; i++)
+        {
+            <div class="daily-advance-entry mb-2 p-2 bg-white rounded shadow-sm" data-index="@i">
+                <div class="row g-2 align-items-center">
+                    <!-- Date Column -->
+                    <div class="col-md-2">
+                        <label asp-for="@Model.DailyAdvances[i].Date" class="form-label fw-bold small text-uppercase text-muted mb-1">Date</label>
+                        <input asp-for="@Model.DailyAdvances[i].Date" class="form-control form-control-sm border-primary" type="date" disabled="@isReadOnly" />
+                    </div>
+
+                    <!-- Meal Columns -->
+                    <div class="col-md-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold small text-uppercase text-muted">Breakfast</span>
+                            <span class="badge bg-light text-dark">$</span>
+                        </div>
+                        <input asp-for="@Model.DailyAdvances[i].Breakfast" class="form-control form-control-sm meal-input border-success" type="number" step="0.01" placeholder="0.00" data-category="breakfast" disabled="@isReadOnly" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold small text-uppercase text-muted">Lunch</span>
+                            <span class="badge bg-light text-dark">$</span>
+                        </div>
+                        <input asp-for="@Model.DailyAdvances[i].Lunch" class="form-control form-control-sm meal-input border-success" type="number" step="0.01" placeholder="0.00" data-category="lunch" disabled="@isReadOnly" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold small text-uppercase text-muted">Dinner</span>
+                            <span class="badge bg-light text-dark">$</span>
+                        </div>
+                        <input asp-for="@Model.DailyAdvances[i].Dinner" class="form-control form-control-sm meal-input border-success" type="number" step="0.01" placeholder="0.00" data-category="dinner" disabled="@isReadOnly" />
+                    </div>
+
+                    <!-- Accomodation -->
+                    <div class="col-md-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold small text-uppercase text-muted">Accomodation</span>
+                            <span class="badge bg-light text-dark">$</span>
+                        </div>
+                        <input asp-for="@Model.DailyAdvances[i].Accomodation" class="form-control form-control-sm border-warning" type="number" step="0.01" placeholder="0.00" disabled="@isReadOnly" />
+                    </div>
+
+                    <!-- Day Total -->
+                    <div class="col-md-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold small text-uppercase text-muted">Total</span>
+                            <span class="badge bg-light text-dark">$</span>
+                        </div>
+                        <div class="day-total-display bg-light p-1 rounded text-end fw-bold small">
+                            0.00
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+              @*       <div class="col-md-1 d-flex justify-content-end gap-1">
+                        <button type="button" class="btn btn-sm btn-danger remove-entry px-2">
+                            <i class="bi bi-trash-fill"></i>
+                        </button>
+                        @if (i == Model.DailyAdvances.Count - 1)
+                        {
+                            <button type="button" class="btn btn-sm btn-success add-day px-2">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                        }
+                    </div> *@
+                </div>
+
+                <input type="hidden" asp-for="@Model.DailyAdvances[i].Id" />
+                <input type="hidden" asp-for="@Model.DailyAdvances[i].ClaimID" />
+                <input type="hidden" asp-for="@Model.DailyAdvances[i].SubKey" />
+            </div>
+        }
+    </div>
+
+    <!-- Grand Totals -->
+    <div class="grand-totals  text-black p-2 rounded shadow">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-2">
+                <h6 class="mb-0 text-uppercase small">Claim Summary</h6>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold small">Breakfast:</span>
+                    <span class="total-amount bg-white text-dark px-2 py-1 rounded small" id="breakfastTotal">$0.00</span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold small">Lunch:</span>
+                    <span class="total-amount bg-white text-dark px-2 py-1 rounded small" id="lunchTotal">$0.00</span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold small">Dinner:</span>
+                    <span class="total-amount bg-white text-dark px-2 py-1 rounded small" id="dinnerTotal">$0.00</span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold small">Accomodation:</span>
+                    <span class="total-amount bg-white text-dark px-2 py-1 rounded small" id="accomodationTotal">$0.00</span>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-bold small">TOTAL CLAIM:</span>
+                    <span class="total-amount bg-success text-white px-2 py-1 rounded small" id="overallTotal">$0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stipend Invoice Section -->
+    <!-- Combined Total Section -->
+    <div class="combined-total  text-black p-2 rounded shadow mt-2">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-10 text-end">
+                <span class="fw-bold small">GRAND TOTAL (DAILY ADVANCES + STIPEND):</span>
+            </div>
+            <div class="col-md-2">
+                <span class="total-amount bg-success text-white px-2 py-1 rounded small" id="combinedTotal">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Actions -->
+    @*     <div class="d-flex justify-content-center mt-5 mb-5">
+        <!-- Increased margins -->
+        <button type="submit" class="btn btn-lg text-white  fw-bold px-5 py-3 shadow" style="background-color:#153355;">
+            <!-- More padding and shadow -->
+            <i class="bi bi-check-circle-fill me-2 fs-5"></i>  <!-- Larger icon -->
+            <span class="fs-5">SUBMIT CLAIM</span>  <!-- Larger text -->
+        </button>
+    </div> *@
+</form>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" />
+    <script>
+        // Add current date in Zimbabwe format
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-ZW', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            // Initialize calculations
+            calculateAllTotals();
+            calculateStipend();
+            calculateCombinedTotal();
+
+            // Add new entry
+            $(document).on("click", ".add-day", function() {
+                var index = $(".daily-advance-entry").length;
+                var template = `
+                    <div class="daily-advance-entry mb-2 p-2 bg-white rounded shadow-sm" data-index="${index}">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold small text-uppercase text-muted mb-1">Date</label>
+                                <input name="DailyAdvances[${index}].Date" class="form-control form-control-sm border-primary" type="date" />
+                            </div>
+                            <div class="col-md-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small text-uppercase text-muted">Breakfast</span>
+                                    <span class="badge bg-light text-dark">$</span>
+                                </div>
+                                <input name="DailyAdvances[${index}].Breakfast" class="form-control form-control-sm meal-input border-success" type="number" step="0.01" placeholder="0.00" data-category="breakfast" />
+                            </div>
+                            <div class="col-md-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small text-uppercase text-muted">Lunch</span>
+                                    <span class="badge bg-light text-dark">$</span>
+                                </div>
+                                <input name="DailyAdvances[${index}].Lunch" class="form-control form-control-sm meal-input border-success" type="number" step="0.01" placeholder="0.00" data-category="lunch" />
+                            </div>
+                            <div class="col-md-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small text-uppercase text-muted">Dinner</span>
+                                    <span class="badge bg-light text-dark">$</span>
+                                </div>
+                                <input name="DailyAdvances[${index}].Dinner" class="form-control form-control-sm meal-input border-success" type="number" step="0.01" placeholder="0.00" data-category="dinner" />
+                            </div>
+                            <div class="col-md-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small text-uppercase text-muted">Accomodation</span>
+                                    <span class="badge bg-light text-dark">$</span>
+                                </div>
+                                <input name="DailyAdvances[${index}].Accomodation" class="form-control form-control-sm border-warning" type="number" step="0.01" placeholder="0.00" />
+                            </div>
+                            <div class="col-md-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small text-uppercase text-muted">Total</span>
+                                    <span class="badge bg-light text-dark">$</span>
+                                </div>
+                                <div class="day-total-display bg-light p-1 rounded text-end fw-bold small">
+                                    0.00
+                                </div>
+                            </div>
+                            // <div class="col-md-1 d-flex justify-content-end gap-1">
+                            //     <button type="button" class="btn btn-sm btn-danger remove-entry px-2">
+                            //         <i class="bi bi-trash-fill"></i>
+                            //     </button>
+                            //     <button type="button" class="btn btn-sm btn-success add-day px-2">
+                            //         <i class="bi bi-plus-lg"></i>
+                            //     </button>
+                            // </div>
+                        </div>
+                    </div>
+                `;
+                $(this).closest(".daily-advance-entry").after(template);
+                $(this).remove();
+                calculateAllTotals();
+            });
+
+            // Remove entry
+            $(document).on("click", ".remove-entry", function() {
+                $(this).closest(".daily-advance-entry").fadeOut(300, function() {
+                    $(this).remove();
+                    reindexEntries();
+                    calculateAllTotals();
+                    // Ensure last row has add button
+                    $(".add-day").remove();
+                    $(".daily-advance-entry").last().find(".col-md-1.d-flex").append(
+                        '<button type="button" class="btn btn-sm btn-success add-day px-2">' +
+                        '<i class="bi bi-plus-lg"></i></button>'
+                    );
+                });
+            });
+
+            // Calculate totals when values change
+            $(document).on("input", "input[type='number']", function() {
+                if ($(this).is("#dayss")) {
+                    calculateStipend();
+                } else {
+                    calculateRowTotal($(this).closest(".daily-advance-entry"));
+                    calculateGrandTotals();
+                }
+                calculateCombinedTotal();
+            });
+
+            // Calculate row total
+            function calculateRowTotal(row) {
+                let rowTotal = 0;
+                row.find(".meal-input").each(function() {
+                    rowTotal += parseFloat($(this).val()) || 0;
+                });
+                rowTotal += parseFloat(row.find("input[name$='Accomodation']").val()) || 0;
+                row.find(".day-total-display").text(rowTotal.toFixed(2));
+            }
+
+            // Calculate grand totals
+            function calculateGrandTotals() {
+                let breakfastTotal = 0;
+                let lunchTotal = 0;
+                let dinnerTotal = 0;
+                let accomodationTotal = 0;
+                let overallTotal = 0;
+
+                $(".daily-advance-entry").each(function() {
+                    breakfastTotal += parseFloat($(this).find("[data-category='breakfast']").val()) || 0;
+                    lunchTotal += parseFloat($(this).find("[data-category='lunch']").val()) || 0;
+                    dinnerTotal += parseFloat($(this).find("[data-category='dinner']").val()) || 0;
+                    accomodationTotal += parseFloat($(this).find("input[name$='Accomodation']").val()) || 0;
+                });
+
+                overallTotal = breakfastTotal + lunchTotal + dinnerTotal + accomodationTotal;
+
+                $("#breakfastTotal").text("$" + breakfastTotal.toFixed(2));
+                $("#lunchTotal").text("$" + lunchTotal.toFixed(2));
+                $("#dinnerTotal").text("$" + dinnerTotal.toFixed(2));
+                $("#accomodationTotal").text("$" + accomodationTotal.toFixed(2));
+                $("#overallTotal").text("$" + overallTotal.toFixed(2));
+            }
+
+            // Calculate stipend total
+                   function calculateStipend() {
+            // Get values safely without forcing defaults
+            const rate = parseFloat($("#stipendRate").text().replace('$', '')) || 0;
+            const days = parseInt($("#dayss").val()); // Remove the || 0 fallback
+
+            // Only calculate if both values exist
+            if (!isNaN(rate) && !isNaN(days)) {
+                const total = (rate * days).toFixed(2);
+                $("#stipendTotal").text("$" + total);
+            }
+        }
+
+            // Calculate combined total
+            function calculateCombinedTotal() {
+                const dailyTotal = parseFloat($("#overallTotal").text().replace('$', '')) || 0;
+                const stipendTotal = parseFloat($("#stipendTotal").text().replace('$', '')) || 0;
+                const combinedTotal = dailyTotal + stipendTotal;
+                $("#combinedTotal").text("$" + combinedTotal.toFixed(2));
+            }
+
+            // Calculate all totals
+            function calculateAllTotals() {
+                $(".daily-advance-entry").each(function() {
+                    calculateRowTotal($(this));
+                });
+                calculateGrandTotals();
+                calculateCombinedTotal();
+            }
+
+            // Reindex all entries for proper model binding
+            function reindexEntries() {
+                $(".daily-advance-entry").each(function(i) {
+                    $(this).attr("data-index", i);
+                    $(this).find("input, select").each(function() {
+                        var name = $(this).attr("name");
+                        if (name) {
+                            name = name.replace(/DailyAdvances\[\d+\]/, `DailyAdvances[${i}]`);
+                            $(this).attr("name", name);
+                        }
+                    });
+                });
+            }
+
+
+            
+
+        });
+
+    </script>
+
+    
+
+    
+    <script>
+        // Date formatting and other existing functions...
+        
+        function SendClaim(claimId, nationalId, subKey) {
+            Swal.fire({
+                title: 'Send Claim for Approval',
+                text: 'Are you sure you want to submit this claim for approval?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#153355',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, submit it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading indicator
+                    Swal.fire({
+                        title: 'Processing...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    // Get anti-forgery token
+                    const token = $('input[name="__RequestVerificationToken"]').val();
+
+                    // Make AJAX call with proper headers
+                    $.ajax({
+                        url: '@Url.Action("ApproveReviewClaim", "ExamMonitorsTandSs")',
+                        type: 'POST',
+                        headers: {
+                            "RequestVerificationToken": token
+                        },
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            claimId: claimId,
+                            nationalId: nationalId,
+                            subKey: subKey
+                        }),
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: response.message,
+                                    icon: 'success',
+                                    confirmButtonColor: '#153355'
+                                }).then(() => {
+                                    window.location.href = '@Url.Action("IndexAccounts", "ExamMonitorsTandSs")';
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: response.message,
+                                    icon: 'error',
+                                    confirmButtonColor: '#153355'
+                                });
+                            }
+                        },
+                        error: function (xhr) {
+                            let errorMsg = 'Failed to submit claim';
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                errorMsg = response.message || errorMsg;
+                            } catch (e) {
+                                errorMsg = xhr.responseText || errorMsg;
+                            }
+                            
+                            Swal.fire({
+                                title: 'Error!',
+                                text: errorMsg,
+                                icon: 'error',
+                                confirmButtonColor: '#153355'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function rejectClaim(claimId, nationalId, subKey) {
+            Swal.fire({
+                title: 'Reject Claim',
+                html: `<p>Are you sure you want to reject this claim?</p>
+                      <textarea id="rejectReason" class="form-control mt-2" 
+                      placeholder="Please specify reason for rejection..." rows="3"></textarea>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#153355',
+                confirmButtonText: 'Confirm Rejection',
+                cancelButtonText: 'Cancel',
+                preConfirm: () => {
+                    return {
+                        reason: document.getElementById('rejectReason').value
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Processing...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    const token = $('input[name="__RequestVerificationToken"]').val();
+
+                    $.ajax({
+                        url: '@Url.Action("RejectClaim", "ExamMonitorsTandSs")',
+                        type: 'POST',
+                        headers: {
+                            "RequestVerificationToken": token
+                        },
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                            claimId: claimId,
+                            nationalId: nationalId,
+                            subKey: subKey,
+                            reason: result.value.reason
+                        }),
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: response.message,
+                                    icon: 'success',
+                                    confirmButtonColor: '#153355'
+                                }).then(() => {
+                                    window.location.href = '@Url.Action("IndexAccounts", "ExamMonitorsTandSs")';
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: response.message,
+                                    icon: 'error',
+                                    confirmButtonColor: '#153355'
+                                });
+                            }
+                        },
+                        error: function (xhr) {
+                            let errorMsg = 'Failed to reject claim';
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                errorMsg = response.message || errorMsg;
+                            } catch (e) {
+                                errorMsg = xhr.responseText || errorMsg;
+                            }
+                            
+                            Swal.fire({
+                                title: 'Error!',
+                                text: errorMsg,
+                                icon: 'error',
+                                confirmButtonColor: '#153355'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
+   
+
+

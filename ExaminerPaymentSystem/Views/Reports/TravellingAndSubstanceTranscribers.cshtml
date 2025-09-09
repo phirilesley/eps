@@ -1,0 +1,170 @@
+﻿@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+@inject IVenueRepository venueRepo
+@inject IActivityRepository activityRepo
+
+@{
+    ViewBag.Title = "Reports";
+
+    IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+    IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+    IEnumerable<Venue> venues = await venueRepo.VenuesGetAll();
+    IEnumerable<Activity> activities = await activityRepo.GetAllActivitiesAsync();
+    // IEnumerable<PaperMarkingRate> paperCodes = await papercodesRepo.GetPaperCodeById();
+    var years = examCodes.Where(a => a.ACTIVATED_SESSION == "Activated").DistinctBy(a => a.EXM_EXAM_YEAR);
+
+    var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+    int currentYear = DateTime.Now.Year;
+    int lastYear = currentYear - 1;
+}
+<!-- Font Awesome CDN for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<style>
+    .report-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .report-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        transition: all 0.3s ease-in-out;
+        border: 1px solid #dee2e6;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+    }
+
+        .report-item:hover {
+            background: #e9ecef;
+            transform: translateY(-3px);
+        }
+
+    .report-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .report-text {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .file-icon {
+        font-size: 1.8rem;
+        color: #007bff;
+    }
+
+    .download-icon {
+        font-size: 1.5rem;
+        color: #28a745;
+        transition: color 0.3s ease;
+    }
+
+    .report-item:hover .download-icon {
+        color: #218838;
+    }
+</style>
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-file-excel" style="color: #2a5a8a;"></i>
+        <h5 class="fw-bold mb-0" style="color: #153355;">
+            T and S Reports
+
+        </h5>
+    </div>
+    <hr style="border-top: 1px solid black;
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+
+<div class="card mt-4 mb-1 p-2 shadow-sm border">
+    <ul class="report-list">
+        <li class="report-item" data-bs-toggle="modal" data-bs-target="#bankModal">
+            <div class="report-content">
+                <i class="fas fa-file-excel file-icon" style="color: #217346;"></i>
+                <span class="report-text">Genarate Travelling and Substance CSV Report </span>
+            </div>
+            <i class="fas fa-download download-icon"></i>
+        </li>
+
+
+    </ul>
+</div>
+
+<div class="modal fade" id="bankModal" tabindex="-1" aria-labelledby="bankModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-black" id="exampleModalLabel">Select Session, Subject, Paper, and Venue</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="bankForm" method="get" action="@Url.Action("DownloadTranscriberVenueReport", "Reports")">
+                    <div class="form-group">
+                        <label for="bankPurposeOfJourney" class="text-black">Activity:</label>
+                        <select id="bankPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                            <option value="">--Select Activity--</option>
+                            @foreach (var activity in activities)
+                            {
+                                <option value="@activity.Value">@activity.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <label for="bankVenue" class="text-black">Venue:</label>
+                        <select id="bankVenue" name="venue" class="form-control" required>
+                            <option value="">-- Select Venue --</option>
+                            @foreach (var venue in venues)
+                            {
+                                if (venue.Status == "Active")
+                                {
+                                    <option value="@venue.Name">@venue.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label for="bankExamCode" class="text-black">Exam Level and Session:</label>
+                        <select id="bankExamCode" name="examCode" class="form-control" required>
+                            <option value="">-- Select Session --</option>
+                            int currentYear = DateTime.Now.Year;
+                            int lastYear = currentYear - 1;
+                            @foreach (var examCode in examCodes)
+                            {
+                                int examYear;
+                                if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                {
+                                    if (examCode.ACTIVATED_SESSION == "Activated")
+                                    {
+                                        <option value="@examCode.EXM_EXAM_CODE">
+                                            @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                        </option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                   
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="bankForm" class="btn" style="background-color: #153355;color:white;">Download</button>
+            </div>
+        </div>
+    </div>
+</div>

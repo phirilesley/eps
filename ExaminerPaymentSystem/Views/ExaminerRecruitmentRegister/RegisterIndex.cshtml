@@ -1,0 +1,295 @@
+﻿@model IEnumerable<ExaminerRecruitmentAndSelectionViewModel>
+
+@{
+    ViewData["Title"] = "Examiner Recruitment List";
+    // Layout = "_CustomLayout";
+
+}
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+
+
+<div class="container shadow-sm rounded mt-4">
+    <h2 class="text-center mb-4">Selected Trainee Examiners Register</h2>
+
+    <div class="shadow p-3 mt-2 mb-3 rounded">
+        <div class="row shadow-sm p-1">
+            <div class="col-12 col-md-3" onclick="filterData('Total')">
+                <div class="btn btn-outline-warning mb-2"><i class="bi bi-layout-text-sidebar-reverse"></i> Total <span id="grandTotal">0</span></div>
+            </div>
+            <div class="col-12 col-md-3" onclick="filterData('Present')">
+                <span class="btn btn-outline-info">
+                    <i class="bi bi-file-earmark-ppt"></i> Present <span id="totalPresent">0</span>
+                </span>
+            </div>
+
+            <div class="col-12 col-md-3" onclick="filterData('Pending')">
+                <span class="btn btn-outline-secondary">
+                    <i class="bi bi-file-earmark-ppt"></i> Pending <span id="totalPending">0</span>
+                </span>
+            </div>
+
+            <div class="col-12 col-md-3" onclick="filterData('Absent')">
+                <span class="btn btn-outline-danger">
+                    <i class="bi bi-window-fullscreen"></i> Absent <span id="totalAbsent">0</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="row  mt-1 shadow-sm p-1">
+            <div class="col-12 col-md-2">
+                <button class="btn btn-sm btn-primary export-excel">
+                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    <i class="bi bi-cloud-download"></i> Download Excel
+                </button>
+            </div>
+            <div class="col-12 col-md-2">
+                <button class="btn btn-sm btn-warning export-pdf">
+                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    <i class="bi bi-cloud-download-fill"></i> Download PDF
+                </button>
+            </div>
+            <div class="col-12 col-md-8">
+                <a class="btn btn-sm"></a>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table id="examinerRecruitRegisterTable" class="table table-bordered table-striped table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>ID</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Gender</th>
+                    <th>Level</th>
+                    <th>Subject</th>
+                    <th>Paper Code</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var urlSuffix = '@(ViewBag.UrlSuffix ?? "")';
+            const examinerRecruitRegisterTable = $('#examinerRecruitRegisterTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "/ExaminerRecruitmentRegister/LoadExaminerRecruitmentsRegister" + '/' + urlSuffix,
+                    type: "POST",
+                    data: function (d) {
+                        d.registerStatus = '';
+                        d.subject = '@ViewBag.Subject';
+                        d.paperCode = '@ViewBag.PaperCode';
+                        d.experience = '@ViewBag.Experience';
+                    },
+                    dataSrc: function (json) {
+                        $('#totalPresent').text(json.totalExaminersWithRegisterTrue);
+                        $('#totalAbsent').text(json.totalExaminersWithRegisterFalse);
+                        $('#grandTotal').text(json.totalSelectedInTrainerTab);
+                        $('#totalPending').text(json.totalSelectedNotRegistered);
+
+                        return json.data;
+                    }
+                },
+                columns: [
+                    { data: 'examinerName' },
+                    { data: 'lastName' },
+                    { data: 'cemId' },
+                    { data: 'phoneHome' },
+                    { data: 'emailAddress' },
+                    { data: 'gender' },
+                    { data: 'experience' },
+                    { data: 'subject' },
+                    { data: 'paperCode' },
+                    {
+                        data: 'registerStatus',
+                        render: function (data) {
+                            if (data === true || data === "true" || data === 1) {
+                                return '<span style="color: green; font-weight: bold;">Present</span>';
+                            } else if (data === false || data === "false" || data === 0) {
+                                return '<span style="color: red; font-weight: bold;">Absent</span>';
+                            } else {
+                                return '<span style="color: orange; font-weight: bold;">Pending</span>';
+                            }
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row) {
+                            return `
+                                        <div class="btn-group" role="group">
+                                            <input type="checkbox" class="presence-checkbox text-white"
+                                                   style="background-color: #153355;"
+                                                   data-id="${row.examinerRecruitmentId}"
+                                                   ${row.registerStatus ? "checked" : ""} />
+                                        </div>`;
+                        }
+                    }
+                ]
+            });
+
+            // Filter data function (if needed in the UI)
+            // window.filterData = function (registerStatus) {
+            //     examinerRecruitRegisterTable.ajax.reload(null, false);
+            // };
+
+            // Handle checkbox change event dynamically
+            $(document).on('change', '.presence-checkbox', function () {
+                const examinerRecruitmentId = $(this).data('id');
+                const registerStatus = this.checked; // Directly read the checked state
+
+                // Disable the checkbox during the update to avoid double clicks
+                $(this).prop('disabled', true);
+
+                fetch('/ExaminerRecruitmentRegister/ToggleAttendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ examinerRecruitmentId, registerStatus })
+                })
+                    .then(response => response.ok
+                        ? response.json()
+                        : response.json().then(data => {
+                            throw new Error(data.message || 'Failed to update presence status.');
+                        })
+                    )
+                    .then(() => {
+                        const statusMessage = registerStatus ? "Marked Present" : "Marked Absent";
+                        const statusColor = registerStatus ? "#007BFF" : "#DC3545"; // Blue for Present, Red for Absent
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Examiner Recruit',
+                            text: statusMessage,
+                            timer: 500,
+                            showConfirmButton: false,
+                            customClass: {
+                                popup: `swal2-popup-custom`,
+                                title: `swal2-title-custom`,
+                                content: `swal2-content-custom`
+                            },
+                            didOpen: () => {
+                                // Apply custom styles to the SweetAlert popup
+                                const popup = Swal.getPopup();
+                                popup.style.backgroundColor = statusColor;
+                                popup.style.color = "#FFFFFF"; // White text for better contrast
+                            }
+                        });
+
+                        // Reload the table to reflect updated status
+                        examinerRecruitRegisterTable.ajax.reload(null, false);
+                    })
+                    .catch(error => {
+                        console.error('Error updating presence status:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.message || 'Failed to update presence status.',
+                            timer: 500,
+                            showConfirmButton: false
+                        });
+
+                        // Revert the checkbox state if the update fails
+                        $(this).prop('checked', !registerStatus);
+                    })
+                    .finally(() => {
+                        // Re-enable the checkbox after processing
+                        $(this).prop('disabled', false);
+                    });
+            });
+        });
+
+
+        function filterData(status) {
+            $('#examinerRecruitRegisterTable').DataTable().ajax.url(`/ExaminerRecruitmentRegister/LoadExaminerRecruitmentsRegister?status=${encodeURIComponent(status)}`).load();
+        }
+
+        $(document).ready(function () {
+            function downloadFile(endpoint, button) {
+                let spinner = button.find(".spinner-border");
+                button.prop("disabled", true);
+                spinner.removeClass("d-none");
+
+                // Use fetch instead of $.ajax for better blob handling
+                fetch(endpoint + '?' + $.param({
+                    subject: '@ViewBag.Subject',
+                    paperCode: '@ViewBag.PaperCode',
+                    experience: '@ViewBag.Experience'
+                }), {
+                    method: 'GET'
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        const disposition = response.headers.get('Content-Disposition');
+                        let filename = 'TraineeExaminers';
+
+                        const now = new Date();
+                        const dateTimeString = now.toISOString() // e.g., "2025-03-28T12:34:56.789Z"
+                            .replace(/[-:T]/g, '') // Remove separators and 'T'
+                            .slice(0, 15); // Take YYYYMMDDHHMMSS
+
+                        // Concatenate with filename
+                        filename = `${filename}_${dateTimeString}`;
+
+                        if (disposition && disposition.indexOf('attachment') !== -1) {
+                            const match = disposition.match(/filename="(.+)"/);
+                            if (match) filename = match[1];
+                        }
+                        return response.blob().then(blob => ({ blob, filename }));
+                    })
+                    .then(({ blob, filename }) => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        window.URL.revokeObjectURL(url);
+                        Swal.fire("Success", "File downloaded successfully!", "success");
+                    })
+                    .catch(error => {
+                        console.error('Download error:', error);
+                        Swal.fire("Error", "Failed to download file!", "error");
+                    })
+                    .finally(() => {
+                        button.prop("disabled", false);
+                        spinner.addClass("d-none");
+                    });
+            }
+
+            $(".export-excel").click(function () {
+                downloadFile("/ExaminerRecruitmentRegister/LoadRegisterBasedOnParametersExcel", $(this));
+            });
+
+            $(".export-pdf").click(function () {
+                downloadFile("/ExaminerRecruitmentRegister/LoadRegisterBasedOnParametersPDF", $(this));
+            });
+        });
+
+    </script>
+}

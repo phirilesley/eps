@@ -1,0 +1,1174 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model TandSViewModel
+@inject IActivityRepository activityRepo
+@{
+    ViewBag.Title = "TandS Claim";
+    string activity = ViewBag.Activity ?? "";
+    IEnumerable<Activity> activities = await activityRepo.GetAllActivitiesAsync();
+}
+
+
+<link href="~/css/tands.css" rel="stylesheet" />
+
+<script src="~/js/tnscalculater.js"></script>
+<script src="~/js/sweetalert2.all.js"></script>
+
+
+   @if (TempData["SweetAlert"] != null)
+{
+    <script>
+        $(document).ready(function () {
+            var alertData = @Html.Raw(TempData["SweetAlert"]);
+            Swal.fire(alertData).then(() => {
+                // Redirect using direct URL path
+                window.location.href = '/TandS/Index';
+            });
+        });
+    </script>
+
+}
+
+ 
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: '@TempData["SuccessMessage"]',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+            </text>
+        }
+      
+                        });
+    </script>
+}
+
+<script>
+    $(document).ready(function () {
+
+    @if (TempData["Error"] != null)
+    {
+            <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: '@TempData["Error"]',
+                        showConfirmButton: true
+                    });
+            </text>
+    }
+            });
+</script>
+
+@* @if (TempData["ProfileNotConfirmed"] != null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                title: 'Profile Incomplete',
+                text: 'You Have not yet Confirmed you are coming to the Venue.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '@Url.Action("Index", "Examiner")';
+                }
+            });
+        });
+    </script>
+} *@
+
+@* @if (TempData["ProfileNotRecommended"] != null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                title: 'Profile Incomplete',
+                text: 'Be Patient the Subject Manager will Authorize you to apply your Travel and Subsistance Allowance form.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '@Url.Action("Index", "Examiner")';
+                }
+            });
+        });
+    </script>
+}
+ *@
+@* @if (TempData["ProfileIncomplete"] != null)
+{
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            Swal.fire({
+                title: 'Profile Incomplete',
+                text: 'Your profile is not yet complete. Please update your profile.',
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '@Url.Action("Index", "Examiner")';
+                }
+            });
+        });
+    </script>
+} *@
+
+
+
+
+@* <a class="btn btn-success px-3 py-2 d-flex align-items-center text-white"
+   style="border-radius: 50px;background-color: #153355; transition: background-color 0.3s;"
+   asp-controller="TandS"
+   asp-action="EditTandS">
+    <i class="fas fa-edit me-2"></i> Edit
+</a>
+ *@
+@if (ViewBag.TANDSTATUS == false)
+{
+    <form method="post" asp-controller="TandS" asp-action="SaveTandS" enctype="multipart/form-data" class="container">
+
+        <input asp-for="EMS_EXAMINER_CODE" type="hidden" />
+
+    
+        <input asp-for="EMS_SUBKEY" type="hidden" />
+  
+        <input asp-for="EMS_NATIONAL_ID" type="hidden" />
+
+        <div class="container py-3  rounded-3 shadow-sm border" style="padding: 30px;">
+            <div class="text-center mb-3">
+                <h6 class="fw-bold">Travel and Subsistence Claim Form (Contract Staff)</h6>
+                <hr />
+            </div>
+
+            <div class="row">
+                <!-- Examiner and Bank Details Section in Same Card -->
+                <div class="col-lg-12 mb-3">
+                    <div class="card p-2 shadow-sm border">
+                        <div class="row">
+                            <!-- Examiner Details Column -->
+                            <div class="col-lg-6 mb-3">
+                                <h6 class="fw-bold custom-heading">Examiner Details</h6>
+                                <div class="info-group">
+                                    <small class="custom-label">Full Name:</small>
+                                    <span class="custom-value">@Model.EMS_EXAMINER_NAME @Model.EMS_LAST_NAME</span>
+                                </div>
+                                <div class="info-group">
+                                    <small class="custom-label">National ID:</small>
+                                    <span class="custom-value">@Model.EMS_NATIONAL_ID</span>
+                                   
+                                </div>
+                                <div class="info-group">
+                                    <small class="custom-label">Subject and Paper Code:</small>
+                                    <span class="custom-value">@Model.EMS_SUB_SUB_ID / @Model.EMS_PAPER_CODE</span>
+                                </div>
+                                <div class="info-group">
+                                    <small class="custom-label">Address:</small>
+                                    <span class="custom-value">@Model.EMS_ADDRESS</span>
+                                </div>
+                                <div class="info-group">
+                                    <small class="custom-label">Phone (Home):</small>
+                                    <span class="custom-value">@Model.EMS_PHONE_HOME</span>
+                                </div>
+                        
+                                
+                            </div>
+
+                            <!-- Bank Details Column -->
+                            <div class="col-lg-6 mb-3">
+                                <h6 class="fw-bold custom-heading">Bank Details</h6>
+                                <div class="info-group">
+                                    <small class="custom-label">Bank Name (ZiG):</small>
+                                    <span class="custom-value">@Model.EMS_BANK_NAME_ZWL</span>
+                                </div>
+                                <div class="info-group">
+                                    <small class="custom-label">Account Number (ZiG):</small>
+                                    <span class="custom-value">@Model.EMS_ACCOUNT_NO_ZWL</span>
+                                </div>
+                                <div class="info-group">
+                                    <small class="custom-label">Bank Name (USD):</small>
+                                    <span class="custom-value">@Model.EMS_BANK_NAME_FCA</span>
+                                </div>
+                                <div class="info-group">
+                                    <small class="custom-label">Account Number (USD):</small>
+                                    <span class="custom-value">@Model.EMS_ACCOUNT_NO_FCA</span>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Purpose and Venue Section -->
+            <div class="row">
+                <!-- Purpose of Journey -->
+                <div class="col-lg-12 mb-3">
+                    <div class="card p-3 shadow-sm border">
+                        <div class="row">
+                            <!-- Residency Status -->
+                            <div class="col-lg-4 mb-3">
+                                <h6 class="fw-bold mb-3">Residency Status</h6>
+                                <div class="mb-2">
+                                    <label for="residentSelect" class="form-label small">Select Residency Status:</label>
+                                    <select id="residentSelect" class="form-select form-select-sm" name="EMS_RESORNON" required>
+                                        <option value="">--Select Residency--</option>
+                                        <option value="RESIDENT">RESIDENT</option>
+                                        <option value="NON RESIDENT">NON RESIDENT</option>
+                                    </select>
+                                    <span id="pError" class="text-danger" style="display: none;">Please select your residency status.</span>
+                                </div>
+                            </div>
+
+                            <!-- Purpose Of Invitation -->
+                            <div class="col-lg-4 mb-3">
+                                <h6 class="fw-bold mb-3">Purpose Of Invitation</h6>
+                                <div class="mb-2">
+
+                                    <label for="venuePaperCode2" class="form-label small">Activity:</label>
+                                    <select id="PurposeOfJourney" class="form-select form-select-sm" name="EMS_PURPOSEOFJOURNEY" required>
+                                        <option value="">--Select Activity--</option>
+                                        @foreach (var activityItem in activities)
+                                        {
+                                            <option value="@activityItem.Value"
+                                                    selected="@(activityItem.Value == activity ? "selected" : null)">
+                                                @activityItem.Text
+                                            </option>
+                                        }
+                                    </select>
+                                    <span id="activityError" class="text-danger" style="display: none;">Please select the purpose of invitation.</span>
+                                </div>
+                            </div>
+
+                            <!-- Venue -->
+                            <div class="col-lg-4 mb-3">
+                                <h6 class="fw-bold mb-3">Venue</h6>
+                                <div class="mb-2">
+                                    <label for="Venuee" class="form-label small">Marking Venue:</label>
+                                    <select id="Venuee" class="form-select form-select-sm" name="EMS_VENUE" required>
+                                        <option value="">--- Select marking venue ---</option>
+                                        @if (ViewBag.Venues != null)
+                                        {
+                                            foreach (var venue in ViewBag.Venues)
+                                            {
+                                                <option value="@venue.Value"
+                                                        selected="@(Model.EMS_VENUE == venue.Value ? "selected" : null)">
+                                                    @venue.Text
+                                                </option>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <option value="" disabled>No venues available</option>
+                                        }
+                                    </select>
+
+
+
+                                    <span id="venueeError" class="text-danger" style="display: none;">Please select a venue.</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+            
+            </div>
+        </div>
+        </div>
+
+
+
+
+        <hr />
+
+        <div class="separator"></div>
+
+                <div class="card p-3 shadow-sm border">
+
+                    <label class="mb-3 custom-label-note">
+                        NB: Please complete the information below (Traveling Details):
+                    </label>
+
+        <div class="table-responsive-sm">
+            <table id="myTable" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th style="padding: 5px;">Date</th>
+                        <th style="padding: 5px;">Departure Time</th>
+                        <th style="padding: 5px;">Arrival Time</th>
+                        <th style="padding: 5px;">Place (From/To)</th>
+                        <th style="padding: 5px;">Busfare</th>
+                        <th style="padding: 5px;">Acc (Bed/B/fast)</th>
+                        <th style="padding: 5px;">Lunch</th>
+                        <th style="padding: 5px;">Dinner</th>
+                        <th style="padding: 5px;">Total</th>
+                        <th style="padding: 5px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="date" name="TANDSDETAILS[0].EMS_DATE" class="form-control form-control-sm"></td>
+                        <td><input name="TANDSDETAILS[0].EMS_DEPARTURE" class="form-control form-control-sm"></td>
+                        <td><input type="text" name="TANDSDETAILS[0].EMS_ARRIVAL" class="form-control form-control-sm"></td>
+                        <td><input name="TANDSDETAILS[0].EMS_PLACE" class="form-control form-control-sm"></td>
+                                <td>
+                                    <input type="text" pattern="[0-9]+([\.,][0-9]+)?"
+                                           inputmode="decimal" name="TANDSDETAILS[0].EMS_BUSFARE" oninput="calculateTotal(this)" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <input type="text" pattern="[0-9]+([\.,][0-9]+)?"
+                                           inputmode="decimal" name="TANDSDETAILS[0].EMS_ACCOMMODATION" oninput="calculateTotal(this)" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <input type="text" pattern="[0-9]+([\.,][0-9]+)?"
+                                           inputmode="decimal" name="TANDSDETAILS[0].EMS_LUNCH" oninput="calculateTotal(this)" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <input type="text" pattern="[0-9]+([\.,][0-9]+)?"
+                                           inputmode="decimal" name="TANDSDETAILS[0].EMS_DINNER" oninput="calculateTotal(this)" class="form-control form-control-sm">
+                                </td>
+                                <td>
+                                    <input type="text" pattern="[0-9]+([\.,][0-9]+)?"
+                                           inputmode="decimal"  name="TANDSDETAILS[0].EMS_TOTAL" id="TANDSDETAILS[0].EMS_TOTAL" readonly class="form-control form-control-sm">
+                                </td>
+                        <td>
+                            <div class="d-flex">
+                                <button class="btn btn-success btn-sm me-1" type="button" onclick="checkFirst()">
+                                    <i class="fas fa-plus-circle"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+                <p class="fw-bold mt-3 text-center" style="font-weight: 700; font-size: 1rem; color: #4CAF50;">
+                    <span>Total:</span>
+                    <span id="totala" style="font-weight: 900; font-size: 1rem; color: #333;">$0.00</span>
+                </p>
+
+
+      
+
+
+                <div class="separator"></div>
+
+                    <label class="mb-3 custom-label-note">NB : Fill below Advance Details</label>
+             
+                <!-- Bootstrap grid for 3-column layout -->
+                <div class="form-section">
+                    <div class="row">
+                        <!-- Dinner -->
+                        <div class="col-md-4 form-group" id="dinnerField">
+                                <label for="dinner" >Dinner:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control fee" id="dinner" readonly name="diner"
+                                       value="@ViewBag.FEE_DINNER" style="font-weight: bold;">
+                                <input type="text" class="form-control quantity" id="dinner_quantity"
+                                       name="TANDSADVANCE.ADV_DINNER" placeholder="Number of Days"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                @(string.IsNullOrEmpty(ViewBag.FEE_DINNER?.ToString()) || ViewBag.FEE_DINNER.ToString() == "0.00" ? "readonly" : "disabled")>
+                            </div>
+                        </div>
+
+                        <!-- Lunch -->
+                        <div class="col-md-4 form-group" id="lunchField">
+                            <label for="lunch">Lunch:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control fee" id="lunch" readonly name="lunch"
+                                       value="@ViewBag.FEE_LUNCH" style="font-weight: bold;">
+                                <input type="text" class="form-control quantity" id="lunch_quantity"
+                                       name="TANDSADVANCE.ADV_LUNCH" placeholder="Number of Days"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                @(string.IsNullOrEmpty(ViewBag.FEE_LUNCH?.ToString()) || ViewBag.FEE_LUNCH.ToString() == "0.00" ? "readonly" : "disabled")>
+                            </div>
+                        </div>
+
+                                        <!-- Res (Accommodation) -->
+
+                        <div class="col-md-4 form-group" id="resField">
+                            <label for="res">Res:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control fee" id="res" readonly name="company_provided_price"
+                                       value="@ViewBag.FEE_ACCOMMODATION_RES" style="font-weight: bold;">
+                                <input type="text" class="form-control quantity" id="company_provided_quantity"
+                                       name="TANDSADVANCE.ADV_ACCOMMODATION_RES" placeholder="Number of Days"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                @(string.IsNullOrEmpty(ViewBag.FEE_ACCOMMODATION_RES?.ToString()) || ViewBag.FEE_ACCOMMODATION_RES.ToString() == "0.00" ? "readonly" : "disabled")>
+                            </div>
+                        </div>
+                                    </div>
+
+
+
+                                    <!-- Repeat similar structure for other fields -->
+                                    <div class="row">
+                                        <!-- Overnight Allowance -->
+                        <div class="col-md-4 form-group" id="overnightField">
+                            <label for="overnight">Overnight Allowance:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control fee" id="overnight" readonly name="overnight"
+                                       value="@ViewBag.FEE_OVERNIGHTALLOWANCE" style="font-weight: bold;">
+                                <input type="text" class="form-control quantity" id="overnight_quantity"
+                                       name="TANDSADVANCE.ADV_OVERNIGHTALLOWANCE" placeholder="Number of Days"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                @(string.IsNullOrEmpty(ViewBag.FEE_OVERNIGHTALLOWANCE?.ToString()) || ViewBag.FEE_OVERNIGHTALLOWANCE.ToString() == "0.00" ? "readonly" : "disabled")>
+                            </div>
+                        </div>
+
+                                        <!-- Non Res -->
+                        <div class="col-md-4 form-group" id="nonResField">
+                            <label for="non_res">Non Res:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control fee" id="non_res" readonly name="non_res"
+                                       value="@ViewBag.FEE_ACCOMMODATION_NONRES" style="font-weight: bold;">
+                                <input type="text" class="form-control quantity" id="non_res_quantity"
+                                       name="TANDSADVANCE.ADV_ACCOMMODATION_NONRES" placeholder="Number of Days"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                @(string.IsNullOrEmpty(ViewBag.FEE_ACCOMMODATION_NONRES?.ToString()) || ViewBag.FEE_ACCOMMODATION_NONRES.ToString() == "0.00" ? "readonly" : "disabled")>
+                            </div>
+                        </div>
+
+                                        <!-- BusFare -->
+                        <div class="col-md-4 form-group" id="busFareField">
+                            <label for="bus_fare">Bus Fare:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control fee" id="bus_fare" readonly name="bus_fare"
+                                       value="@ViewBag.FEE_TRANSPORT" style="font-weight: bold;">
+                                <input type="text" class="form-control quantity" id="bus_fare_quantity"
+                                       name="TANDSADVANCE.ADV_TRANSPORT" placeholder="Number of Days"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                @(string.IsNullOrEmpty(ViewBag.FEE_TRANSPORT?.ToString()) || ViewBag.FEE_TRANSPORT.ToString() == "0.00" ? "readonly" : "disabled")>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4 form-group" id="breakfastField">
+                            <label for="breakfast">Breakfast:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control fee" id="breakfast" readonly name="breakfast"
+                                       value="@ViewBag.FEE_BREAKFAST" style="font-weight: bold;">
+                                <input type="text" class="form-control quantity" id="breakfast_quantity" name="TANDSADVANCE.ADV_BREAKFAST"
+                                       placeholder="Number of Days" oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                @(string.IsNullOrEmpty(ViewBag.FEE_BREAKFAST?.ToString()) || ViewBag.FEE_BREAKFAST.ToString() == "0.00" ? "readonly" : "disabled")>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4 form-group" id="teasField">
+                            <label for="teas">Teas:</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">$</span>
+                                </div>
+                                <input type="text" class="form-control fee" id="teas" readonly name="teas" value="@ViewBag.FEE_TEA" style="font-weight: bold;">
+                                <input type="text" class="form-control quantity" id="teas_quantity" name="TANDSADVANCE.ADV_TEAS" placeholder="Number of Days"
+                                       oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                                @(string.IsNullOrEmpty(ViewBag.FEE_TEA?.ToString()) || ViewBag.FEE_TEA.ToString() == "0.00" ? "readonly" : "disabled")>
+                            </div>
+                        </div>
+
+
+                                    </div>
+                                </div>
+
+              
+
+                                <!-- Total Display -->
+                <p class="text-center" style="font-size: 1rem; font-weight: 700; color: #4CAF50;">
+                    Total: <span id="total"  style="font-weight: 900; font-size: 1rem; color: #333;">$0.00</span>
+                </p>
+
+                <hr />
+
+                <p class="grandTotal text-end" style="font-size: 1rem; font-weight: 700; color: #2196F3;">
+                    Grand Total: <span id="totalF" class="fw-bold" style="font-size: 1rem; color: #333; padding: 0.2rem 0.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); background: #f9f9f9;">$0.00</span>
+                </p>
+
+
+
+
+                                </div>
+
+                <div class="card p-3 mt-3 mb-3 shadow-sm border">
+
+                <div class="row mb-3" id="fileInputsContainer">
+                        <label class=" mb-3 custom-label-note">Upload Ticket</label>
+
+                    <!-- File Input -->
+                    <div class="col-md-4">
+                        <label class="form-label small">Select Files:</label>
+                        <div class="input-group">
+                            <input name="fileDocuments[0].Files" type="file" class="form-control"
+                                   accept=".pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png"
+                                   multiple onchange="showSelectedFiles()" />
+                            <span class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <!-- Currency Dropdown -->
+                    <div class="col-md-4">
+                        <label class="form-label small">Select Ticket Currency:</label>
+                        <select name="fileDocuments[0].FileCurrency" class="form-select">
+                            <option value="USD">USD - United States Dollar</option>
+                            <option value="ZIG">ZIG - Zimbabwean Dollar</option>
+                            <option value="ZAR">ZAR - South African Rand</option>
+                        </select>
+                    </div>
+
+                    <!-- Add Button -->
+                    <div class="col-md-4">
+                        <label class="form-label small d-block mb-2">Selected Files:</label>
+                        <div id="selectedFilesList" class="mb-2 small"></div>
+                        <button type="button" class="btn btn-primary" style="background-color: #153355;" onclick="addFileInput()">+</button>
+                    </div>
+                </div>
+
+                <!-- Additional File Inputs -->
+                <div id="additionalFileInputs"></div>
+
+                </div>
+        <div class="separator"></div>
+
+
+
+            <div class="d-grid mb-5 mt-3">
+                <button id="submitButton" type="submit" class="btn text-white" style="background-color:#123255;">Submit</button>
+                </div>
+
+                </div>
+    </form>
+
+
+   
+
+
+
+  
+}
+
+
+else
+{
+
+
+    <div class="container py-3  rounded-3 shadow-sm border" style="padding: 30px;" >
+        <div class="header text-center mb-4">
+            <h4 class="font-weight-bold">Travelling and Subsistence Claim Report</h4>
+        </div>
+
+        <div class="card p-2 mb-3 shadow-sm border">
+        <div class="row">
+        <div class="col-md-9 mb-3">
+            <div class="card p-1 shadow-sm border rounded">
+                <div class="card-header bg-secondary text-white py-1">
+                    <h6 class="mb-0 small">Claim Details</h6>
+                </div>
+                <div class="card-body p-2">
+                    <div class="row">
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">Full Name:</span>
+                            <span class="small">@Model.EMS_EXAMINER_NAME @Model.EMS_LAST_NAME</span>
+                        </div>
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">National ID:</span>
+                            <span class="small">@Model.EMS_NATIONAL_ID</span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">Subject:</span>
+                            <span class="small">@Model.EMS_SUB_SUB_ID / @Model.EMS_PAPER_CODE</span>
+                        </div>
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">Level:</span>
+                            <span class="small">@Model.EMS_LEVEL_OF_EXAM_MARKED</span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">Bank (NOSTRO):</span>
+                            <span class="small">@Model.EMS_BANK_NAME_FCA</span>
+                        </div>
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">Account No. (NOSTRO):</span>
+                            <span class="small">@Model.EMS_ACCOUNT_NO_FCA</span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">Bank (ZWG):</span>
+                            <span class="small">@Model.EMS_BANK_NAME_ZWL</span>
+                        </div>
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">Account No. (ZWG):</span>
+                            <span class="small">@Model.EMS_ACCOUNT_NO_ZWL</span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">Purpose:</span>
+                            <span class="small">@Model.EMS_PURPOSEOFJOURNEY</span>
+                        </div>
+                        <div class="col-md-6 mb-1 d-flex">
+                            <span class="font-weight-bold small w-50">Venue:</span>
+                            <span class="small">@Model.EMS_VENUE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+
+            <!-- Work Address and Contact Section -->
+            <div class="col-md-3 mb-4">
+                <div class="card p-2 shadow-sm border rounded">
+                    <div class="card-body">
+                        <h6 class="font-weight-bold text-primary">
+                            <i class="fa fa-map-marker-alt"></i> Work Address
+                        </h6>
+                        <p class="mb-1 small"><i class="fa fa-home"></i> @Model.EMS_WORK_ADD1</p>
+                        <p class="mb-1 small"><i class="fa fa-city"></i> @Model.EMS_WORK_ADD2</p>
+                        <p class="mb-3 small"><i class="fa fa-building"></i> @Model.EMS_WORK_ADD3</p>
+
+                        <h6 class="font-weight-bold text-primary">
+                            <i class="fa fa-phone"></i> Contact
+                        </h6>
+                        <p class="mb-0 small"><i class="fa fa-phone-alt"></i> @Model.EMS_PHONE_HOME</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div>
+        <!-- Claim Details Table -->
+        <div class="card border-light shadow-sm rounded">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0">Travelling and Subsistence Claim Details</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Departure Time</th>
+                            <th>Arrival Time</th>
+                            <th>Place (From/To)</th>
+                            <th>Busfare</th>
+                            <th>Accommodation</th>
+                            <th>Lunch</th>
+                            <th>Dinner</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.TandSDetails != null && ViewBag.TandSDetails.Count > 0)
+                        {
+                            foreach (var detail in ViewBag.TandSDetails)
+                            {
+                                <tr>
+                                    <td>@detail.EMS_DATE</td>
+                                    <td>@detail.EMS_DEPARTURE</td>
+                                    <td>@detail.EMS_ARRIVAL</td>
+                                    <td>@detail.EMS_PLACE</td>
+                                    <td>@detail.EMS_BUSFARE</td>
+                                    <td>@detail.EMS_ACCOMMODATION</td>
+                                    <td>@detail.EMS_LUNCH</td>
+                                    <td>@detail.EMS_DINNER</td>
+                                    <td>@detail.EMS_TOTAL</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="9" class="text-center">No data available</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" class="font-weight-bold text-right">Total Expenses</td>
+                            <td class="font-weight-bold">@ViewBag.TotalBusfare</td>
+                            <td class="font-weight-bold">@ViewBag.TotalAccommodation</td>
+                            <td class="font-weight-bold">@ViewBag.TotalLunch</td>
+                            <td class="font-weight-bold">@ViewBag.TotalDinner</td>
+                            <td class="font-weight-bold">@ViewBag.TotalTotal</td>
+                        </tr>
+                        <tr>
+                            <td colspan="9" class="font-weight-bold">Less advances/prepayments received in respect of this claim</td>
+                        </tr>
+                        <tr>
+                            <td colspan="8" class="font-weight-bold text-right">Amount Due to Employee</td>
+                            <td class="font-weight-bold">@ViewBag.TotalTotal</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover mt-5">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-center">Unit Price</th>
+                                <th class="text-end">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.TandSAdvance != null)
+                            {
+                                var advance = ViewBag.TandSAdvance as TandSAdvance;
+
+                                if (advance.ADV_TEAS.HasValue && ViewBag.FEE_TEA != null)
+                                {
+                                    decimal teasAmount = advance.ADV_TEAS.Value;
+                                    decimal feeTea = (decimal)ViewBag.FEE_TEA;
+                                    decimal totalTeas = teasAmount * feeTea;
+                                    <tr>
+                                        <td>Teas</td>
+                                        <td class="text-center">@teasAmount</td>
+                                        <td class="text-center">@feeTea.ToString("F2")</td>
+                                        <td class="text-end">@totalTeas.ToString("F2")</td>
+                                    </tr>
+                                }
+
+                                if (advance.ADV_BREAKFAST.HasValue && ViewBag.FEE_BREAKFAST != null)
+                                {
+                                    decimal breakfastAmount = advance.ADV_BREAKFAST.Value;
+                                    decimal feeBreakfast = (decimal)ViewBag.FEE_BREAKFAST;
+                                    decimal totalBreakfast = breakfastAmount * feeBreakfast;
+                                    <tr>
+                                        <td>Breakfast</td>
+                                        <td class="text-center">@breakfastAmount</td>
+                                        <td class="text-center">@feeBreakfast.ToString("F2")</td>
+                                        <td class="text-end">@totalBreakfast.ToString("F2")</td>
+                                    </tr>
+                                }
+
+                                if (advance.ADV_TRANSPORT.HasValue && ViewBag.FEE_TRANSPORT != null)
+                                {
+                                    decimal transportAmount = advance.ADV_TRANSPORT.Value;
+                                    decimal feeTransport = (decimal)ViewBag.FEE_TRANSPORT;
+                                    <tr>
+                                        <td>Transport</td>
+                                        <td class="text-center">@transportAmount</td>
+                                        <td class="text-center">@feeTransport.ToString("F2")</td>
+                                        <td class="text-end">@((transportAmount * feeTransport).ToString("F2"))</td>
+                                    </tr>
+                                }
+
+                                if (advance.ADV_ACCOMMODATION_RES.HasValue && ViewBag.FEE_ACCOMMODATION_RES != null)
+                                {
+                                    decimal accommodationResAmount = advance.ADV_ACCOMMODATION_RES.Value;
+                                    decimal feeAccommodationRes = (decimal)ViewBag.FEE_ACCOMMODATION_RES;
+                                    <tr>
+                                        <td>Accommodation (Res)</td>
+                                        <td class="text-center">@accommodationResAmount</td>
+                                        <td class="text-center">@feeAccommodationRes.ToString("F2")</td>
+                                        <td class="text-end">@((accommodationResAmount * feeAccommodationRes).ToString("F2"))</td>
+                                    </tr>
+                                }
+
+                                if (advance.ADV_ACCOMMODATION_NONRES.HasValue && ViewBag.FEE_ACCOMMODATION_NONRES != null)
+                                {
+                                    decimal accommodationNonResAmount = advance.ADV_ACCOMMODATION_NONRES.Value;
+                                    decimal feeAccommodationNonRes = (decimal)ViewBag.FEE_ACCOMMODATION_NONRES;
+                                    <tr>
+                                        <td>Accommodation (Non-Res)</td>
+                                        <td class="text-center">@accommodationNonResAmount</td>
+                                        <td class="text-center">@feeAccommodationNonRes.ToString("F2")</td>
+                                        <td class="text-end">@((accommodationNonResAmount * feeAccommodationNonRes).ToString("F2"))</td>
+                                    </tr>
+                                }
+
+                                if (advance.ADV_LUNCH.HasValue && ViewBag.FEE_LUNCH != null)
+                                {
+                                    decimal lunchAmount = advance.ADV_LUNCH.Value;
+                                    decimal feeLunch = (decimal)ViewBag.FEE_LUNCH;
+                                    <tr>
+                                        <td>Lunch</td>
+                                        <td class="text-center">@lunchAmount</td>
+                                        <td class="text-center">@feeLunch.ToString("F2")</td>
+                                        <td class="text-end">@((lunchAmount * feeLunch).ToString("F2"))</td>
+                                    </tr>
+                                }
+
+                                if (advance.ADV_DINNER.HasValue && ViewBag.FEE_DINNER != null)
+                                {
+                                    decimal dinnerAmount = advance.ADV_DINNER.Value;
+                                    decimal feeDinner = (decimal)ViewBag.FEE_DINNER;
+                                    <tr>
+                                        <td>Dinner</td>
+                                        <td class="text-center">@dinnerAmount</td>
+                                        <td class="text-center">@feeDinner.ToString("F2")</td>
+                                        <td class="text-end">@((dinnerAmount * feeDinner).ToString("F2"))</td>
+                                    </tr>
+                                }
+
+                                if (advance.ADV_OVERNIGHTALLOWANCE.HasValue && ViewBag.FEE_OVERNIGHTALLOWANCE != null)
+                                {
+                                    decimal overnightAllowanceAmount = advance.ADV_OVERNIGHTALLOWANCE.Value;
+                                    decimal feeOvernightAllowance = (decimal)ViewBag.FEE_OVERNIGHTALLOWANCE;
+                                    <tr>
+                                        <td>Overnight Allowance</td>
+                                        <td class="text-center">@overnightAllowanceAmount</td>
+                                        <td class="text-center">@feeOvernightAllowance.ToString("F2")</td>
+                                        <td class="text-end">@((overnightAllowanceAmount * feeOvernightAllowance).ToString("F2"))</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center">No data available</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end font-weight-bold">Total</td>
+                                <td class="text-end font-weight-bold">@ViewBag.TandSAdvance?.ADV_TOTAL?.ToString("F2")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card border-light shadow-sm rounded">
+            <div class="container py-3">
+                <h4 class="mb-3 text-dark fw-bold">Uploaded Files</h4>
+                <div class="row g-3">
+                    @if (ViewBag.TandSFile != null)
+                    {
+                        foreach (var file in ViewBag.TandSFile as IEnumerable<TandSFile>)
+                        {
+                            <div class="col-6 col-sm-4 col-md-3">
+                                <div class="card border-0 shadow-sm rounded-2 h-100">
+                                    <div class="card-body text-center d-flex flex-column align-items-center justify-content-center p-2">
+                                        @{
+                                            var fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();
+                                            var iconClass = "fa-file";
+                                            switch (fileExtension)
+                                            {
+                                                case ".pdf":
+                                                    iconClass = "fa-file-pdf text-danger";
+                                                    break;
+                                                case ".doc":
+                                                case ".docx":
+                                                    iconClass = "fa-file-word text-primary";
+                                                    break;
+                                                case ".xls":
+                                                case ".xlsx":
+                                                    iconClass = "fa-file-excel text-success";
+                                                    break;
+                                                case ".jpg":
+                                                case ".jpeg":
+                                                case ".png":
+                                                    iconClass = "fa-file-image text-warning";
+                                                    break;
+                                                default:
+                                                    iconClass = "fa-file text-secondary";
+                                                    break;
+                                            }
+                                        }
+                                        <i class="fas @iconClass fa-2x mb-2"></i>
+                                        <p class="text-muted small mb-0 fw-semibold">Currency: @file.Currency</p>
+                                    </div>
+                                    <div class="card-footer bg-light text-center p-1">
+                                        <small class="text-dark text-truncate d-block fw-light">
+                                            <i class="fas fa-file-alt me-1"></i> @file.FileName
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <p class="text-center text-muted fst-italic">No files available.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="container my-4">
+            <div class="d-flex justify-content-end align-items-center py-3 px-4 bg-light shadow-sm rounded">
+                <span class="text-secondary fw-semibold fs-5 me-2">Overall Total:</span>
+                <span class="text-primary fw-bold fs-2">
+                    @String.Format("{0:C}", Model.EMS_TOTAL)
+                </span>
+            </div>
+        </div>
+
+
+    </div>
+
+}
+
+
+
+
+<!-- JavaScript -->
+<script>
+    document.getElementById('residentSelect').addEventListener('change', function () {
+        var selectedValue = this.value;
+
+        // Enable fields only if "Resident" or "Non Resident" is selected
+        if (selectedValue === "RESIDENT") {
+            // Show Resident-specific fields and enable them
+            document.getElementById('resField').style.display = "block";
+            document.getElementById('overnightField').style.display = "block";
+            document.getElementById('nonResField').style.display = "none";
+            document.getElementById('busFareField').style.display = "none";
+            document.getElementById('teasField').style.display = "none"; // Hide Teas field
+            document.getElementById('breakfastField').style.display = "none"; // Hide Breakfast field
+
+            enableFields(true);
+        } else if (selectedValue === "NON RESIDENT") {
+            // Show Non-Resident specific fields and enable them
+            document.getElementById('resField').style.display = "none";
+            document.getElementById('overnightField').style.display = "none";
+            document.getElementById('nonResField').style.display = "block";
+            document.getElementById('busFareField').style.display = "block";
+            document.getElementById('teasField').style.display = "block"; // Show Teas field
+            document.getElementById('breakfastField').style.display = "block"; // Show Breakfast field
+
+            enableFields(true);
+        } else {
+            // Hide all fields and show error if not selected
+            document.getElementById('resField').style.display = "none";
+            document.getElementById('overnightField').style.display = "none";
+            document.getElementById('nonResField').style.display = "none";
+            document.getElementById('busFareField').style.display = "none";
+            document.getElementById('teasField').style.display = "none"; // Hide Teas field
+            document.getElementById('breakfastField').style.display = "none"; // Hide Breakfast field
+
+            enableFields(false);
+            document.getElementById('pError').classList.remove('d-none');
+        }
+    });
+
+    function enableFields(enable) {
+        var fields = document.querySelectorAll('.quantity');
+        fields.forEach(function (field) {
+            field.disabled = !enable;
+        });
+    }
+</script>
+
+
+
+<script>
+    // Get all elements with class "fee" and "quantity"
+    const fees = document.querySelectorAll('.fee');
+    const quantities = document.querySelectorAll('.quantity');
+
+    // Add event listener to each quantity input
+    quantities.forEach(quantity => {
+        quantity.addEventListener('input', updateTotal);
+    });
+
+    // Function to update total
+    function updateTotal() {
+        let total = 0;
+        // Iterate through each fee and quantity input
+        fees.forEach((fee, index) => {
+            const quantity = quantities[index].value || 0; // If quantity is empty, default to 0
+            total += parseFloat(fee.value || 0) * parseFloat(quantity); // Multiply fee with quantity and add to total
+        });
+        // Update the total in the HTML
+        document.getElementById('total').textContent = '$' + total.toFixed(2);
+
+        redoTotals();
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get all fee inputs
+        const feeInputs = document.querySelectorAll('.fee');
+
+        feeInputs.forEach(feeInput => {
+            if (parseFloat(feeInput.value) === 0.00) {
+                const quantityInput = feeInput.nextElementSibling;
+                feeInput.classList.add('text-danger');  // Make fee input red
+                quantityInput.disabled = true;          // Disable related quantity input
+            }
+        });
+    });
+
+    <script>
+                var selectedFiles = []; // Array to store selected files
+
+    function showSelectedFiles() {
+        var fileInput = document.getElementById('fileInput');
+        var selectedFilesList = document.getElementById('selectedFilesList');
+
+        // Clear the previous list
+        selectedFilesList.innerHTML = '';
+
+        // Log the selected files
+        console.log(fileInput.files);
+
+        // Append to the existing list
+        for (var i = 0; i < fileInput.files.length; i++) {
+            selectedFiles.push(fileInput.files[i]); // Add new files to the array
+        }
+
+        // Display all selected files
+        for (var i = 0; i < selectedFiles.length; i++) {
+            var listItem = document.createElement('div');
+            listItem.textContent = selectedFiles[i].name;
+            selectedFilesList.appendChild(listItem);
+        }
+    }
+</script>
+
+
+<script>
+    let fileInputCounter = 1;
+
+    function addFileInput() {
+        const additionalFileInput = document.createElement("div");
+        additionalFileInput.className = "row mb-3"; // Add margin-bottom class for spacing
+        additionalFileInput.innerHTML = `
+                    <div class="col-md-4">
+                        <label class="form-label small">Select Files:</label>
+                        <div class="input-group">
+                            <input name="fileDocuments[${fileInputCounter}].Files"
+                                   type="file"
+                                   class="form-control"
+                                   accept=".pdf, .doc, .docx, .xls, .xlsx, .jpg, .jpeg, .png"
+                                   multiple
+                                   onchange="showSelectedFiles()" />
+                            <span class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label small">Select Currency:</label>
+                        <select name="fileDocuments[${fileInputCounter}].FileCurrency" class="form-select">
+                            <option value="USD">USD - United States Dollar</option>
+                            <option value="ZIG">ZIG - Zimbabwean Dollar</option>
+                            <option value="ZAR">ZAR - South African Rand</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label small d-block mb-2">Selected Files:</label>
+                        <div id="selectedFilesList" class="mb-2 small"></div>
+                    </div>
+
+                    <div class="col-md-2 d-flex justify-content-end align-items-center">
+                        <button type="button" class="btn btn-danger btn-sm me-2" onclick="removeFileInput(this)">-</button>
+                        <button type="button" class="btn btn-primary btn-sm" style="background-color:#153355;" onclick="addFileInput()">+</button>
+                    </div>
+                `;
+
+        document.getElementById("additionalFileInputs").appendChild(additionalFileInput);
+        fileInputCounter++;
+    }
+
+    function removeFileInput(button) {
+        const parentDiv = button.closest('.row');
+        parentDiv.remove();
+    }
+
+</script>
+
+
+
+<script>
+    document.getElementById('submitButton').addEventListener('click', function (event) {
+        let isValid = true;
+
+        // Residency Status Validation
+        const residentSelect = document.getElementById('residentSelect');
+        const pError = document.getElementById('pError');
+        if (!residentSelect.value.trim()) {
+            pError.style.display = 'block';
+            isValid = false;
+        } else {
+            pError.style.display = 'none';
+        }
+
+      @*   const purposeSelect = document.getElementById('PurposeOfJourney');
+        console.log("Selected Value on Load:", `"${purposeSelect.value}"`);
+
+        const activityError = document.getElementById('activityError');
+
+        console.log("Selected Value (Trimmed):", `"${purposeSelect.value.trim()}"`);
+
+        if (!purposeSelect.value.trim()) {
+            activityError.style.display = 'block';
+            isValid = false;
+        } else {
+            activityError.style.display = 'none';
+        } *@
+
+        // Venue Validation
+        const venueeSelect = document.getElementById('Venuee');
+        const venueeError = document.getElementById('venueeError');
+        if (!venueeSelect.value.trim()) {
+            venueeError.style.display = 'block';
+            isValid = false;
+        } else {
+            venueeError.style.display = 'none';
+        }
+
+        // Prevent Form Submission if Validation Fails
+        if (!isValid) {
+            event.preventDefault();
+            console.log("Form submission blocked due to validation errors.");
+        } else {
+            console.log("Form submitted successfully.");
+        }
+    });
+
+
+</script>

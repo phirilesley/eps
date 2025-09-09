@@ -1,0 +1,601 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model IEnumerable<TandSListViewModel>
+
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    ViewBag.Title = "TandS List";
+
+    int currentYear = DateTime.Now.Year;
+    int lastYear = currentYear - 1;
+
+    Pager pager = new Pager();
+    int pageNo = 0;
+    if (ViewBag.Pager != null)
+    {
+        pager = ViewBag.Pager;
+        pageNo = pager.CurrentPage;
+    }
+
+
+
+    string activity = ViewBag.Activity ?? "";
+    var examCode = ViewBag.ExamCode;
+    var venue = ViewBag.Venue;
+}
+
+
+
+
+<style>
+   
+
+    .counter {
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+        .counter h5 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .counter p {
+            font-size: 1rem;
+            color: #6c757d;
+        }
+
+
+    .status-approved {
+        color: green;
+    }
+
+    .status-pending {
+        color: orange;
+    }
+
+
+    .blink {
+        animation: blinker 1s linear infinite;
+    }
+
+</style>
+<link href="~/css/alert.css" rel="stylesheet" />
+
+
+
+<div class="text-center mb-">
+    <h6 class="fw-bold text-black">Travelling and Subsistence:  <span class="text-black">  @venue</span></h6>
+    <hr class="border-2 border-primary w-50 mx-auto" />
+</div>
+
+
+@if (User.IsInRole("Accounts"))
+{
+
+    <div id="myAlert" class="custom-alert d-none" role="alert">
+        <i class="fas fa-exclamation-triangle"></i> <!-- Cool Animated Icon -->
+        <div class="alert-content">
+            <strong>Alert ! 🚨</strong> These claims were returned for review. Please check:
+            <ul id="returnedClaimsList" class="mt-2"></ul> <!-- List for returned claims -->
+        </div>
+        <button type="button" class="close-btn" onclick="closeAlert()">×</button>
+    </div>
+
+    <script>
+        function closeAlert() {
+            document.getElementById("myAlert").classList.add("d-none");
+        }
+    </script>
+}
+
+
+
+
+
+<div class="card mt-4 mb-2 shadow border-0 p-3">
+    <div class="row text-center">
+        <div class="col-md-4 mb-3">
+            <div class="counter py-3 px-2 border rounded-3 bg-light shadow-sm">
+                <h5 id="totalCount" class="text-primary fw-bold">0</h5>
+                <p class="mb-0">Present Examiners</p>
+            </div>
+        </div>
+
+
+        <div class="col-md-4 mb-3">
+            <div class="counter py-3 px-2 border rounded-3 bg-light shadow-sm" onclick="filterData('ApprovedCount')">
+                <h5 id="approvedCount" class="text-success fw-bold">0</h5>
+                <p class="mb-0">Approved</p>
+            </div>
+        </div>
+
+
+
+
+        <div class="col-md-4 mb-3">
+            <div class="counter py-3 px-2 border rounded-3 bg-light shadow-sm" onclick="filterData('PendingCount')">
+                <h5 id="pendingCount" class="text-warning fw-bold">0</h5>
+                <p class="mb-0">Submitted Applications (Pending Approval)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="card p-4 shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="tandsTable" class="table table-bordered table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+
+                        <th>National ID</th>
+                        <th>Created</th>
+                        <th>Approved</th>
+                        <th>Approved By</th>
+                        <th>Approved Date</th>
+                        <th>Initiator Status</th>
+                        <th>Reviewer Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                </tbody>
+            </table>
+
+
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+@section Scripts {
+    <script>
+        function confirmAction(actionType) {
+            let actionText = actionType === 'approve' ? 'approve' : 'recommend';
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to ${actionText} these claims.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#153355',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Submit!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    approveClaims(actionType);
+                }
+            });
+        }
+
+        function approveClaims(actionType) {
+            $.ajax({
+                url: '@Url.Action("AccountsApproveBulkClaims", "TandS")',
+                type: 'POST',
+                data: { actionType: actionType },
+                success: function (response) {
+                    if (response.success) {
+                        let successTitle = actionType === 'approve' ? 'Approved!' : 'Recommended!';
+                        Swal.fire(successTitle, response.message, 'success').then(() => {
+                            window.location.href = '@Url.Action("ApprovalList", "TandS")';
+                        });
+                    } else {
+                        Swal.fire('Error!', response.message, 'error');
+                    }
+                },
+                error: function (error) {
+                    console.error('Error approving claims:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while processing the request.',
+                    });
+                }
+            });
+        }
+    </script>
+
+
+    @if (User.IsInRole("Accounts") || User.IsInRole("PeerReviewer"))
+    {
+        <script>
+            $(document).ready(function () {
+                // Initialize DataTable
+                var table = $('#tandsTable').DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [
+                        [10, 25, 50, 100, 250, 500, 1000],
+                        [10, 25, 50, 100, 250, 500, 1000]
+                    ],
+                    "pageLength": 100,
+                    "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                        '<"table-responsive"t>' +
+                        '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+                    "buttons": [
+                        {
+                            extend: 'excelHtml5',
+                            className: 'btn btn-sm btn-success',
+                            text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel'
+                        },
+                        {
+                            extend: 'csvHtml5',
+                            className: 'btn btn-sm btn-info',
+                            text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV'
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            className: 'btn btn-sm btn-danger',
+                            text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF'
+                        }
+                    ],
+                    "ajax": {
+                        url: "/Transcribers/GetAccountsTandS",
+                        type: "POST",
+                        data: function (d) {
+                            // Apply filters based on active counter
+                            if ($('#pendingCount').hasClass('active')) {
+                                d.request = 'pending';
+                            } else if ($('#approvedCount').hasClass('active')) {
+                                d.request = 'approved';
+                            }
+                                 d.examCode = "@examCode"; 
+                          
+                                d.activity = "@activity"; 
+                                d.venue = "@venue";
+                            
+                                    },
+                        dataSrc: function (json) {
+                            // Update counters
+                            $('#totalCount').text(json.totalCount || 0);
+                            $('#approvedCount').text(json.approvedtands || 0);
+                            $('#pendingCount').text(json.pendingtands || 0);
+
+                            // Populate returned claims list
+                            const returnedClaimsList = $('#returnedClaimsList');
+                            returnedClaimsList.empty(); // Clear existing items
+
+                            if (json.returned && json.returned.length > 0) {
+                                json.returned.forEach(claim => {
+                                    returnedClaimsList.append(`<li>${claim.lastName} ${claim.firstName}</li>`);
+                                });
+                                $('#myAlert').removeClass('d-none').addClass('fade show'); // Show the alert if there are returned claims
+                            } else {
+                                $('#myAlert').removeClass('fade show').addClass('d-none'); // Hide the alert if no returned claims
+                            }
+
+                            return json.data;
+                        }
+                    },
+                    "columns": [
+                        { "data": "lastName", "name": "LastName", "autoWidth": true },
+                        { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                        { "data": "idNumber", "name": "IdNumber", "autoWidth": true },
+                            {
+                            "data": "createdDate", "name": "CreatedDate", "autoWidth": true
+                        },
+                          {
+                            "data": "approvedStatus",
+                            "name": "ApprovedStatus",
+                            "autoWidth": true,
+                            "render": function (data, type, row) {
+                                var statusClass = '';
+                                var statusText = '';
+
+                                // Determine the CSS class and text based on status value
+                                if (data === 'Approved') {
+                                    statusClass = 'status-approved';
+                                    statusText = 'Approved';
+                                } else if (data === 'Pending') {
+                                    statusClass = 'status-pending';
+                                    statusText = 'Pending';
+                                } else {
+                                    statusClass = ''; // Default class if needed
+                                    statusText = data;
+                                }
+
+                                return `<span class="${statusClass}">${statusText}</span>`;
+                            }
+                        },
+
+                           {
+                            "data": "approvedBy", "name": "ApprovedBy", "autoWidth": true
+                        },
+                         {
+                            "data": "approvedDate", "name": "ApprovedDate", "autoWidth": true
+                        },
+                        {
+                            "data": "accountsStatus",
+                            "name": "AccountsStatus",
+                            "autoWidth": true,
+                            "render": function (data) {
+                                var statusClass = data === 'Approved' ? 'status-approved' : 'status-pending';
+                                return `<span class="${statusClass}">${data}</span>`;
+                            }
+                        },
+                        {
+                            "data": "peerStatus",
+                            "name": "PeerStatus",
+                            "autoWidth": true,
+                            "render": function (data) {
+                                var statusClass = data === 'Approved' ? 'status-approved' : 'status-pending';
+                                return `<span class="${statusClass}">${data}</span>`;
+                            }
+                        },
+                        {
+                            "render": function (data, type, row) {
+                                return `
+                                                <div class="btn-group" role="group">
+                                                                <a href="/Transcribers/TandSAccountsReview/${row.examinerCode}?examinerCode=${row.examinerCode}&nationalId=${row.idNumber}&subKey=${row.subKey}&claimId=${row.claimId}"
+                                                       class="btn btn-sm me-2 text-white" style="background-color: #153355;">
+                                                        <i class="fa fa-eye"></i> View Claim
+                                                    </a>
+                                                </div>
+                                            `;
+                            }
+                        }
+                    ]
+                });
+
+            });
+
+            function filterData(statuss) {
+                $('#tandsTable').DataTable().ajax.url(`/Transcribers/GetAccountsTandS?statuss=${encodeURIComponent(statuss)}`).load();
+            }
+
+        </script>
+
+    }
+
+    @if (User.IsInRole("Admin"))
+    {
+        <script>
+            $(document).ready(function () {
+                // Initialize DataTable
+                var table = $('#tandsTable').DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [
+                        [10, 25, 50, 100, 250, 500, 1000],
+                        [10, 25, 50, 100, 250, 500, 1000]
+                    ],
+                    "pageLength": 100,
+                    "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                        '<"table-responsive"t>' +
+                        '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+                    "buttons": [
+                        {
+                            extend: 'excelHtml5',
+                            className: 'btn btn-sm btn-success',
+                            text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel'
+                        },
+                        {
+                            extend: 'csvHtml5',
+                            className: 'btn btn-sm btn-info',
+                            text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV'
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            className: 'btn btn-sm btn-danger',
+                            text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF'
+                        }
+                    ],
+                    "ajax": {
+                        url: "/Transcribers/GetAccountsTandS",
+                        type: "POST",
+                        data: function (d) {
+                            // Apply filters based on active counter
+                            if ($('#pendingCount').hasClass('active')) {
+                                d.request = 'pending';
+                            } else if ($('#approvedCount').hasClass('active')) {
+                                d.request = 'approved';
+                            }
+
+                               d.examCode = "@examCode";
+
+                                d.activity = "@activity";
+                                d.venue = "@venue";
+                                                },
+                        dataSrc: function (json) {
+                            // Update counters
+                            $('#totalCount').text(json.totalCount || 0);
+                            $('#approvedCount').text(json.approvedtands || 0);
+                            $('#pendingCount').text(json.pendingtands || 0);
+
+                            return json.data;
+                        }
+                    },
+                    "columns": [
+                        { "data": "lastName", "name": "LastName", "autoWidth": true },
+                        { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                        { "data": "idNumber", "name": "IdNumber", "autoWidth": true },
+                            {
+                            "data": "createdDate", "name": "CreatedDate", "autoWidth": true
+                        },
+                          {
+                            "data": "approvedStatus",
+                            "name": "ApprovedStatus",
+                            "autoWidth": true,
+                            "render": function (data, type, row) {
+                                var statusClass = '';
+                                var statusText = '';
+
+                                // Determine the CSS class and text based on status value
+                                if (data === 'Approved') {
+                                    statusClass = 'status-approved';
+                                    statusText = 'Approved';
+                                } else if (data === 'Pending') {
+                                    statusClass = 'status-pending';
+                                    statusText = 'Pending';
+                                } else {
+                                    statusClass = ''; // Default class if needed
+                                    statusText = data;
+                                }
+
+                                return `<span class="${statusClass}">${statusText}</span>`;
+                            }
+                        },
+
+                           {
+                            "data": "approvedBy", "name": "ApprovedBy", "autoWidth": true
+                        },
+                         {
+                            "data": "approvedDate", "name": "ApprovedDate", "autoWidth": true
+                        },
+                        {
+                            "data": "accountsStatus",
+                            "name": "AccountsStatus",
+                            "autoWidth": true,
+                            "render": function (data) {
+                                var statusClass = data === 'Approved' ? 'status-approved' : 'status-pending';
+                                return `<span class="${statusClass}">${data}</span>`;
+                            }
+                        },
+                        {
+                            "data": "peerStatus",
+                            "name": "PeerStatus",
+                            "autoWidth": true,
+                            "render": function (data) {
+                                var statusClass = data === 'Approved' ? 'status-approved' : 'status-pending';
+                                return `<span class="${statusClass}">${data}</span>`;
+                            }
+                        },
+                        {
+                            "render": function (data, type, row) {
+                                return `
+                                                            <div class="btn-group" role="group">
+                                                                            <a href="/Transcribers/TandSAccountsReview/${row.examinerCode}?examinerCode=${row.examinerCode}&nationalId=${row.idNumber}&subKey=${row.subKey}&claimId=${row.claimId}"
+                                                                   class="btn btn-sm me-2 text-white" style="background-color: #153355;">
+                                                                    <i class="fa fa-eye"></i> View Claim
+                                                                </a>
+
+                                                                                                  <button
+                            class="btn btn-danger btn-sm delete-button"
+                            style="padding: 2px 5px;"
+                            data-claimid="${row.claimId}"
+                            data-examinercode="${row.examinerCode}"
+                            data-subkey="${row.subKey}"
+                            data-idnumber="${row.idNumber}">
+                            <i class="fa fa-trash"></i>
+                            Delete
+                        </button>
+
+
+                                                            </div>
+                                                        `;
+                            }
+                        }
+                    ]
+                });
+
+
+            });
+
+
+            function filterData(statuss) {
+                $('#tandsTable').DataTable().ajax.url(`/Transcribers/GetData?statuss=${encodeURIComponent(statuss)}`).load();
+            }
+        </script>
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                console.log('DOM fully loaded and parsed');
+
+                function attachDeleteEvent() {
+                    const deleteButtons = document.querySelectorAll('.delete-button');
+                    if (deleteButtons.length > 0) {
+                        console.log(`Found ${deleteButtons.length} delete buttons`);
+
+                        deleteButtons.forEach(button => {
+                            button.addEventListener('click', function (e) {
+                                e.preventDefault();
+                                console.log('Delete button clicked');
+
+                                const idNumber = this.getAttribute('data-idnumber');
+                                const examinerCode = this.getAttribute('data-examinercode');
+                                const subKey = this.getAttribute('data-subkey');
+                                const claimId = this.getAttribute('data-claimid');
+                                console.log(`idNumber: ${idNumber}, examinerCode: ${examinerCode}, subKey: ${subKey}, claimId: ${claimId}`);
+
+                                Swal.fire({
+                                    title: 'Are you sure?',
+                                    text: "You won't be able to revert this!",
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3085d6',
+                                    cancelButtonColor: '#d33',
+                                    confirmButtonText: 'Yes, delete it!'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        console.log('Confirmed delete');
+                                        // Make a GET request to delete the item
+                                        fetch(`/Transcribers/DeleteTandS?idNumber=${idNumber}&claimId=${claimId}&examinerCode=${examinerCode}&subKey=${subKey}`)
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.success) {
+                                                    Swal.fire(
+                                                        'Deleted!',
+                                                        'The record has been deleted.',
+                                                        'success'
+                                                    ).then(() => {
+                                                        location.reload();
+                                                    });
+                                                } else {
+                                                    Swal.fire(
+                                                        'Error!',
+                                                        'There was an error deleting the record.',
+                                                        'error'
+                                                    );
+                                                }
+                                            });
+                                    }
+                                });
+                            });
+                        });
+                    } else {
+                        console.log('No delete buttons found');
+                    }
+                }
+
+                // Initial attachment of events
+                attachDeleteEvent();
+
+                // Use MutationObserver to detect any added nodes and re-attach events
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.addedNodes.length > 0) {
+                            attachDeleteEvent();
+                        }
+                    });
+                });
+
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            });
+
+        </script>
+
+    }
+}
+
+
+
+

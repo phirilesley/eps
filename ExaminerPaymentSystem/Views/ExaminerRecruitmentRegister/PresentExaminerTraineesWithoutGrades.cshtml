@@ -1,0 +1,210 @@
+﻿@{
+    ViewData["Title"] = "Trainee Examiners Without Grades";
+}
+
+<div class="p-3 shadow mt-2 mb-2">
+    <div class="p-1 mb-2 shadow-sm row">
+        <div class="col-12 col-md-6">
+            <h2>Trainee Examiners Missing Grades</h2>
+        </div>
+        <div class="col-12 col-md-6">
+            <span class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-ppt"></i> Total Records: <span class="grandTotalInvites">0</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Filtering Section -->
+    <div class="row teaching-experience-row mb-4 d-flex align-items-center gx-2">
+        <div class="col-auto">
+            <label class="form-label">Level</label><br />
+            <select class="form-select form-select-sm levelSelected" id="sessionLevelFilter" name="Level">
+                <option value="">Select Level Taught</option>
+                <option value="A">A-Level</option>
+                <option value="O">O-Level</option>
+                <option value="G7">G-7</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label">Subject</label>
+            <select class="form-select form-select-sm subject" name="Subject" id="subjectFilter">
+                <option value="">Select Subject</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label">Paper Code</label>
+            <select class="form-select form-select-sm" id="paperCodeFilter">
+                <option value="">Select Paper Code</option>
+                <option value="01">1</option>
+                <option value="02">2</option>
+                <option value="03">3</option>
+                <option value="04">4</option>
+                <option value="05">5</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label">Region</label>
+            <select class="form-select form-select-sm" id="regionCodeFilter">
+                <option value="">Select Region</option>
+                <option value="01">01-Harare</option>
+                <option value="02">02-Manicaland</option>
+                <option value="03">03-Mashonaland East</option>
+                <option value="04">04-Matabeleland North</option>
+                <option value="05">05-Midlands</option>
+                <option value="06">06-Masvingo</option>
+                <option value="07">07-Mashonaland Central</option>
+                <option value="08">08-Mashonaland West</option>
+                <option value="09">09-Matabeleland South</option>
+                <option value="10">10-Bulawayo</option>
+            </select>
+        </div>
+
+        <div class="col-auto mt-4">
+            <button class="btn btn-primary btn-sm filterButton">Apply</button>
+            <button class="btn btn-secondary btn-sm clearFilters">Clear</button>
+        </div>
+    </div>
+
+</div>
+<table id="assessmentsTable" class="display table table-bordered">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>NationalId</th>
+            <th>Subject</th>
+            <th>PaperCode</th>
+            <th>Capturer</th>
+            <th>Verifier</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var table = $('#assessmentsTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "@Url.Action("GetPresentExaminersWithoutGrades", "ExaminerRecruitmentRegister")",
+                    "type": "POST",
+                    "data": function (d) {
+                        d.sessionLevel = $('#sessionLevelFilter').val();
+                        d.subject = $('#subjectFilter').val();
+                        d.paperCode = $('#paperCodeFilter').val();
+                        d.regionCodeFilter = $('#regionCodeFilter').val();
+                    },
+                    dataSrc: function (json) {
+
+                        $('.grandTotalInvites').text(json.recordsFiltered);
+
+                        return json.data;
+                    }
+                },
+                "columns": [
+                    { "data": "examinerName" },
+                    { "data": "lastName" },
+                    { "data": "cemId" },
+                    { "data": "subject" },
+                    { "data": "paperCode" },
+                    { "data": "capturer" },
+                    { "data": "verifier" },
+              
+                ]
+            });
+
+            // Apply filter on button click
+            $('.filterButton').on('click', function () {
+                table.ajax.reload();
+            });
+
+            // Reload table when any filter field changes
+            $('#sessionLevelFilter, #subjectFilter, #paperCodeFilter, #regionCodeFilter').change(function () {
+                table.ajax.reload();
+            });
+
+
+            // Clear filters and reload table
+            $('.clearFilters').on('click', function () {
+                const filters = ["sessionLevelFilter", "subjectFilter", "paperCodeFilter", "regionCodeFilter"];
+                filters.forEach(filter => {
+                    $('#' + filter).val("");
+                    localStorage.removeItem(filter);
+                });
+                $('#subjectFilter').empty().append('<option value="">Select Subject</option>');
+                table.ajax.reload();
+            });
+
+            // Populate subject dropdown based on level
+            $('.levelSelected').on('change', function () {
+                const selectedValue = $(this).val();
+                let prefix = '';
+
+                switch (selectedValue) {
+                    case 'A':
+                        prefix = '6';
+                        break;
+                    case 'O':
+                        prefix = '4';
+                        break;
+                    case 'G7':
+                        prefix = '7';
+                        break;
+                    default:
+                        prefix = '';
+                }
+
+                const $subjectDropdown = $('#subjectFilter');
+                if (prefix) {
+                    $.ajax({
+                        url: '/ExaminerRecruitment/GetSubjects',
+                        type: 'GET',
+                        data: { prefix: prefix },
+                        success: function (data) {
+                            $subjectDropdown.empty().append('<option value="">Select Subject</option>');
+                            $.each(data, function (index, subject) {
+                                $subjectDropdown.append(
+                                    $('<option>', {
+                                        value: subject.suB_SUBJECT_CODE,
+                                        text: subject.suB_SUBJECT_DESC
+                                    })
+                                );
+                            });
+                        },
+                        error: function () {
+                            alert('Error fetching subjects. Please try again.');
+                        }
+                    });
+                } else {
+                    $subjectDropdown.empty().append('<option value="">Select Subject</option>');
+                }
+            });
+
+            // Load saved filter values from localStorage
+            const filters = ["sessionLevelFilter", "subjectFilter", "paperCodeFilter", "regionCodeFilter"];
+            filters.forEach(filter => {
+                const savedValue = localStorage.getItem(filter);
+                if (savedValue) {
+                    $('#' + filter).val(savedValue);
+                }
+            });
+
+            // Trigger subject dropdown population if level is pre-selected
+            if ($('#sessionLevelFilter').val()) {
+                $('#sessionLevelFilter').trigger('change');
+            }
+
+            // Save filter values on change
+            filters.forEach(filter => {
+                $('#' + filter).on('change', function () {
+                    localStorage.setItem(filter, this.value);
+                });
+            });
+        });
+    </script>
+}

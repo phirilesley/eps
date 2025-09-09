@@ -1,0 +1,168 @@
+﻿@page
+@model RegisterModel
+@using ExaminerPaymentSystem.Data
+@using ExaminerPaymentSystem.Models.Common
+@using ExaminerPaymentSystem.Models.Major
+@using ExaminerPaymentSystem.Models.Other
+@using Microsoft.AspNetCore.Identity
+@using ExaminerPaymentSystem.Interfaces
+   @using ExaminerPaymentSystem.Interfaces.Other
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+
+@{
+    ViewData["Title"] = "Register";
+    Layout = "~/Views/Shared/_LayoutAuth.cshtml";
+    IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+    IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+
+   
+
+    var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+    int currentYear = DateTime.Now.Year;
+    int lastYear = currentYear - 1;
+}
+
+
+
+
+
+<div class="row">
+    <div class="col-md-6" style="margin-left: 300px;margin-top: 30px;">
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <h2 style="margin-left: 60px;">
+                Register a New Account.
+            </h2>
+            <hr />
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.FirstName" class="form-control" style="background-color:transparent;" autocomplete="firstname" aria-required="true" placeholder="First Name" />
+                <label asp-for="Input.FirstName">First Name</label>
+                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Surname" class="form-control" style="background-color:transparent;" autocomplete="surname" aria-required="true" placeholder="Last Name" />
+                <label asp-for="Input.Surname">Last Name</label>
+                <span asp-validation-for="Input.Surname" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.IDNumber" class="form-control" style="background-color:transparent;" autocomplete="idnumber" aria-required="true" placeholder="National ID Number" />
+                <label asp-for="Input.IDNumber">National ID Number</label>
+                <span asp-validation-for="Input.IDNumber" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+        
+                <select id="ExamCode" name="examCode" class="form-control" style="background-color:transparent;">
+                    <option value="">-- Select Session --</option>
+                    int currentYear = DateTime.Now.Year;
+                    int lastYear = currentYear - 1;
+                    
+
+                    @foreach (var examCode in examCodes)
+                    {
+                        int examYear;
+                        
+
+                        if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) && (examYear == currentYear))
+                        {
+                            if(examCode.ACTIVATED_SESSION == "Activated"){
+                            <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL  @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                            } }
+                    }
+
+                </select>
+                <span id="error-examCode" style="color:red;display:none;">Please select a session.</span>
+
+                </div>
+
+            <div class="form-floating mb-3">
+                
+                <select id="Subject" name="subject" class="form-control" style="background-color:transparent;">
+                    <option value="">-- Select Subject --</option>
+                </select>
+                <span id="error-subject" style="color:red;display:none;">Please select a subject.</span>
+            </div>
+
+            <div class="form-floating mb-3">
+
+                <select id="PaperCode" name="paperCode" class="form-control" style="background-color:transparent;">
+                    <option value="">-- Select Paper Code --</option>
+                </select>
+                <span id="error-paperCode" style="color:red;display:none;">Please select a paper code.</span>
+            </div>
+
+
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Mobile" class="form-control" style="background-color:transparent;" autocomplete="mobile" aria-required="true" placeholder="Mobile Number" />
+                <label asp-for="Input.Mobile">Mobile Number</label>
+                <span asp-validation-for="Input.Mobile" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Email" class="form-control" style="background-color:transparent;" autocomplete="email" aria-required="true" placeholder="Email" />
+                <label asp-for="Input.Email">Email</label>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg text-white" style="background-color:#153355">Register</button>
+        </form>
+        <div class="form-group">
+            <p class="mt-3">
+                Already have an account? <a class="fw-bold" asp-page="/Account/Login">Login here</a>.
+            </p>
+        </div>
+    </div>
+    <div class="col-md-6 d-flex justify-content-center align-items-center">
+        <section>
+     @*        <img src="~/Images/logo.jpeg" alt="Logo" class="img-fluid"> *@
+        </section>
+    </div>
+</div>
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<script>
+    document.getElementById('registerForm').addEventListener('submit', function (event) {
+        var isValid = true;
+
+        var examCode = document.getElementById('ExamCode');
+        var errorExamCode = document.getElementById('error-examCode');
+        if (examCode.value === "") {
+            errorExamCode.style.display = 'inline';
+            isValid = false;
+        } else {
+            errorExamCode.style.display = 'none';
+        }
+
+        var subject = document.getElementById('Subject');
+        var errorSubject = document.getElementById('error-subject');
+        if (subject.value === "") {
+            errorSubject.style.display = 'inline';
+            isValid = false;
+        } else {
+            errorSubject.style.display = 'none';
+        }
+
+        var paperCode = document.getElementById('PaperCode');
+        var errorPaperCode = document.getElementById('error-paperCode');
+        if (paperCode.value === "") {
+            errorPaperCode.style.display = 'inline';
+            isValid = false;
+        } else {
+            errorPaperCode.style.display = 'none';
+        }
+
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+</script>
+
+  @*   <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script> *@

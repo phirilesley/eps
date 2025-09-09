@@ -1,0 +1,598 @@
+﻿@model ExaminerPaymentSystem.ViewModel.ExaminerRecutiments.ExaminerRecruitmentViewModel
+
+@{
+    // Layout = "_CustomLayout";
+    ViewData["Title"] = "Examiner Recruitment";
+}
+
+<style>
+    input[type="text"], input[type="number"], textarea {
+        text-transform: uppercase;
+    }
+
+</style>
+
+<h1 class="mb-3 text-center" style="color:#123255;">Examiner Recruitment</h1>
+
+
+
+<form asp-controller="ExaminerRecruitment" asp-action="Create" enctype="multipart/form-data" class="needs-validation mb-5" novalidate>
+    <span asp-validation-summary="All" class="text-danger"></span>
+
+
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Personal Details</h4>
+        </div>
+        <div class="row mb-3">
+            <!-- Hidden Input for Examiner Code -->
+            <input asp-for="ExaminerCode" type="hidden" class="form-control form-control-sm" value="@ViewBag.UniqueExaminerCode" placeholder="Examiner Code" />
+            @* <input asp-for="Experience" type="hidden" value="@ViewBag.Experience" /> *@
+
+
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+            <!-- Examiner Name -->
+            <div class="col-12 col-md-6  mb-3">
+                <div class="form-floating">
+                    <input asp-for="ExaminerName" class="form-control form-control-sm" placeholder="Examiner Name" />
+                    <label asp-for="ExaminerName">Examiner Name</label>
+                    <span asp-validation-for="ExaminerName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Last Name -->
+            <div class="col-12 col-md-6 mb-3">
+                <div class="form-floating">
+                    <input asp-for="LastName" class="form-control form-control-sm" pattern="[A-Za-z]+" placeholder="Examiner Surname" />
+                    <label asp-for="LastName">Examiner Surname</label>
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <!-- National ID -->
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="CemId" class="form-control" placeholder="National ID" id="NationalId" />
+                    <label asp-for="CemId">National ID Eg-(34227788B34)</label>
+                    <span asp-validation-for="CemId" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Gender -->
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <select asp-for="Sex" class="form-select" aria-label="Gender">
+                        <option value="">Select Gender</option>
+                        <option value="M">M</option>
+                        <option value="F">F</option>
+                    </select>
+                    <label asp-for="Sex">Gender</label>
+                    <span asp-validation-for="Sex" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="DateOfBirth" type="date" class="form-control" min="@DateTime.Today.AddYears(-100).ToString("yyyy-MM-dd")"
+                           max="@DateTime.Today.AddYears(-20).ToString("yyyy-MM-dd")" placeholder="Date of Birth" />
+                    <label asp-for="DateOfBirth">Date of Birth</label>
+                    <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="PhoneHome" type="number" class="form-control" min="4" placeholder="Cellphone Number" id="PhoneHome" />
+                    <label asp-for="PhoneHome">Cellphone Number</label>
+                    <span asp-validation-for="PhoneHome" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row mb-3">
+            <!-- Email Address -->
+            <div class="col-12 col-md-6 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EmailAddress" class="form-control" placeholder="National ID" />
+                    <label asp-for="EmailAddress"></label>
+                    <span asp-validation-for="EmailAddress" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Academic Qualification -->
+            <div class="col-12 col-md-6 mb-3">
+                <div class="form-floating">
+                    <select asp-for="AcademicQualification" class="form-select" aria-label="AcademicQualification">
+                        <option value="">Select Academic Qualification</option>
+                        <option value="O">O level</option>
+                        <option value="A">A Level</option>
+                    </select>
+                    <label asp-for="AcademicQualification"></label>
+                    <span asp-validation-for="AcademicQualification" class="text-danger"></span>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Home Address</h4>
+        </div>
+
+        <div class="row mb-3">
+            <!-- Home Address -->
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="Address" class="form-control" placeholder="Address" />
+                    <label asp-for="Address">Home location name</label>
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="Address2" class="form-control" placeholder="Address2" />
+                    <label asp-for="Address2">House Number/Box number</label>
+                    <span asp-validation-for="Address2" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="Address3" class="form-control" placeholder="Enter house number" />
+                    <label asp-for="Address3">Home Town/City</label>
+                    <span asp-validation-for="Address3" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Area To Be Trained</h4>
+        </div>
+
+        <div class="row mb-3">
+        <div class="col-12 col-md-4 mb-3">
+            <div class="form-floating">
+                <select asp-for="Experience" class="levelSelect form-select academicQualification" required>
+                    <option value="">Select Training Level</option>
+                    <option value="A">A-Level</option>
+                    <option value="O">O-Level</option>
+                    <option value="G7">G-7</option>
+                </select>
+                <label for="levelSelect">Level to be trained</label>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4 mb-3">
+            <div class="form-floating">
+                <select asp-for="Subject" class="subjectSelect form-select subject" aria-label="Subject">
+                    <option value="">Select training subject</option>
+                </select>
+                <label for="subjectSelect" asp-for="Subject">Training Subject</label>
+                <span asp-validation-for="Subject" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4 mb-3">
+            <div class="form-floating">
+                <select asp-for="PaperCode" class="form-select paperCodeSelect" aria-label="PaperCode">
+                    <option value="">Select training paper code</option>
+                </select>
+                <label asp-for="PaperCode">Training Paper Code</label>
+                <span asp-validation-for="PaperCode" class="text-danger"></span>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="col-12 col-md-12 mb-3">
+        <div class="form-floating">
+            <select asp-for="TrainingCentre" class="form-select" aria-label="TrainingCentre">
+                <option value="">Select training centre</option>
+                <option value="Harate">Harare</option>
+                <option value="Mutare">Mutare</option>
+                <option value="Marondera">Marondera</option>
+                <option value="Bulawayo">Bulawayo</option>
+                <option value="Gweru">Gweru</option>
+                <option value="Masvingo">Masvingo</option>
+                <option value="Chinhoyi">Chinhoyi</option>
+                <option value="Bindura">Bindura</option>
+                <option value="Gwanda">Gwanda</option>
+            </select>
+            <label asp-for="TrainingCentre"></label>
+            <span asp-validation-for="TrainingCentre" class="text-danger"></span>
+        </div>
+    </div>
+
+        
+    </div>
+
+
+
+
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Work Details</h4>
+        </div>
+
+       <div class="row mb-3">
+
+        <div class="col-12 col-md-4">
+            <div class="form-floating">
+                <input asp-for="PhoneBusiness" type="number" class="form-control" placeholder="Enter Business phone" />
+                <label asp-for="PhoneBusiness">Business PhoneNumber</label>
+                <span asp-validation-for="PhoneBusiness" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4 mb-3">
+            <div class="form-floating">
+                <select asp-for="RegionCode" class="form-select" aria-label="Select Region">
+                    <option value="">Select your region</option>
+                    <option value="01">01-Harare</option>
+                    <option value="02">02-Manicaland</option>
+                    <option value="03">03-Mashonaland East</option>
+                    <option value="04">04-Matabeleland North</option>
+                    <option value="05">05-Midlands</option>
+                    <option value="06">06-Masvingo</option>
+                    <option value="07">07-Mashonaland Central</option>
+                    <option value="08">08-Mashonaland West</option>
+                    <option value="09">09-Matabeleland South</option>
+                    <option value="10">10-Bulawayo</option>
+                </select>
+                <label asp-for="RegionCode"></label>
+                <span asp-validation-for="RegionCode" class="text-danger"></span>
+            </div>
+        </div>
+
+   
+ 
+        <div class="col-12 col-md-4">
+            <div class="form-floating">
+                <input asp-for="DistrictCode" class="form-control" placeholder="Enter district code" />
+                <label asp-for="DistrictCode"></label>
+                <span asp-validation-for="DistrictCode" class="text-danger"></span>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+
+
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Work Address</h4>
+        </div>
+
+        <div class="row mb-3">
+            <!-- Work Address -->
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="WorkAddress1" class="form-control" placeholder="Work Address" />
+                    <label asp-for="WorkAddress1">Current school name</label>
+                    <span asp-validation-for="WorkAddress1" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="WorkAddress2" class="form-control" placeholder="WorkAddress2" />
+                    <label asp-for="WorkAddress2">School-Box number</label>
+                    <span asp-validation-for="WorkAddress2" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="WorkAddress3" class="form-control" placeholder="Enter number" />
+                    <label asp-for="WorkAddress3">School-Town/City</label>
+                    <span asp-validation-for="WorkAddress3" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Professional Qualifications</h4>
+        </div>
+
+        <div id="professionalQualifications">
+            <div class="professional-qualifications-row">
+                <div class="row align-items-center">
+                    @*        <div class="col-12 col-md-3 mb-3 my-1">
+                    <div class="form-floating">
+                    <input type="text" class="form-control qualification-programme" name="ProfessionalQualifications[0].ProgrammeName" placeholder="Programme name" required />
+                    <label>Programme Name</label>
+                    </div>
+                    </div> *@
+                    <div class="col-12 col-md-3 mb-3 my-1">
+                        <div class="form-floating">
+                            <select class="form-control qualification-programme"
+                                    name="ProfessionalQualifications[0].ProgrammeName"
+                                    required>
+                                <option value="">Select Programme</option>
+                                <option value="Bachelor of Education (B.Ed)">Bachelor of Education (B.Ed)</option>
+                                <option value="Postgraduate Certificate in Education (PGCE)">Postgraduate Certificate in Education (PGCE)</option>
+                                <option value="Diploma in Education">Diploma in Education</option>
+                                <option value="Bachelor of Arts in Education">Bachelor of Arts in Education</option>
+                                <option value="Bachelor of Science in Education">Bachelor of Science in Education</option>
+                                <option value="Master of Education (M.Ed)">Master of Education (M.Ed)</option>
+                                <option value="National Professional Diploma in Education (NPDE)">National Professional Diploma in Education (NPDE)</option>
+                                <option value="Certificate in Early Childhood Education">Certificate in Early Childhood Education</option>
+                                <option value="Diploma in Special Needs Education">Diploma in Special Needs Education</option>
+                                <option value="Advanced Certificate in Education (ACE)">Advanced Certificate in Education (ACE)</option>
+                            </select>
+                            <label>Programme Name</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-3 mb-3 my-1">
+                        <div class="form-floating">
+                            <input type="text" class="form-control qualification-institution" name="ProfessionalQualifications[0].InstitutionName" placeholder="Institution name" required />
+                            <label>Institution Name</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3 mb-3 my-1">
+                        <div class="form-floating">
+                            <select class="form-control qualification-start"
+                                    name="ProfessionalQualifications[0].StartYear"
+                                    required>
+                                <option value="">Select Year</option>
+                            </select>
+                            <label>Start Year</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2 mb-3 my-1">
+                        <div class="form-floating">
+                            <select class="form-control qualification-end"
+                                    name="ProfessionalQualifications[0].EndYear"
+                                    required>
+                                <option value="">Select Year</option>
+                            </select>
+                            <label>End Year</label>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-1 mb- my-1 d-flex align-items-end justify-content-end">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success btn-sm addQualification">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        @*         <div class="row mb-3">
+        <div class="col-12 col-md-12">
+        <div class="form-floating">
+        <input asp-for="Qualification" class="form-control" placeholder="Professional Qualification" />
+        <label asp-for="Qualification"></label>
+        <span asp-validation-for="Qualification" class="text-danger"></span>
+        </div>
+        </div>
+
+        </div> *@
+
+    </div>
+
+
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Teaching Experience</h4>
+        </div>
+        <div id="teachingExperienceList">
+            <!-- Teaching Experience Row -->
+            <div class="teaching-experience-row">
+                <div class="row align-items-center">
+                    <!-- Level Taught -->
+                    <div class="col-12 col-md-3 mb-3">
+                        <div class="form-floating">
+                            <select class="form-select academicQualification" name="TeachingExperiences[0].LevelTaught" required>
+                                <option value="">Select Level Taught</option>
+                                <option value="A">A-Level</option>
+                                <option value="O">O-Level</option>
+                                <option value="G7">G-7</option>
+                            </select>
+                            <label>Level Taught</label>
+                        </div>
+
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="col-12 col-md-3 mb-3">
+                        <div class="form-floating">
+                            <select class="form-select subject" name="TeachingExperiences[0].Subject" required>
+                                <option value="">Select Subject</option>
+                            </select>
+                            <label>Subject</label>
+                        </div>
+                    </div>
+
+                    <!-- Teaching Experience (Years) -->
+                    <div class="col-12 col-md-3 mb-3">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" name="TeachingExperiences[0].ExperienceYears" placeholder="Teaching Experience" required />
+                            <label>Teaching Experience (Years)</label>
+                        </div>
+                    </div>
+
+                    <!-- Institution Name -->
+                    <div class="col-12 col-md-2 mb-3 my-1">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" name="TeachingExperiences[0].InstitutionName" placeholder="School Name" required />
+                            <label>Institution Name</label>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="col-12 col-md-1 mb-3 d-flex align-items-end justify-content-end">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-success btn-sm add-row">+</button>
+                            <button type="button" class="btn btn-danger btn-sm remove-row" style="display:none;">-</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Attachments</h4>
+        </div>
+        <div class="row mb-3">
+            <div class="mb-3 col-12 col-md-4">
+                <label class="form-label" asp-for="AttachHeadComment"></label>
+                <input asp-for="AttachHeadComment" type="file" class="form-control" />
+                <span asp-validation-for="AttachHeadComment" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3 col-12 col-md-4">
+                <label class="form-label" asp-for="AcademicQualifications">Attach Academic Qualifications</label>
+                <input asp-for="AcademicQualifications" type="file" class="form-control" />
+                <span asp-validation-for="AcademicQualifications" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3 col-12 col-md-4">
+                <label class="form-label" asp-for="NationalIdDocs">Attach National ID</label>
+                <input asp-for="NationalIdDocs" type="file" class="form-control" />
+                <span asp-validation-for="NationalIdDocs" class="text-danger"></span>
+            </div>
+        </div>
+        </div>
+
+    <!-- Add fields for other properties similarly -->
+    <div class="d-grid mb-5 mt-3">
+        <button class="btn btn-primary" type="submit">Submit</button>
+    </div>
+
+</form>
+
+
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const currentYear = new Date().getFullYear();
+                const minYear = currentYear - 80;
+
+                // Function to populate year options
+                function populateYearOptions(selectElement) {
+                    for (let year = currentYear; year >= minYear; year--) {
+                        const option = document.createElement('option');
+                        option.value = year;
+                        option.text = year;
+                        selectElement.appendChild(option);
+                    }
+                }
+
+                // Function to apply year constraints and validation
+                function applyYearConstraints(row) {
+                    const startSelect = row.querySelector('.qualification-start');
+                    const endSelect = row.querySelector('.qualification-end');
+
+                    // Populate years if not already populated
+                    if (startSelect.options.length === 1) {
+                        populateYearOptions(startSelect);
+                    }
+                    if (endSelect.options.length === 1) {
+                        populateYearOptions(endSelect);
+                    }
+
+                    // Add validation
+                    [startSelect, endSelect].forEach(select => {
+                        select.addEventListener('change', function () {
+                            const startYear = parseInt(startSelect.value) || 0;
+                            const endYear = parseInt(endSelect.value) || 0;
+                            if (startYear && endYear && endYear < startYear) {
+                                endSelect.setCustomValidity('End year cannot be before start year');
+                            } else {
+                                endSelect.setCustomValidity('');
+                            }
+                        });
+                    });
+                }
+
+                // Apply to initial row
+                const initialRow = document.querySelector('.professional-qualifications-row');
+                applyYearConstraints(initialRow);
+
+                // Add new row functionality
+                $(document).on("click", ".addQualification", function () {
+                    const $newRow = $(".professional-qualifications-row:first").clone();
+                    $newRow.find("input").val(""); // Clear input values
+                    $newRow.find("select").val(""); // Clear select values
+
+                    // Replace the btn-group with both buttons
+                    $newRow.find(".btn-group").html(`
+                        <button type="button" class="btn btn-success btn-sm addQualification">+</button>
+                        <button type="button" class="btn btn-danger btn-sm removeQualification">-</button>
+                    `);
+
+                    // Update array indices
+                    const rowCount = $("#professionalQualifications .professional-qualifications-row").length;
+                    $newRow.find("input, select").each(function () {
+                        const name = $(this).attr("name");
+                        const newName = name.replace(/\[\d+\]/, `[${rowCount}]`);
+                        $(this).attr("name", newName);
+                    });
+
+                    // Add the new row
+                    $("#professionalQualifications").append($newRow);
+
+                    // Apply year constraints to new row
+                    applyYearConstraints($newRow[0]);
+                });
+
+                // Remove row functionality
+                $(document).on("click", ".removeQualification", function () {
+                    $(this).closest(".professional-qualifications-row").remove();
+                });
+            });
+        </script>
+
+
+
+    }
+
+
+}
+
+
+
+

@@ -1,0 +1,358 @@
+﻿@inject SignInManager<ApplicationUser> SignInManager
+@{
+    ViewData["Title"] = "Send Claims";
+
+    string regionCode = ViewBag.RegionCode ?? "";
+}
+<link href="/css/monitorlist.css" rel="stylesheet" />
+
+<style>
+    :root {
+        --primary-color: #153355;
+        --secondary-color: #4a8c5f;
+        --accent-color: #e63946;
+        --light-bg: #f8f9fa;
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+        background-color: #f5f7f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+   ;
+    }
+
+    .header-container {
+        position: relative;
+        padding-bottom: 10px;
+    }
+
+    .accent-line {
+        height: 4px;
+        width: 80px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        border-radius: 2px;
+        margin-top: 8px;
+    }
+
+    .text-gradient {
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .region-badge {
+        font-size: 0.6em;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        vertical-align: middle;
+    }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.2s;
+        margin-bottom: 20px;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+    .filter-card {
+        background-color: white;
+    }
+
+    .action-card {
+        background: linear-gradient(135deg, #153355 0%, #1e4a6e 100%);
+        color: white;
+    }
+
+    .btn-primary-custom {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+        .btn-primary-custom:hover {
+            background-color: #0f2642;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+    .btn-outline-custom {
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        font-weight: 600;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+
+        .btn-outline-custom:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+    .filter-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+
+    .form-select {
+        border-radius: 6px;
+        padding: 10px;
+        border: 1px solid #ced4da;
+    }
+
+    .action-icon {
+        font-size: 2rem;
+        margin-bottom: 15px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .section-title {
+        position: relative;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 40px;
+            background-color: var(--secondary-color);
+            border-radius: 3px;
+        }
+
+    .code-container {
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+        padding: 20px;
+        border-radius: 8px;
+        font-family: 'Fira Code', monospace;
+        overflow-x: auto;
+        margin-top: 30px;
+    }
+
+    .code-comment {
+        color: #6a9955;
+    }
+
+    .code-keyword {
+        color: #569cd6;
+    }
+
+    .code-function {
+        color: #dcdcaa;
+    }
+
+    .code-string {
+        color: #ce9178;
+    }
+
+    .code-var {
+        color: #9cdcfe;
+    }
+</style>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="header-container mb-4">
+                <h5 class="fw-bold text-gradient mb-1">
+                    @ViewData["Title"]
+                  
+                    @if (User.IsInRole("RegionalManager"))
+                    {
+                        <span class="region-badge text-white">Region: @regionCode</span>
+                    }
+                </h5>
+                <div class="accent-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Filters Card -->
+            <div class="card border-0 shadow-sm filter-card">
+                <div class="card-body">
+                    <h6 class="section-title">Filter Claims</h6>
+                    <div class="row g-3">
+                        <!-- Region Filter -->
+                        <div class="col-md-4">
+                            <div class="filter-label">Region</div>
+                            <select id="regionFilter" class="form-select">
+                                <option value="">All Regions</option>
+                                <option value="01">01 - Harare</option>
+                                <option value="02">02 - Manicaland</option>
+                                <option value="03">03 - Mashonaland East</option>
+                                <option value="04">04 - Matabeleland North</option>
+                                <option value="05">05 - Midlands</option>
+                                <option value="06">06 - Masvingo</option>
+                                <option value="07">07 - Mashonaland Central</option>
+                                <option value="08">08 - Mashonaland West</option>
+                                <option value="09">09 - Matabeleland South</option>
+                                <option value="10">10 - Bulawayo</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="filter-label">Session</div>
+                            <select id="sessionFilter" class="form-select">
+                                <option value="">All Sessions</option>
+                                @if (ViewBag.Sessions != null)
+                                {
+                                    @foreach (var session in ViewBag.Sessions)
+                                    {
+                                        <option value="@session.Value">@session.Text</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="" disabled>No sessions available</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="filter-label">Phase</div>
+                            <select id="phaseFilter" class="form-select">
+                                <option value="">All Phases</option>
+                                @if (ViewBag.Phases != null)
+                                {
+                                    @foreach (var phase in ViewBag.Phases)
+                                    {
+                                        <option value="@phase.Value">@phase.Text</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="" disabled>No phases available</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <hr>
+                            <button id="resetFiltersBtn" class="btn btn-outline-custom">
+                                <i class="fas fa-undo me-2"></i>Reset Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Action Card -->
+            <div class="card border-0 shadow-sm action-card h-100">
+                <div class="card-body d-flex flex-column">
+                    <div class="action-icon">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <h4 class="mb-3">Send Claims To Accounts For Processing</h4>
+                    <p class="flex-grow-1">Generate and submit claims based on current filters selection</p>
+                    <button id="generateClaimsBtn" class="btn btn-light btn-lg w-100 py-3">
+                        <i class="fas fa-paper-plane me-2"></i>Send Claims
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+<script>
+    // Fixed JavaScript implementation
+    $(document).ready(function() {
+        // Generate Claims Button Click - Single event handler
+        $('#generateClaimsBtn').click(function() {
+            // Get filter values
+            var region = $('#regionFilter').val();
+            var session = $('#sessionFilter').val();
+            var phase = $('#phaseFilter').val();
+
+            // Validate at least session and phase are selected
+            if (!session || !phase) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Selection Required',
+                    text: 'Please select both Session and Phase to generate claims',
+                    confirmButtonColor: '#153355',
+                });
+                return;
+            }
+
+            // Show processing alert with timer progress bar
+            Swal.fire({
+                title: 'Processing Claims',
+                html: 'We are generating and submitting your claims. This may take a moment...',
+                allowOutsideClick: false,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // AJAX call to the server
+            $.ajax({
+                url: '@Url.Action("GenerateClaims", "ExamMonitorsTandSs")',
+                type: 'POST',
+                data: {
+                    session: session,
+                    phaseCode: phase,
+                    region: region
+                },
+                success: function(response) {
+                    // Close the loading alert
+                    Swal.close();
+
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Claims Submitted Successfully!',
+                        html: 'Generated and submitted <strong>' +
+                              response.count + ' claims</strong> for processing.<br><br>' +
+                              '<small>Region: ' + (region || 'All') +
+                              ' | Session: ' + session +
+                              ' | Phase: ' + phase + '</small>',
+                        confirmButtonColor: '#153355',
+                    });
+                },
+                error: function(xhr) {
+                    // Close the loading alert
+                    Swal.close();
+
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: xhr.responseJSON ?
+                              xhr.responseJSON.message : 'An error occurred while generating claims',
+                        confirmButtonColor: '#153355',
+                    });
+                }
+            });
+        });
+
+        // Reset filters button
+        $('#resetFiltersBtn').click(function() {
+            $('#regionFilter').val('');
+            $('#sessionFilter').val('');
+            $('#phaseFilter').val('');
+        });
+    });
+</script>

@@ -1,0 +1,677 @@
+﻿@{
+    ViewData["Title"] = "Assign Monitors to Clusters or Centres";
+
+    string regionCode = ViewBag.RegionCode ?? "";
+}
+
+<link href="/css/monitorlist.css" rel="stylesheet" />
+    <style>
+        .assigned-monitor-display {
+            transition: all 0.2s;
+            border-left: 3px solid #153355;
+        }
+
+            .assigned-monitor-display .monitor-name {
+                font-weight: 500;
+                color: #153355;
+            }
+
+        .change-assignment {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .assigned-badge {
+            font-size: 0.7rem;
+            vertical-align: middle;
+        }
+
+        .bg-soft-primary {
+            background-color: rgba(21, 51, 85, 0.1);
+        }
+
+        .list-group-item {
+            transition: all 0.2s;
+        }
+
+            .list-group-item:hover {
+                background-color: rgba(21, 51, 85, 0.05);
+            }
+    /* Make Select2 match Bootstrap form control height */
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px !important;
+    }
+    </style>
+
+
+<div class="container-fluid py-4 mt-3">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2">
+        <div>
+            <div class="header-container mb-4">
+                <h5 class="fw-bold text-gradient mb-1">
+                    @ViewData["Title"]
+                    @if (User.IsInRole("RegionalManager"))
+                    {
+                        <span class="region-badge text-white">Region: @regionCode</span>
+                    }
+                </h5>
+                <div class="accent-line"></div>
+            </div>
+        </div>
+        <div class="mt-3 mt-md-0">
+          
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-2 p-2">
+
+
+        <div class="card-body">
+            <!-- Filter Section -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="form-label">Cluster</label>
+                    <select class="form-select select2-cluster" id="clusterFilter">
+                        <option value="">Select Cluster</option>
+                        @foreach (var cluster in ViewBag.Clusters)
+                        {
+                            <option value="@cluster.Id" data-type="@cluster.Type">@cluster.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Phase</label>
+                    <select class="form-select select2-phase" id="phaseFilter">
+                        <option value="">All Phases</option>
+                        @foreach (var phase in ViewBag.Phases)
+                        {
+                            <option value="@phase.Value">@phase.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Session</label>
+                    <select class="form-select select2-session" id="sessionFilter">
+                        <option value="">All Sessions</option>
+                        @foreach (var session in ViewBag.Sessions)
+                        {
+                            <option value="@session.Value">@session.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button id="searchBtn" class="btn btn-outline-secondary w-100" style="color:#153355;">
+                        <i class="fas fa-search me-2"></i>Search
+                    </button>
+                </div>
+            </div>
+
+
+            <style>
+                /* Make all Select2 elements match Bootstrap form control height */
+                .select2-container .select2-selection--single {
+                    height: 38px !important;
+                    padding: 6px 12px;
+                    font-size: 14px;
+                    line-height: 1.5;
+                    border: 1px solid #ced4da;
+                    border-radius: 0.375rem;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__arrow {
+                    height: 36px !important;
+                }
+
+                .select2-container--default .select2-selection--single .select2-selection__rendered {
+                    line-height: 24px !important;
+                }
+
+                /* Ensure all selects have the same height */
+                .form-select, .select2-container .select2-selection--single {
+                    height: 38px;
+                }
+
+                .btn-custom {
+                    background-color: #153355;
+                    color: white;
+                    border: 1px solid #153355;
+                }
+
+                    .btn-custom:hover {
+                        background-color: #0f2642;
+                        border-color: #0f2642;
+                        color: white;
+                    }
+
+                .btn-outline-custom {
+                    color: #153355;
+                    border-color: #153355;
+                    background-color: transparent;
+                }
+
+                    .btn-outline-custom:hover {
+                        color: white;
+                        background-color: #153355;
+                        border-color: #153355;
+                    }
+            </style>
+
+        
+
+            <script>
+                $(document).ready(function() {
+                    // Initialize all Select2 elements
+                    $('.select2').select2({
+                        width: '100%',
+                        placeholder: function() {
+                            return $(this).data('placeholder') || "Select an option";
+                        },
+                        allowClear: true
+                    });
+                });
+            </script>
+
+            <!-- Assignment Form -->
+            <div class="container-fluid">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <!-- Assignment Form Card -->
+                        <div class="card shadow-sm border-0 mb-4">
+                            <div class="card-body p-4">
+                                <!-- Loading Spinner -->
+                                <div id="loadingSpinner" class="text-center d-none py-5">
+                                    <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-3 text-muted">Loading assignment data...</p>
+                                </div>
+
+                                <!-- No Results Message -->
+                                <div id="noResults" class="text-center d-none py-5">
+                                    <div class="alert alert-info bg-soft-info border-0">
+                                        <i class="fas fa-info-circle me-2"></i>No assignment data found for the selected filters
+                                    </div>
+                                </div>
+
+                                <!-- Assignment Form -->
+                                <div id="assignmentForm" class="d-none">
+                                    <div class="mb-4">
+                                        <h4 class="text-primary mb-3" id="assignmentTitle"></h4>
+                                        <hr class="my-3">
+                                    </div>
+
+                                    <!-- Currently Assigned Section -->
+                                    <div id="currentAssignments" class="mb-4 p-3 bg-soft-primary rounded">
+                                        <h5 class="mb-3"><i class="fas fa-users me-2"></i>Currently Assigned</h5>
+                                        <div id="assignedMonitorsList" class="list-group">
+                                            <!-- Will be populated dynamically -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Manager Section -->
+                                    <div id="managerSection" class="mb-4 p-3 bg-light rounded">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-bold text-dark">Cluster Manager:</label>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div id="managerDisplay" class="assigned-display d-none">
+                                                    <div class="assigned-monitor-display bg-white p-2 rounded border d-flex justify-content-between align-items-center">
+                                                        <span class="monitor-name"></span>
+                                                        <button class="btn btn-sm btn-outline-danger change-assignment">Change</button>
+                                                    </div>
+                                                </div>
+                                                <select id="managerSelect" class="form-select select2-monitor shadow-none">
+                                                    <option value="">Select Monitor</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Assistant Section -->
+                                    <div id="assistantSection" class="mb-4 p-3 bg-light rounded">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-bold text-dark">Assistant Manager:</label>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div id="assistantDisplay" class="assigned-display d-none">
+                                                    <div class="assigned-monitor-display bg-white p-2 rounded border d-flex justify-content-between align-items-center">
+                                                        <span class="monitor-name"></span>
+                                                        <button class="btn btn-sm btn-outline-danger change-assignment">Change</button>
+                                                    </div>
+                                                </div>
+                                                <select id="assistantSelect" class="form-select select2-monitor shadow-none">
+                                                    <option value="">Select Monitor</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Resident Monitor Section -->
+                                    <div class="p-3 bg-light rounded">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-bold text-dark">Resident Monitor:</label>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div id="residentDisplay" class="assigned-display d-none">
+                                                    <div class="assigned-monitor-display bg-white p-2 rounded border d-flex justify-content-between align-items-center">
+                                                        <span class="monitor-name"></span>
+                                                        <button class="btn btn-sm btn-outline-danger change-assignment">Change</button>
+                                                    </div>
+                                                </div>
+                                                <select id="residentSelect" class="form-select select2-monitor shadow-none">
+                                                    <option value="">Select Monitor</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Card Footer with Submit Button -->
+                            <div class="card-footer bg-light border-0 pt-0">
+                                <div class="d-flex justify-content-end">
+                                    <button id="submitBtn" class="btn text-white px-4 d-none" style="background-color:#153355;">
+                                        <i class="fas fa-save me-2"></i>Save Assignments
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        // Global variable to store available monitors
+        var globalAvailableMonitors = [];
+        var globalAllMonitors = [];
+
+        $(document).ready(function() {
+            // Initialize Select2 dropdowns
+            $('.select2-cluster, .select2-phase, .select2-session').select2({
+                width: '100%'
+            });
+
+            // Search button click handler
+            $('#searchBtn').click(function() {
+                var clusterId = $('#clusterFilter').val();
+                var clusterType = $('#clusterFilter option:selected').data('type');
+                var phase = $('#phaseFilter').val();
+                var session = $('#sessionFilter').val();
+
+                if (!clusterId) {
+                    toastr.warning('Please select a cluster first');
+                    return;
+                }
+
+                loadAssignmentData(clusterId, phase, session, clusterType);
+            });
+
+            function loadAssignmentData(clusterId, phase, session, clusterType) {
+                $('#loadingSpinner').removeClass('d-none');
+                $('#assignmentForm').addClass('d-none');
+                $('#noResults').addClass('d-none');
+                $('#submitBtn').addClass('d-none');
+
+                $.ajax({
+                    url: '@Url.Action("GetAssignmentData")',
+                    type: 'GET',
+                    data: {
+                        clusterId: clusterId,
+                        phase: phase,
+                        session: session,
+                        clusterType: clusterType
+                    },
+                    success: function(response) {
+                        $('#loadingSpinner').addClass('d-none');
+
+                        if (response.success) {
+                            // Store available monitors globally
+                            globalAvailableMonitors = response.availableMonitors;
+                            globalAllMonitors = response.allMonitors;
+
+                            response.clusterName = $('#clusterFilter option:selected').text();
+                            renderAssignmentForm(response, clusterId, clusterType);
+                        } else {
+                            $('#noResults').removeClass('d-none');
+                            toastr.error(response.message || 'Error loading data');
+                        }
+                    },
+                    error: function(xhr) {
+                        $('#loadingSpinner').addClass('d-none');
+                        $('#noResults').removeClass('d-none');
+                        toastr.error('Failed to load assignment data');
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+
+            function renderAssignmentForm(data, clusterId, clusterType) {
+                // Update title
+                $('#assignmentTitle').text(`Assignments for ${data.clusterName}`);
+
+                // Show/hide sections based on cluster type
+                $('#managerSection').toggle(clusterType === 'IsCluster');
+                $('#assistantSection').toggle(clusterType === 'IsCluster');
+
+                // Update current assignments list
+                updateAssignedMonitorsList(data);
+
+                // Render each position
+                renderPosition('#residentSelect', '#residentDisplay', data.availableMonitors, data.currentResident, data.allMonitors, 'Resident');
+
+                if (clusterType === 'IsCluster') {
+                    renderPosition('#managerSelect', '#managerDisplay', data.availableMonitors, data.currentManager, data.allMonitors, 'Manager');
+                    renderPosition('#assistantSelect', '#assistantDisplay', data.availableMonitors, data.currentAssistant, data.allMonitors, 'Assistant');
+                }
+
+                // Initialize Select2
+                $('.select2-monitor').select2({
+                    placeholder: "Select available monitor...",
+                    width: '100%',
+                    dropdownParent: $('#assignmentForm')
+                });
+
+                // Handle change assignment clicks
+                $(document).off('click', '.change-assignment').on('click', '.change-assignment', function() {
+                    var container = $(this).closest('.col-md-8');
+                    var select = container.find('select');
+
+                    // Show the dropdown and hide the display
+                    container.find('.assigned-display').addClass('d-none');
+                    select.removeClass('d-none');
+
+                    // Repopulate the dropdown with globally stored available monitors
+                    select.empty().append('<option value="">Select Monitor</option>');
+                    globalAvailableMonitors.forEach(function(monitor) {
+                        select.append($('<option>')
+                            .val(monitor.id)
+                            .text(monitor.name));
+                    });
+
+                    // Reinitialize Select2
+                    select.select2({
+                        placeholder: "Select available monitor...",
+                        width: '100%',
+                        dropdownParent: $('#assignmentForm')
+                    });
+                });
+
+                // Show form and submit button
+                $('#assignmentForm').removeClass('d-none');
+                $('#submitBtn').removeClass('d-none');
+            }
+
+            function updateAssignedMonitorsList(data) {
+                var $list = $('#assignedMonitorsList').empty();
+                var hasAssignments = false;
+
+                if (data.currentResident) {
+                    var monitor = data.allMonitors.find(m => m.id === data.currentResident);
+                    if (monitor) {
+                        $list.append(`
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-user me-2"></i>
+                                    ${monitor.name}
+                                    <span class="assigned-badge badge bg-primary ms-2">Resident Monitor</span>
+                                </div>
+                                <span class="text-muted">Current Assignment</span>
+                            </div>
+                        `);
+                        hasAssignments = true;
+                    }
+                }
+
+                if (data.isCluster) {
+                    if (data.currentManager) {
+                        var monitor = data.allMonitors.find(m => m.id === data.currentManager);
+                        if (monitor) {
+                            $list.append(`
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-user-tie me-2"></i>
+                                        ${monitor.name}
+                                        <span class="assigned-badge badge bg-success ms-2">Cluster Manager</span>
+                                    </div>
+                                    <span class="text-muted">Current Assignment</span>
+                                </div>
+                            `);
+                            hasAssignments = true;
+                        }
+                    }
+
+                    if (data.currentAssistant) {
+                        var monitor = data.allMonitors.find(m => m.id === data.currentAssistant);
+                        if (monitor) {
+                            $list.append(`
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-user-shield me-2"></i>
+                                        ${monitor.name}
+                                        <span class="assigned-badge badge bg-info ms-2">Assistant Manager</span>
+                                    </div>
+                                    <span class="text-muted">Current Assignment</span>
+                                </div>
+                            `);
+                            hasAssignments = true;
+                        }
+                    }
+                }
+
+                // Show/hide section based on whether there are assignments
+                $('#currentAssignments').toggle(hasAssignments);
+            }
+
+            function renderPosition(selectId, displayId, availableMonitors, currentId, allMonitors, roleType) {
+                var $select = $(selectId);
+                var $display = $(displayId);
+
+                // Clear previous options
+                $select.empty().append('<option value="">Select Monitor</option>');
+
+                // Populate dropdown with available monitors
+                availableMonitors.forEach(function(monitor) {
+                    $select.append($('<option>')
+                        .val(monitor.id)
+                        .text(monitor.name));
+                });
+
+                if (currentId) {
+                    // Show assigned monitor display
+                    var assignedMonitor = allMonitors.find(m => m.id === currentId);
+                    if (assignedMonitor) {
+                        $display.find('.monitor-name').text(assignedMonitor.name);
+                        $display.removeClass('d-none');
+                        $select.addClass('d-none');
+
+                        // Also set the value in the hidden select
+                        $select.val(currentId).trigger('change');
+                    }
+                } else {
+                    // Show dropdown with available monitors
+                    $display.addClass('d-none');
+                    $select.removeClass('d-none');
+                    $select.val('').trigger('change'); // Reset selection
+                }
+            }
+
+            // Submit assignments
+                 $('#submitBtn').click(function() {
+            var clusterId = $('#clusterFilter').val();
+            var clusterType = $('#clusterFilter option:selected').data('type');
+            var phase = $('#phaseFilter').val();
+            var session = $('#sessionFilter').val();
+
+            var assignments = {
+                CenterId: clusterId,
+                ResidentMonitorId: $('#residentSelect').val(),
+                Phase: phase,
+                Session: session,
+                Status: clusterType
+            };
+
+            if (clusterType === 'IsCluster') {
+                assignments.ClusterManagerId = $('#managerSelect').val();
+                assignments.AssistantResidentId = $('#assistantSelect').val();
+            }
+
+            // Show confirmation dialog before proceeding
+            Swal.fire({
+                title: 'Confirm Submission',
+                text: 'Are you sure you want to save these assignments?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, save it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show progress dialog
+                    let progressInterval;
+                    Swal.fire({
+                        title: 'Saving Assignments',
+                        html: `
+                            <div class="progress mt-3">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                     role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <p class="mt-2">Processing your request...</p>
+                        `,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            // Animate progress bar
+                            const progressBar = Swal.getHtmlContainer().querySelector('.progress-bar');
+                            let width = 0;
+                            progressInterval = setInterval(() => {
+                                if (width < 90) {
+                                    width += 5;
+                                    progressBar.style.width = `${width}%`;
+                                }
+                            }, 300);
+                        }
+                    });
+
+                    // Disable button and show spinner
+                    $('#submitBtn').prop('disabled', true)
+                        .html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...');
+
+                    $.ajax({
+                        url: '@Url.Action("SaveAssignments")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify([assignments]),
+                               // Enhanced success handler
+                // Enhanced success handler
+        success: function(response) {
+            // Clear progress interval and close progress dialog
+            clearInterval(progressInterval);
+            Swal.close();
+
+            // Reset button
+            $('#submitBtn').prop('disabled', false)
+                .html('<i class="fas fa-save me-2"></i>Save Assignments');
+
+            if (response.success) {
+                let htmlContent = `<p>${response.message}</p>`;
+
+                // Show detailed results if there were failures
+                if (response.failedCount > 0 && response.detailedResults) {
+                    htmlContent += `<div class="mt-3"><strong>Detailed Results:</strong></div>`;
+                    htmlContent += `<div style="max-height: 300px; overflow-y: auto; font-size: 0.9em;">`;
+
+                    response.detailedResults.forEach(result => {
+                        const status = result.isSuccess ?
+                            '<span class="text-success">✓ Success</span>' :
+                            `<span class="text-danger">✗ Failed: ${result.errorReason}</span>`;
+
+                        htmlContent += `
+                            <div class="border-bottom py-2">
+                                <strong>${result.monitorName || result.monitorId}</strong>
+                                (${result.role}) → Center ${result.centerId}<br>
+                                ${status}
+                            </div>
+                        `;
+                    });
+
+                    htmlContent += `</div>`;
+                }
+
+                Swal.fire({
+                    title: response.failedCount > 0 ? 'Deployment Results' : 'Success!',
+                    html: htmlContent,
+                    width: '700px',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Refresh the data without full page reload
+                    var clusterId = $('#clusterFilter').val();
+                    var clusterType = $('#clusterFilter option:selected').data('type');
+                    var phase = $('#phaseFilter').val();
+                    var session = $('#sessionFilter').val();
+
+                    loadAssignmentData(clusterId, phase, session, clusterType);
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: response.message,
+                    icon: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK'
+                });
+            }
+        },
+                        error: function(xhr) {
+                            // Clear progress interval and close progress dialog
+                            clearInterval(progressInterval);
+                            Swal.close();
+
+                            // Reset button
+                            $('#submitBtn').prop('disabled', false)
+                                .html('<i class="fas fa-save me-2"></i>Save Assignments');
+
+                            // Show error message
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Error saving assignments',
+                                icon: 'error',
+                                confirmButtonColor: '#3085d6',
+                                confirmButtonText: 'OK'
+                            });
+                            console.error(xhr.responseText);
+                        }
+                    });
+                }
+            });
+        });
+        });
+    </script>
+}

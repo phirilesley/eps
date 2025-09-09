@@ -1,0 +1,198 @@
+﻿@model ExaminerPaymentSystem.Data.ApplicationUserDTO
+@{
+    ViewBag.Title = "Add Other Users";
+}
+
+
+
+
+<div class="container" style="margin-bottom:50px;">
+    <h2>Add New User(ZIMSEC STAFF)</h2>
+    <form id="userForm" asp-action="AddOtherUsers" method="post">
+        <div class="form-group">
+            <label for="FirstName">First Name</label>
+            <input type="text" class="form-control" id="FirstName" name="FirstName" required>
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="Surname">Surname</label>
+            <input type="text" class="form-control" id="Surname" name="Surname" required>
+            <span asp-validation-for="Surname" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="IDNumber">National ID</label>
+            <input type="text" class="form-control" id="IDNumber" name="IDNumber" required>
+            <span asp-validation-for="IDNumber" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="Role">Role</label>
+            <select class="form-control" id="Role" name="Role" required>
+                <option value="">-- Select Role --</option>
+                @if (User.IsInRole("AssistantAccountant"))
+                {
+                    <option value="Accounts">Initiator</option>
+                    <option value="PeerReviewer">Peer Reviewer</option>
+                }
+
+                @if (User.IsInRole("CentreSupervisor"))
+                {
+                    <option value="SubjectManager">Subject Manager</option>
+                }
+
+                @if (User.IsInRole("HR"))
+                {
+                    <option value="HRVerifier">HR Verifier</option>
+                    <option value="HRCapturer">HR Capturer</option>
+                }
+
+                @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+                {
+                    <option value="Admin">Admin</option>
+                    <option value="SuperAdmin">S.Admin</option>
+                    <option value="CentreSupervisor">Centre Supervisor</option>
+                    <option value="SubjectManager">Subject Manager</option>
+                    <option value="OfficerSpecialNeeds">Officer Exams Special Needs</option>
+                    <option value="Accounts">Initiator</option>
+                    <option value="PeerReviewer">Peer Reviewer</option>
+                    <option value="AssistantAccountant">Assistant Accountant</option>
+                    <option value="HR">HR</option>
+                    <option value="ExamsAdmin">Exams Admin</option>
+                    <option value="HRVerifier">HR Verifier</option>
+                    <option value="HRCapturer">HR Capturer</option>
+                    <option value="RegionalManager">Regional Manager</option>
+                }
+            </select>
+            <span id="error-role" style="color:red;display:none;">Please select a role.</span>
+        </div>
+
+        <!-- Region Select (Hidden by default) -->
+        <div class="form-group" id="regionGroup">
+            <label for="regionCode">Region</label>
+            <select name="RegionCode" id="regionCode" class="form-control">
+                <option value="">--- Select Region Code ---</option>
+                <option value="01">01-Harare</option>
+                <option value="02">02-Manicaland</option>
+                <option value="03">03-Mashonaland East</option>
+                <option value="04">04-Matabeleland North</option>
+                <option value="05">05-Midlands</option>
+                <option value="06">06-Masvingo</option>
+                <option value="07">07-Mashonaland Central</option>
+                <option value="08">08-Mashonaland West</option>
+                <option value="09">09-Matabeleland South</option>
+                <option value="10">10-Bulawayo</option>
+                <option value="HQ">HEAD QUATERS</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="Mobile">Phone Number</label>
+            <input type="text" class="form-control" id="Mobile" name="Mobile" required>
+            <span asp-validation-for="Mobile" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label for="Email">Email</label>
+            <input type="email" class="form-control" id="Email" name="Email" required>
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div>
+            <button type="submit" class="btn text-white mt-3" style="background-color: #153355;">
+                <i class="fas fa-check-circle"></i> Submit
+            </button>
+            <a href="@Url.Action("Index", "Users")" class="btn btn-danger mt-3">
+                <i class="fas fa-times-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    $(document).ready(function() {
+        // Initialize - hide region group if not RegionalManager on page load
+        if ($('#Role').val() !== 'RegionalManager') {
+            $('#regionGroup').hide();
+            $('#regionCode').prop('required', false);
+        }
+
+        // Show/hide region select based on role selection
+        $('#Role').on('change', function() {
+            if ($(this).val() === 'RegionalManager') {
+                $('#regionGroup').show();
+                $('#regionCode').prop('required', true);
+            } else {
+                $('#regionGroup').hide();
+                $('#regionCode').prop('required', false);
+            }
+        });
+
+        // Form validation
+        $('#userForm').on('submit', function(e) {
+            // Reset error messages
+            $('#error-role').hide();
+
+            // Validate role selection
+            if ($('#Role').val() === '') {
+                $('#error-role').show();
+                e.preventDefault();
+                return false;
+            }
+
+            // Additional validation for Regional Manager
+            if ($('#Role').val() === 'RegionalManager' && $('#regionCode').val() === '') {
+                $('#regionCode').addClass('is-invalid');
+                if (!$('#regionGroup').find('.invalid-feedback').length) {
+                    $('#regionGroup').append('<div class="invalid-feedback">Please select a region</div>');
+                }
+                e.preventDefault();
+                return false;
+            } else {
+                $('#regionCode').removeClass('is-invalid');
+                $('#regionGroup').find('.invalid-feedback').remove();
+            }
+        });
+    });
+</script>
+
+<script>
+    document.getElementById('userForm').addEventListener('submit', function (event) {
+        var isValid = true;
+
+     }
+
+        var role = document.getElementById('Role');
+        var errorRole = document.getElementById('error-role');
+        if (role.value === "") {
+            errorRole.style.display = 'inline';
+            isValid = false;
+        } else {
+            errorRole.style.display = 'none';
+        }
+
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+</script>
+
+
+@if (@ViewBag.HasError != null)
+{
+    <script>
+        Swal.fire({
+            title: "Validation failed",
+            text: "@ViewBag.HasError",
+            icon: "error"
+        });
+    </script>
+}
+
+@if (@ViewBag.HasSuccess != null)
+{
+    <script>
+        Swal.fire({
+            title: "Succeded",
+            text: "@ViewBag.HasSuccess",
+            icon: "success"
+        });
+    </script>
+}

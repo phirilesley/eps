@@ -1,0 +1,72 @@
+﻿.custom-alert {
+    background: linear-gradient(135deg, #ff758c, #ff7eb3); /* Beautiful pink-red gradient */
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    animation: fadeIn 0.5s ease-in-out;
+    position: relative;
+}
+
+    .custom-alert i {
+        font-size: 22px;
+        animation: bounce 1s infinite alternate;
+    }
+
+    .custom-alert .alert-content {
+        flex-grow: 1; /* This allows text to take up remaining space properly */
+    }
+
+    .custom-alert ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+
+    .custom-alert .close-btn {
+        background: white;
+        border: none;
+        color: #ff758c;
+        font-weight: bold;
+        font-size: 16px;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: 0.3s;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+
+        .custom-alert .close-btn:hover {
+            background: #ffe5e9;
+            transform: scale(1.1);
+        }
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-5px);
+    }
+}

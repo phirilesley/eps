@@ -1,0 +1,47 @@
+﻿@page
+@model RegisterConfirmationModel
+@{
+    ViewData["Title"] = "Register confirmation";
+}
+
+<h1>@ViewData["Title"]</h1>
+@{
+    if (@Model.DisplayConfirmAccountLink)
+    {
+        <p>
+            <span class="tick-icon"></span>
+            Thank you for registering now Login
+        </p>
+        <style>
+            .tick-icon {
+                display: inline-block;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background-color: green;
+                position: relative;
+                margin-right: 8px;
+            }
+
+                .tick-icon::before {
+                    content: '';
+                    display: block;
+                    width: 8px;
+                    height: 4px;
+                    border: solid white;
+                    border-width: 0 2px 2px 0;
+                    position: absolute;
+                    top: 4px;
+                    left: 4px;
+                    transform: rotate(45deg);
+                }
+        </style>
+    }
+    else
+    {
+<p>
+        Please check your email to confirm your account.
+</p>
+    }
+}
+

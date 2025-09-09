@@ -1,0 +1,116 @@
+﻿@{
+    ViewData["Title"] = "Server Error";
+}
+
+<div class="error-container text-center">
+  @*   <div class="error-illustration">
+        <!-- SVG illustration of person with servers -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" class="server-cart-illustration">
+            <!-- Person -->
+            <circle cx="150" cy="120" r="30" fill="#FFD166" />
+            <path d="M150 150 v60 m-20 -20 h40" stroke="#333" stroke-width="4" fill="none" />
+            <path d="M150 170 l-30 50 m60 -50 l-30 50" stroke="#333" stroke-width="4" />
+
+            <!-- Cart -->
+            <rect x="200" y="180" width="250" height="80" rx="5" fill="#E0E0E0" />
+            <rect x="210" y="190" width="40" height="60" rx="2" fill="#8E8E8E" />
+            <rect x="260" y="190" width="40" height="60" rx="2" fill="#8E8E8E" />
+            <rect x="310" y="190" width="40" height="60" rx="2" fill="#8E8E8E" />
+            <rect x="360" y="190" width="40" height="60" rx="2" fill="#8E8E8E" />
+            <rect x="410" y="190" width="30" height="60" rx="2" fill="#8E8E8E" />
+
+            <!-- Wheels -->
+            <circle cx="220" cy="280" r="15" fill="#555" />
+            <circle cx="380" cy="280" r="15" fill="#555" />
+
+            <!-- Server lights -->
+            <circle cx="230" cy="200" r="3" fill="#FF5252" />
+            <circle cx="230" cy="220" r="3" fill="#4CAF50" />
+            <circle cx="280" cy="200" r="3" fill="#FF5252" />
+            <circle cx="330" cy="220" r="3" fill="#4CAF50" />
+            <circle cx="380" cy="200" r="3" fill="#FF5252" />
+
+            <!-- Handle -->
+            <path d="M200 180 Q180 150 150 150" stroke="#555" stroke-width="6" fill="none" />
+        </svg>
+    </div> *@
+
+    <h1 class="text-danger">Whoops! Server Trouble</h1>
+    <p class="lead">Our team is working hard to get things back on track</p>
+
+    <div class="error-details mt-2">
+        <div class="alert alert-warning">
+            <p>@TempData["Error"]</p>
+        </div>
+
+        <div class="server-status mt-2">
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated"
+                     role="progressbar" style="width: 75%">
+                    Rebooting servers...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="error-actions mt-5">
+        <a href="/" class="btn btn-primary btn-lg mr-3">
+            <i class="fas fa-home"></i> Take Me Home
+        </a>
+        <a href="mailto:support@yourcompany.com" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-envelope"></i> Contact Support
+        </a>
+    </div>
+</div>
+
+<style>
+    .error-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    .server-cart-illustration {
+        max-width: 400px;
+        height: auto;
+        margin: 0 auto;
+        display: block;
+    }
+
+    .error-actions .btn {
+        min-width: 180px;
+    }
+
+    .server-status {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    @@media (max-width: 576px) {
+        .error-actions .btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+</style>
+
+@section Scripts {
+    <!-- Add Font Awesome for icons -->
+ @*    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" /> *@
+
+    <script>
+        // Optional: Add some animation
+        document.addEventListener('DOMContentLoaded', function () {
+            const serverLights = document.querySelectorAll('svg circle[fill="#FF5252"]');
+            setInterval(() => {
+                serverLights.forEach(light => {
+                    light.style.fill = light.style.fill === 'rgb(255, 82, 82)' ? '#FFEB3B' : '#FF5252';
+                });
+            }, 500);
+        });
+    </script>
+}

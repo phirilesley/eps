@@ -1,0 +1,76 @@
+﻿@{
+    ViewBag.Title = "Upload Examiners";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow rounded-4">
+                <div class="card-header bg-primary text-white text-center rounded-top-4">
+                    <h4><i class="bi bi-upload"></i> Upload Examiner Data</h4>
+                </div>
+
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Download the Excel template, fill in examiner details, select subject and paper, then upload.
+                    </p>
+
+                    <div class="mb-3 text-center">
+                        <a href="@Url.Action("DownloadExaminerTemplate", "Examiner")" class="btn btn-outline-primary rounded-pill">
+                            <i class="bi bi-download"></i> Download Template
+                        </a>
+                    </div>
+
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <strong>Success!</strong> @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Error!</strong> @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+
+                    <form method="post" enctype="multipart/form-data" asp-action="UploadExaminers" asp-controller="Examiner">
+                        <div class="mb-3">
+                            <label for="subjectCode" class="form-label">Subject Code</label>
+                            <input type="text" name="subjectCode" id="subjectCode" class="form-control" placeholder="e.g., 4011" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="paperCode" class="form-label">Paper Code</label>
+                            <input type="text" name="paperCode" id="paperCode" class="form-control" placeholder="e.g., 02" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="regionCode" class="form-label">Region Code</label>
+                            <input type="text" name="regionCode" id="regionCode" class="form-control" placeholder="e.g., 02" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Select Excel File (.xlsx)</label>
+                            <input type="file" name="file" id="file" class="form-control" accept=".xlsx" required />
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success rounded-pill">
+                                <i class="bi bi-cloud-upload"></i> Upload Examiners
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

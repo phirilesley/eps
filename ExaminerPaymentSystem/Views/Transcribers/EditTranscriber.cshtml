@@ -1,0 +1,195 @@
+﻿@model ExaminerPaymentSystem.Models.Major.Examiner
+@inject IActivityRepository activityRepo
+@{
+    ViewBag.Title = "Edit Transcriber";
+    string examCode = ViewBag.ExamCode ?? "";
+
+    string activity = ViewBag.Activity ?? "";
+    string supervisor = ViewBag.Supervisor ?? "";
+
+    IEnumerable<Activity> activities = await activityRepo.GetAllActivitiesAsync();
+}
+
+
+<script>
+    $(document).ready(function () {
+
+
+    @if (TempData["Error"] != null)
+    {
+                <text>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                                text: '@TempData["Error"]',
+                            showConfirmButton: true
+                        });
+                </text>
+    }
+            });
+</script>
+
+<h1 class="mb-3 text-center" style="color:#123255;">Edit Examiner</h1>
+
+<form asp-action="EditTranscriber" class="needs-validation mb-5" novalidate>
+    <input asp-for="EMS_EXAMINER_CODE" type="hidden" />
+    <input asp-for="EMS_SUBKEY" type="hidden" />
+
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Personal Details</h4>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_NATIONAL_ID" id="emsNationalId" class="form-control" placeholder="Examiner National ID" readonly />
+                    <label asp-for="EMS_NATIONAL_ID">National ID</label>
+                    <span asp-validation-for="EMS_NATIONAL_ID" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_EXAMINER_NAME" class="form-control form-control-sm" placeholder="Examiner Name" readonly />
+                    <label asp-for="EMS_EXAMINER_NAME">Examiner Name</label>
+                    <span asp-validation-for="EMS_EXAMINER_NAME" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_LAST_NAME" class="form-control form-control-sm" placeholder="Examiner Last Name" readonly />
+                    <label asp-for="EMS_LAST_NAME">Examiner Last Name</label>
+                    <span asp-validation-for="EMS_LAST_NAME" class="text-danger"></span>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="row mb-3">
+         
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_ECT_EXAMINER_CAT_CODE" class="form-select" required>
+                        <option value="">Select Examiner Category</option>
+                        <option value="BT">Braille Transcriber</option>
+                        <option value="PBT">Principal Braille Transcriber</option>
+                        <option value="A">Aide</option>
+                        <option value="S">Signer</option>
+                        <option value="I">Interpreter</option>
+                    </select>
+                    <label asp-for="EMS_ECT_EXAMINER_CAT_CODE">Examiner Category</label>
+                    <span asp-validation-for="EMS_ECT_EXAMINER_CAT_CODE" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <select class="form-select form-select-sm" name="attendance" required>
+                        <option value="">--Select Attendance--</option>
+                        <option value="Yes" selected="@(ViewBag.Attendance == "Yes")">Yes</option>
+                        <option value="No" selected="@(ViewBag.Attendance == "No")">No</option>
+                        <option value="Pending" selected="@(ViewBag.Attendance == "Pending")">Pending</option>
+                    </select>
+                    <label>Attendance</label>
+                    <span class="text-danger d-none">Please select attendance.</span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <select class="form-select form-select-sm" name="activity" required>
+                        <option value="">--Select Activity--</option>
+                        @foreach (var activityItem in activities)
+                        {
+                            <option value="@activityItem.Value"
+                                    selected="@(activityItem.Value == activity ? "selected" : null)">
+                                @activityItem.Text
+                            </option>
+                        }
+                    </select>
+                    <label>Activity</label>
+                    <span class="text-danger d-none">Please select the purpose of invitation.</span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3" id="supervisorContainer" style="display:none;">
+                <div class="form-floating">
+                    <input type="text"
+                           name="supervisor"
+                           class="form-control"
+                           id="supervisorInput"
+                           placeholder="Enter supervisor ID number"
+                           value="@supervisor">
+                    <label for="supervisorInput">Supervisor ID Number</label>
+                    <span class="text-danger field-validation-valid"
+                          data-valmsg-for="supervisor"
+                          data-valmsg-replace="true"></span>
+                </div>
+            </div>
+
+        </div>
+
+   
+
+
+    </div>
+
+
+
+    <div class="row mb-3">
+        <div class="col-12 col-md-6 mb-3">
+            <button class="btn text-white w-100" type="submit" style="background-color: #153355;">
+                <i class="fas fa-save mr-2"></i>
+                Save
+            </button>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <a class="btn btn-danger w-100" href="@Url.Action("SelectedTranscribers", "Transcribers")">
+                <i class="fas fa-times mr-2"></i>
+                Cancel
+            </a>
+        </div>
+    </div>
+
+</form>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+    }
+
+
+}
+
+<script>
+    $(document).ready(function() {
+        // Initialize based on current category value (for edit scenarios)
+        if ($('#EMS_ECT_EXAMINER_CAT_CODE').val() === 'A') {
+            $('#supervisorContainer').show();
+            $('#supervisorInput').prop('required', true);
+        }
+
+        // Show/hide supervisor input based on category selection
+        $('#EMS_ECT_EXAMINER_CAT_CODE').change(function() {
+            if ($(this).val() === 'A') {
+                $('#supervisorContainer').show();
+                $('#supervisorInput').prop('required', true);
+            } else {
+                $('#supervisorContainer').hide();
+                $('#supervisorInput').prop('required', false);
+                $('#supervisorInput').val('');
+            }
+        });
+
+        // Optional: Add input validation
+        $('#supervisorInput').on('blur', function() {
+            validateSupervisorId($(this).val());
+        });
+    });
+</script>

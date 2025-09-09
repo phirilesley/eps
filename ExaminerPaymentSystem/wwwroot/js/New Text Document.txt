@@ -1,0 +1,112 @@
+  // Get all elements with class "fee" and "quantity"
+  const fees = document.querySelectorAll('.fee');
+  const quantities = document.querySelectorAll('.quantity');
+
+  // Add event listener to each quantity input
+  quantities.forEach(quantity => {
+      quantity.addEventListener('input', updateTotal);
+  });
+
+  // Function to update total
+  function updateTotal() {
+      let total = 0;
+      // Iterate through each fee and quantity input
+      fees.forEach((fee, index) => {
+          const quantity = quantities[index].value || 0; // If quantity is empty, default to 0
+          total += parseFloat(fee.value || 0) * parseFloat(quantity); // Multiply fee with quantity and add to total
+      });
+      // Update the total in the HTML
+      document.getElementById('total').textContent = '$' + total.toFixed(2);
+  }
+
+  function calculateRowTotal(index) {
+      alert("In function");
+      var busfare = parseFloat(document.getElementsByName('TANDSDETAILS[' + index + '].EMS_BUSFARE')[0].value) || 0;
+      var accommodation = parseFloat(document.getElementsByName('TANDSDETAILS[' + index + '].EMS_ACCOMMODATION')[0].value) || 0;
+      var lunch = parseFloat(document.getElementsByName('TANDSDETAILS[' + index + '].EMS_LUNCH')[0].value) || 0;
+      var dinner = parseFloat(document.getElementsByName('TANDSDETAILS[' + index + '].EMS_DINNER')[0].value) || 0;
+
+      var total = busfare + accommodation + lunch + dinner;
+
+      document.getElementsByName('TANDSDETAILS[' + index + '].EMS_TOTAL')[0]).value = total.toFixed(2);
+
+      // Update total expenses
+      updateTotalExpenses();
+  }
+
+  function updateTotalExpenses() {
+      var totalBusfare = 0;
+      var totalAccommodation = 0;
+      var totalLunch = 0;
+      var totalDinner = 0;
+
+      var rows = document.querySelectorAll('input[name^="TANDSDETAILS"]');
+
+      rows.forEach(function (row) {
+          var busfareElement = row.parentElement.nextElementSibling.querySelector('input[name$="EMS_BUSFARE"]');
+          var accommodationElement = row.parentElement.nextElementSibling.nextElementSibling.querySelector('input[name$="EMS_ACCOMMODATION"]');
+          var lunchElement = row.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.querySelector('input[name$="EMS_LUNCH"]');
+          var dinnerElement = row.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.querySelector('input[name$="EMS_DINNER"]');
+
+          if (busfareElement && accommodationElement && lunchElement && dinnerElement) {
+              var busfare = parseFloat(busfareElement.value) || 0;
+              var accommodation = parseFloat(accommodationElement.value) || 0;
+              var lunch = parseFloat(lunchElement.value) || 0;
+              var dinner = parseFloat(dinnerElement.value) || 0;
+
+              totalBusfare += busfare;
+              totalAccommodation += accommodation;
+              totalLunch += lunch;
+              totalDinner += dinner;
+          } else {
+              console.log("One or more elements not found");
+          }
+      });
+
+      document.getElementById('totalBusfare').textContent = totalBusfare.toFixed(2);
+      document.getElementById('totalAccommodation').textContent = totalAccommodation.toFixed(2);
+      document.getElementById('totalLunch').textContent = totalLunch.toFixed(2);
+      document.getElementById('totalDinner').textContent = totalDinner.toFixed(2);
+
+      var grandTotal = totalBusfare + totalAccommodation + totalLunch + totalDinner;
+      document.getElementById('grandTotal').textContent = grandTotal.toFixed(2);
+      document.getElementById('grandTotal2').textContent = grandTotal.toFixed(2);
+  }
+
+  function calculateRowTotal(index) {
+      var busfareElement = document.getElementsByName('TANDSDETAILS[' + index + '].EMS_BUSFARE')[0];
+      var accommodationElement = document.getElementsByName('TANDSDETAILS[' + index + '].EMS_ACCOMMODATION')[0];
+      var lunchElement = document.getElementsByName('TANDSDETAILS[' + index + '].EMS_LUNCH')[0];
+      var dinnerElement = document.getElementsByName('TANDSDETAILS[' + index + '].EMS_DINNER')[0];
+
+      if (busfareElement && accommodationElement && lunchElement && dinnerElement) {
+          var busfare = parseFloat(busfareElement.value) || 0;
+          var accommodation = parseFloat(accommodationElement.value) || 0;
+          var lunch = parseFloat(lunchElement.value) || 0;
+          var dinner = parseFloat(dinnerElement.value) || 0;
+
+          var total = busfare + accommodation + lunch + dinner;
+
+          document.getElementsByName('TANDSDETAILS[' + index + '].EMS_TOTAL')[0].value = total.toFixed(2);
+
+          // Update total expenses
+          updateTotalExpenses();
+      } else {
+          console.log("One or more elements not found");
+      }
+  }
+
+  // Bind calculateRowTotal to input change events
+ /* var inputFields = document.querySelectorAll('input[name^="TANDSDETAILS"]');
+  inputFields.forEach(function (input) {
+      input.addEventListener('change', function () {
+          // Extract index from input name
+          var index = this.name.match(/\d+/)[0];
+          calculateRowTotal(index);
+      });
+  });*/
+
+  // Trigger calculation on page load
+  window.onload = function () {
+      updateTotalExpenses();
+  };

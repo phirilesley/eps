@@ -1,0 +1,765 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model TandSViewModel
+
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    ViewBag.Title = "Approval View(Centre Supervisor)";
+}
+
+<style>
+ 
+
+    .containera {
+        border: 1px solid #153355; /* Set border width and color */
+        padding: 10px; /* Add padding inside the container */
+        border-radius: 10px; /* Add border radius for rounded corners */
+    
+    }
+   
+    .timeline {
+        margin: 20px 0;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .timeline-header {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+
+    .timeline-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+    .timeline-label {
+        font-weight: bold;
+        color: #343a40;
+    }
+
+    .timeline-content {
+        color: #495057;
+    }
+
+</style>
+<script src="~/js/tnscalculater.js"></script>
+<script src="~/js/sweetalert2.all.js"></script>
+
+
+<div class="container py-3 mb-3 mt-3 rounded-3 shadow-sm border" style="padding: 30px;">
+
+    <div class="container d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            @if (User.IsInRole("CentreSupervisor"))
+            {
+                <button class="btn btn-primary me-2 px-3 py-2 d-flex align-items-center text-white"
+                        style="background-color: #153355; transition: background-color 0.3s;"
+                        onclick="approveClaim()">
+                    <i class="fas fa-check-circle me-2"></i> Approve
+                </button>
+                <button class="btn btn-primary px-3 py-2 d-flex align-items-center text-white"
+                        style="background-color: red; transition: background-color 0.3s;"
+                        onclick="rejectClaim()">
+                    <i class="fas fa-times-circle me-2"></i> Reject
+                </button>
+            }
+        </div>
+        <div>
+            <a class="btn btn-primary px-3 py-2 d-flex align-items-center text-white"
+               style="background-color: #153355; transition: background-color 0.3s;"
+               asp-controller="TandS" asp-action="ApprovalList">
+                <i class="fas fa-arrow-left me-2"></i> Back To List
+            </a>
+        </div>
+    </div>
+
+
+
+   
+</div>
+
+<div class="container py-3  mb-3 rounded-3 shadow-sm border" style="padding: 30px;">
+   <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="created-date" style="font-size: 0.9rem; color: #666;">
+            Created Date: @Model.Date
+        </div>
+        <div class="header">
+            <h4 class="font-weight-bold text-center">Travelling and Subsistence Claim Report</h4>
+        </div>
+        <div style="width: 100px;">&nbsp;</div> <!-- Spacer for alignment -->
+    </div>
+
+    <div class="card p-2 mb-3 shadow-sm border">
+
+       
+        <div class="row">
+            <div class="col-md-9 mb-3">
+                <div class="card p-1 shadow-sm border rounded">
+                    <div class="card-header bg-secondary text-white py-1">
+                        <h6 class="mb-0 small">Claim Details</h6>
+                    </div>
+                    <div class="card-body p-2">
+                        <div class="row">
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">Full Name:</span>
+                                <span class="small">@Model.EMS_EXAMINER_NAME @Model.EMS_LAST_NAME</span>
+                            </div>
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">National ID:</span>
+                                <span class="small">@Model.EMS_NATIONAL_ID</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">Subject:</span>
+                                <span class="small">@Model.EMS_SUB_SUB_ID / @Model.EMS_PAPER_CODE</span>
+                            </div>
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">Level:</span>
+                                <span class="small">@Model.EMS_LEVEL_OF_EXAM_MARKED</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">Bank (NOSTRO):</span>
+                                <span class="small">@Model.EMS_BANK_NAME_FCA</span>
+                            </div>
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">Account No. (NOSTRO):</span>
+                                <span class="small">@Model.EMS_ACCOUNT_NO_FCA</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">Bank (ZWG):</span>
+                                <span class="small">@Model.EMS_BANK_NAME_ZWL</span>
+                            </div>
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">Account No. (ZWG):</span>
+                                <span class="small">@Model.EMS_ACCOUNT_NO_ZWL</span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">Purpose:</span>
+                                <span class="small">@Model.EMS_PURPOSEOFJOURNEY</span>
+                            </div>
+                            <div class="col-md-6 mb-1 d-flex">
+                                <span class="font-weight-bold small w-50">Venue:</span>
+                                <span class="small">@Model.EMS_VENUE</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Work Address and Contact Section -->
+            <div class="col-md-3 mb-4">
+                <div class="card p-2 shadow-sm border rounded">
+                    <div class="card-body">
+                        <h6 class="font-weight-bold text-primary">
+                            <i class="fa fa-map-marker-alt"></i> Work Address
+                        </h6>
+                        <p class="mb-1 small"><i class="fa fa-home"></i> @Model.EMS_WORK_ADD1</p>
+                        <p class="mb-1 small"><i class="fa fa-city"></i> @Model.EMS_WORK_ADD2</p>
+                        <p class="mb-3 small"><i class="fa fa-building"></i> @Model.EMS_WORK_ADD3</p>
+
+                        <h6 class="font-weight-bold text-primary">
+                            <i class="fa fa-phone"></i> Contact
+                        </h6>
+                        <p class="mb-0 small"><i class="fa fa-phone-alt"></i> @Model.EMS_PHONE_HOME</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- Claim Details Table -->
+    <div class="card border-light shadow-sm rounded">
+        <div class="card-header bg-secondary text-white">
+            <h6 class="mb-0">Travelling and Subsistence Claim Details</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Departure Time</th>
+                        <th>Arrival Time</th>
+                        <th>Place (From/To)</th>
+                        <th>Busfare</th>
+                        <th>Accommodation</th>
+                        <th>Lunch</th>
+                        <th>Dinner</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.TandSDetails != null && ViewBag.TandSDetails.Count > 0)
+                    {
+                        foreach (var detail in ViewBag.TandSDetails)
+                        {
+                            <tr>
+                                <td>@detail.EMS_DATE</td>
+                                <td>@detail.EMS_DEPARTURE</td>
+                                <td>@detail.EMS_ARRIVAL</td>
+                                <td>@detail.EMS_PLACE</td>
+                                <td>@detail.EMS_BUSFARE</td>
+                                <td>@detail.EMS_ACCOMMODATION</td>
+                                <td>@detail.EMS_LUNCH</td>
+                                <td>@detail.EMS_DINNER</td>
+                                <td>@detail.EMS_TOTAL</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center">No data available</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="font-weight-bold text-right">Total Expenses</td>
+                        <td class="font-weight-bold">@ViewBag.TotalBusfare</td>
+                        <td class="font-weight-bold">@ViewBag.TotalAccommodation</td>
+                        <td class="font-weight-bold">@ViewBag.TotalLunch</td>
+                        <td class="font-weight-bold">@ViewBag.TotalDinner</td>
+                        <td class="font-weight-bold">@ViewBag.TotalTotal</td>
+                    </tr>
+                    <tr>
+                        <td colspan="9" class="font-weight-bold">Less advances/prepayments received in respect of this claim</td>
+                    </tr>
+                    <tr>
+                        <td colspan="8" class="font-weight-bold text-right">Amount Due to Employee</td>
+                        <td class="font-weight-bold">@ViewBag.TotalTotal</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-hover mt-5">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-center">Unit Price</th>
+                            <th class="text-end">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.TandSAdvance != null)
+                        {
+                            var advance = ViewBag.TandSAdvance as TandSAdvance;
+
+                            if (advance.ADV_TEAS.HasValue && ViewBag.FEE_TEA != null)
+                            {
+                                decimal teasAmount = advance.ADV_TEAS.Value;
+                                decimal feeTea = (decimal)ViewBag.FEE_TEA;
+                                decimal totalTeas = teasAmount * feeTea;
+                                <tr>
+                                    <td>Teas</td>
+                                    <td class="text-center">@teasAmount</td>
+                                    <td class="text-center">@feeTea.ToString("F2")</td>
+                                    <td class="text-end">@totalTeas.ToString("F2")</td>
+                                </tr>
+                            }
+
+                            if (advance.ADV_BREAKFAST.HasValue && ViewBag.FEE_BREAKFAST != null)
+                            {
+                                decimal breakfastAmount = advance.ADV_BREAKFAST.Value;
+                                decimal feeBreakfast = (decimal)ViewBag.FEE_BREAKFAST;
+                                decimal totalBreakfast = breakfastAmount * feeBreakfast;
+                                <tr>
+                                    <td>Breakfast</td>
+                                    <td class="text-center">@breakfastAmount</td>
+                                    <td class="text-center">@feeBreakfast.ToString("F2")</td>
+                                    <td class="text-end">@totalBreakfast.ToString("F2")</td>
+                                </tr>
+                            }
+
+                            if (advance.ADV_TRANSPORT.HasValue && ViewBag.FEE_TRANSPORT != null)
+                            {
+                                decimal transportAmount = advance.ADV_TRANSPORT.Value;
+                                decimal feeTransport = (decimal)ViewBag.FEE_TRANSPORT;
+                                <tr>
+                                    <td>Transport</td>
+                                    <td class="text-center">@transportAmount</td>
+                                    <td class="text-center">@feeTransport.ToString("F2")</td>
+                                    <td class="text-end">@((transportAmount * feeTransport).ToString("F2"))</td>
+                                </tr>
+                            }
+
+                            if (advance.ADV_ACCOMMODATION_RES.HasValue && ViewBag.FEE_ACCOMMODATION_RES != null)
+                            {
+                                decimal accommodationResAmount = advance.ADV_ACCOMMODATION_RES.Value;
+                                decimal feeAccommodationRes = (decimal)ViewBag.FEE_ACCOMMODATION_RES;
+                                <tr>
+                                    <td>Accommodation (Res)</td>
+                                    <td class="text-center">@accommodationResAmount</td>
+                                    <td class="text-center">@feeAccommodationRes.ToString("F2")</td>
+                                    <td class="text-end">@((accommodationResAmount * feeAccommodationRes).ToString("F2"))</td>
+                                </tr>
+                            }
+
+                            if (advance.ADV_ACCOMMODATION_NONRES.HasValue && ViewBag.FEE_ACCOMMODATION_NONRES != null)
+                            {
+                                decimal accommodationNonResAmount = advance.ADV_ACCOMMODATION_NONRES.Value;
+                                decimal feeAccommodationNonRes = (decimal)ViewBag.FEE_ACCOMMODATION_NONRES;
+                                <tr>
+                                    <td>Accommodation (Non-Res)</td>
+                                    <td class="text-center">@accommodationNonResAmount</td>
+                                    <td class="text-center">@feeAccommodationNonRes.ToString("F2")</td>
+                                    <td class="text-end">@((accommodationNonResAmount * feeAccommodationNonRes).ToString("F2"))</td>
+                                </tr>
+                            }
+
+                            if (advance.ADV_LUNCH.HasValue && ViewBag.FEE_LUNCH != null)
+                            {
+                                decimal lunchAmount = advance.ADV_LUNCH.Value;
+                                decimal feeLunch = (decimal)ViewBag.FEE_LUNCH;
+                                <tr>
+                                    <td>Lunch</td>
+                                    <td class="text-center">@lunchAmount</td>
+                                    <td class="text-center">@feeLunch.ToString("F2")</td>
+                                    <td class="text-end">@((lunchAmount * feeLunch).ToString("F2"))</td>
+                                </tr>
+                            }
+
+                            if (advance.ADV_DINNER.HasValue && ViewBag.FEE_DINNER != null)
+                            {
+                                decimal dinnerAmount = advance.ADV_DINNER.Value;
+                                decimal feeDinner = (decimal)ViewBag.FEE_DINNER;
+                                <tr>
+                                    <td>Dinner</td>
+                                    <td class="text-center">@dinnerAmount</td>
+                                    <td class="text-center">@feeDinner.ToString("F2")</td>
+                                    <td class="text-end">@((dinnerAmount * feeDinner).ToString("F2"))</td>
+                                </tr>
+                            }
+
+                            if (advance.ADV_OVERNIGHTALLOWANCE.HasValue && ViewBag.FEE_OVERNIGHTALLOWANCE != null)
+                            {
+                                decimal overnightAllowanceAmount = advance.ADV_OVERNIGHTALLOWANCE.Value;
+                                decimal feeOvernightAllowance = (decimal)ViewBag.FEE_OVERNIGHTALLOWANCE;
+                                <tr>
+                                    <td>Overnight Allowance</td>
+                                    <td class="text-center">@overnightAllowanceAmount</td>
+                                    <td class="text-center">@feeOvernightAllowance.ToString("F2")</td>
+                                    <td class="text-end">@((overnightAllowanceAmount * feeOvernightAllowance).ToString("F2"))</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center">No data available</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end font-weight-bold">Total</td>
+                            <td class="text-end font-weight-bold">@ViewBag.TandSAdvance?.ADV_TOTAL?.ToString("F2")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card border-light shadow-sm rounded">
+        <div class="container py-3">
+            <h4 class="mb-3 text-dark fw-bold">Uploaded Files</h4>
+            <div class="row g-3">
+                @if (ViewBag.TandSFile != null)
+                {
+                    foreach (var file in ViewBag.TandSFile as IEnumerable<TandSFile>)
+                    {
+                        <div class="col-6 col-sm-4 col-md-3">
+                            <div class="card border-0 shadow-sm rounded-2 h-100">
+                                <div class="card-body text-center d-flex flex-column align-items-center justify-content-center p-2">
+                                    @{
+                                        var fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();
+                                        var iconClass = "fa-file";
+                                        switch (fileExtension)
+                                        {
+                                            case ".pdf":
+                                                iconClass = "fa-file-pdf text-danger";
+                                                break;
+                                            case ".doc":
+                                            case ".docx":
+                                                iconClass = "fa-file-word text-primary";
+                                                break;
+                                            case ".xls":
+                                            case ".xlsx":
+                                                iconClass = "fa-file-excel text-success";
+                                                break;
+                                            case ".jpg":
+                                            case ".jpeg":
+                                            case ".png":
+                                                iconClass = "fa-file-image text-warning";
+                                                break;
+                                            default:
+                                                iconClass = "fa-file text-secondary";
+                                                break;
+                                        }
+                                    }
+                                    <i class="fas @iconClass fa-2x mb-2"></i>
+                                    <p class="text-muted small mb-0 fw-semibold">Currency: @file.Currency</p>
+                                </div>
+                                <div class="card-footer bg-light text-center p-1">
+                                    <small class="text-dark text-truncate d-block fw-light">
+                                        <i class="fas fa-file-alt me-1"></i> @file.FileName
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="col-12">
+                        <p class="text-center text-muted fst-italic">No files available.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="container my-4">
+        <div class="d-flex justify-content-end align-items-center py-3 px-4 bg-light shadow-sm rounded">
+            <span class="text-secondary fw-semibold fs-5 me-2">Overall Total:</span>
+            <span class="text-primary fw-bold fs-2">
+                @String.Format("{0:C}", Model.EMS_TOTAL)
+            </span>
+        </div>
+    </div>
+
+
+</div>
+
+
+@if (User.IsInRole("CentreSupervisor"))
+                                    {
+
+    <div class="container py-3 mb-3  rounded-3 shadow-sm border" style="padding: 30px;">
+
+    <div class="timeline">
+        <div class="timeline-header">Timeline</div>
+         
+
+                <div class="container py-3 mb-3  rounded-3 shadow-sm border" style="padding: 30px;">
+                    <div class="timeline-item">
+                        <span class="timeline-label">Status By:</span>
+                        <span class="timeline-content">@Model.SUBJECT_MANAGER_STATUS_BY</span>
+                    </div>
+                    <div class="timeline-item">
+                        <span class="timeline-label">Date:</span>
+                        <span class="timeline-content">@Model.SUBJECT_MANAGER_DATE</span>
+                    </div>
+                    @if (@Model.SUBJECT_MANAGER_STATUS== "Recommended")
+                    {
+                        <div class="timeline-item">
+                            <span class="timeline-label">Status:</span>
+                            <span class="timeline-content" style="color:green;">@Model.SUBJECT_MANAGER_STATUS</span>
+                        </div>
+
+                    }
+                    else if (@Model.SUBJECT_MANAGER_STATUS == "Rejected")
+                    {
+                        <div class="timeline-item">
+                            <span class="timeline-label">Status:</span>
+                            <span class="timeline-content" style="color:red;">@Model.SUBJECT_MANAGER_STATUS</span>
+                        </div>
+                    }else if (Model.SUBJECT_MANAGER_STATUS == "Pending")
+                    {
+                        <div class="timeline-item">
+                            <span class="timeline-label">Status:</span>
+                            <span class="timeline-content" style="color:orange;">@Model.SUBJECT_MANAGER_STATUS</span>
+                        </div>
+                    }
+
+                    <div class="timeline-item">
+                        <span class="timeline-label">Comment:</span>
+                        <span class="timeline-content">@Model.SUBJECT_MANAGER_COMMENT</span>
+                    </div>
+                </div>
+
+
+    </div>
+  
+
+</div>
+
+}
+
+ @if (User.IsInRole("CentreSupervisor"))
+                                    {
+    @section Scripts {
+    <script type="text/javascript">
+        function approveClaim() {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You are about to Approve this claim.",
+                icon: 'warning',
+                input: 'textarea',
+                inputPlaceholder: 'Enter your comment here...',
+                showCancelButton: true,
+                confirmButtonColor: '#153355',
+                cancelButtonColor: 'red',
+                confirmButtonText: 'Yes, Approve!',
+                preConfirm: (comment) => {
+                    // if (!comment) {
+                    //     Swal.showValidationMessage('Comment is required');
+                    //     return false;
+                    // }
+                    return comment;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Approve", "TandS")',
+                        data: {
+                             idNumber: '@Model.EMS_NATIONAL_ID',
+                            examinerCode: '@Model.EMS_EXAMINER_CODE',
+                            tandscode: '@Model.TANDSCODE',
+                            subKey: '@Model.EMS_SUBKEY',
+                            comment: result.value // Include the comment in the request data
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                        Swal.fire({
+                            title: 'Approved!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 2000, // Close the alert after 2 seconds
+                            showConfirmButton: false // Hide the confirm button
+                        }).then(() => {
+                                    window.location.href = '@Url.Action("ApprovalList", "TandS")';
+                                });
+                            } else {
+                                Swal.fire('Error!', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error!', 'An error occurred while processing your request.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+
+        function rejectClaim() {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You are about to reject this claim.",
+                icon: 'warning',
+                input: 'textarea',
+                inputPlaceholder: 'Enter your comment here...',
+                showCancelButton: true,
+                confirmButtonColor: '#153355',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Submit!',
+                preConfirm: (comment) => {
+                    if (!comment) {
+                        Swal.showValidationMessage('Comment is required');
+                        return false;
+                    }
+                    return comment;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Reject", "TandS")',
+                        data: {
+                            idNumber: '@Model.EMS_NATIONAL_ID',
+                            examinerCode: '@Model.EMS_EXAMINER_CODE',
+                            tandscode: '@Model.TANDSCODE',
+                            subKey: '@Model.EMS_SUBKEY',
+                            comment: result.value // Include the comment in the request data
+                        },
+                        success: function (response) {
+                           if (response.success) {
+                        Swal.fire({
+                            title: 'Rejected!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 2000, // Close the alert after 2 seconds
+                            showConfirmButton: false // Hide the confirm button
+                        }).then(() => {
+                                    window.location.href = '@Url.Action("ApprovalList", "TandS")';
+                                });
+                            } else {
+                                Swal.fire('Error!', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error!', 'An error occurred while processing your request.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+    </script>
+
+
+    }
+}
+else if (User.IsInRole("SubjectManager"))
+{
+
+    @section Scripts {
+    <script type="text/javascript">
+        function approveClaim() {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You are about to Recommend this claim.",
+                icon: 'warning',
+                input: 'textarea',
+                inputPlaceholder: 'Enter your comment here...',
+                showCancelButton: true,
+                confirmButtonColor: '#153355',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Submit!',
+                preConfirm: (comment) => {
+                    // if (!comment) {
+                    //     Swal.showValidationMessage('Comment is required');
+                    //     return false;
+                    // }
+                    return comment;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Approve", "TandS")',
+                        data: {
+                              idNumber: '@Model.EMS_NATIONAL_ID',
+                            examinerCode: '@Model.EMS_EXAMINER_CODE',
+                            tandscode: '@Model.TANDSCODE',
+                            subKey: '@Model.EMS_SUBKEY',
+                            comment: result.value // Include the comment in the request data
+                        },
+                        success: function (response) {
+                           if (response.success) {
+                        Swal.fire({
+                            title: 'Recommended!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 2000, // Close the alert after 2 seconds
+                            showConfirmButton: false // Hide the confirm button
+                        }).then(() => {
+                                    window.location.href = '@Url.Action("ApprovalList", "TandS")';
+                                });
+                            } else {
+                                Swal.fire('Error!', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error!', 'An error occurred while processing your request.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+
+        function rejectClaim() {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You are about to reject this claim.",
+                icon: 'warning',
+                input: 'textarea',
+                inputPlaceholder: 'Enter your comment here...',
+                showCancelButton: true,
+                confirmButtonColor: '#153355',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Submit!',
+                preConfirm: (comment) => {
+                    if (!comment) {
+                        Swal.showValidationMessage('Comment is required');
+                        return false;
+                    }
+                    return comment;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Reject", "TandS")',
+                        data: {
+                              idNumber: '@Model.EMS_NATIONAL_ID',
+                            examinerCode: '@Model.EMS_EXAMINER_CODE',
+                            tandscode: '@Model.TANDSCODE',
+                            subKey: '@Model.EMS_SUBKEY',
+                            comment: result.value // Include the comment in the request data
+                        },
+                        success: function (response) {
+                           if (response.success) {
+                        Swal.fire({
+                            title: 'Rejected!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 2000, // Close the alert after 2 seconds
+                            showConfirmButton: false // Hide the confirm button
+                        }).then(() => {
+                                    window.location.href = '@Url.Action("ApprovalList", "TandS")';
+                                });
+                            } else {
+                                Swal.fire('Error!', response.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error!', 'An error occurred while processing your request.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+    </script>
+
+
+    }
+    
+}
+
+
+
+
+
+
+
+
+
+<script>
+    function downloadFile(actionUrl, fileName) {
+        window.location = actionUrl + '?fileName=' + fileName;
+    }
+</script>

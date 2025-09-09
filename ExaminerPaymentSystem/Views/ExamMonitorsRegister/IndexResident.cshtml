@@ -1,0 +1,37 @@
+﻿@model IEnumerable<dynamic>
+@{
+    ViewData["Title"] = "Approve Registers";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white py-3">
+            <h2 class="h5 mb-0">Approve Registers</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm table-bordered table-hover">
+                <thead class="bg-light">
+                    <tr>
+                        <th>User Name</th>
+                        <th>SubKey</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.ClusterManagersName</td>
+                            <td>@item.SubKey</td>
+                            <td>
+                                <a asp-action="Approve" asp-route-subKey="@item.SubKey" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> View Register
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

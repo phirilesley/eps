@@ -1,0 +1,454 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model ExaminerTeamsViewModel
+
+<div class="card-header">
+    <h2 class="h5 mb-0 text-center"><i class="fas fa-users me-2"></i>Examiner Teams Management</h2>
+    <hr class="border-2 border-primary w-50 mx-auto" />
+</div>
+
+<div class="container mt-4">
+    <div class="card shadow-sm mb-4">
+        
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <!-- Filter Section (Left Side) -->
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-filter text-muted me-2"></i>
+                    <label for="filter" class="form-label mb-0 me-2">Filter by:</label>
+                    <select id="filter" class="form-select form-select-sm w-auto" onchange="filterTeams()">
+                        <option value="all">All Teams</option>
+                        <option value="teams">Teams with Members</option>
+                        <option value="categories">By Category</option>
+                    </select>
+                </div>
+
+                <!-- Button Group (Right Side) -->
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-file-excel me-1 text-success"></i> Export Excel
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-file-import me-1 text-success" ></i> Import Excel
+                    </button>
+                </div>
+            </div>
+
+            <div id="team-list">
+                @foreach (var team in Model.ExaminerTeams)
+                {
+                    <div class="card mb-3 border-0 shadow-sm">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-info me-2">Team: @team.ExaminerNumber</span>
+                                <strong>@team.SupervisorName</strong>
+                                <small class="text-muted ms-2" >(@team.Role)</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="input-group input-group-sm" style="width: 150px;">
+                                    <input type="text"
+                                           id="bmsCode_team_@team.ExaminerNumber"
+                                           value="@team.ExaminerNumber"
+                                           class="form-control form-control-sm border-end-0"
+                                           disabled>
+                                    @* <button class="btn btn-outline-secondary border-start-0"
+                                            onclick="toggleEdit('team_@team.ExaminerNumber')">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </button>
+                                    <button id="saveBtn_team_@team.ExaminerNumber"
+                                            class="btn btn-success btn-sm d-none"
+                                            onclick="saveBmsCode('team_@team.ExaminerNumber')">
+                                        <i class="fas fa-check"></i>
+                                    </button> *@
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="badge bg-secondary me-2">BMS Code</span>
+                                <span class="fw-bold">@team.ExaminerNumber</span>
+                            </div>
+
+                            @if (team.TeamMembers != null && team.TeamMembers.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>E.No</th>
+                                                <th>Name</th>
+                                                <th>Phone</th>
+                                                <th>Role</th>
+                                                <th>C.Role</th>
+                                                <th>Station</th>
+                                                <th>District</th>
+                                                <th>Province</th>
+                                                <th>Region</th>
+                                                <th>BMS Code</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                 <tbody>
+    @foreach (var member in team.TeamMembers)
+    {
+        <tr id="memberRow_@member.SubKey">
+                                                    <td>@member.ExaminerNumber</td>
+                                                    <td class="text-truncate" style="max-width: 150px;" title="@member.ExaminerName">@member.ExaminerName</td>
+                                                    <td>@member.Phone</td>
+                                                    <td style="width: 70px;">
+                <input type="text" 
+                       class="form-control form-control-sm role-input" 
+                       value="@member.Role" 
+                       data-member-id="@member.ExaminerNumber" 
+                       disabled>
+            </td>
+                                                    <td style="width: 50px;">
+                <input type="text" 
+                       class="form-control form-control-sm capturing-role-input" 
+                       value="@member.CapturingRole" 
+                       data-member-id="@member.ExaminerNumber" 
+                       disabled>
+            </td>
+            <td>
+                <input type="text" 
+                       class="form-control form-control-sm station-input" 
+                       value="@member.Station" 
+                       data-member-id="@member.ExaminerNumber" 
+                       disabled>
+            </td>
+                                                    <td style="width: 80px;">
+                <input type="text" 
+                       class="form-control form-control-sm district-input" 
+                       value="@member.District" 
+                       data-member-id="@member.ExaminerNumber" 
+                       disabled>
+            </td>
+                                                    <td style="width: 80px;">
+                <input type="text" 
+                       class="form-control form-control-sm province-input" 
+                       value="@member.Province" 
+                       data-member-id="@member.ExaminerNumber" 
+                       disabled>
+            </td>
+                                                    <td style="width: 60px;">
+                <input type="text" 
+                       class="form-control form-control-sm marking-region-input" 
+                       value="@member.MarkingRegion" 
+                       data-member-id="@member.ExaminerNumber" 
+                       disabled>
+            </td>
+                                                    <td style="width: 60px;">
+                <div class="input-group input-group-sm">
+                    <input type="text"
+                           id="bmsCode_member_@member.ExaminerNumber"
+                           value="@member.ExaminerNumber"
+                           class="form-control form-control-sm border-end-0"
+                           disabled>
+                </div>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary me-1 edit-btn"
+                        data-member-id="@member.SubKey"
+                        onclick="toggleEditMode('@member.SubKey')">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button class="btn btn-sm btn-success save-btn d-none"
+                        data-member-id="@member.SubKey"
+                        onclick="saveMemberData('@member.SubKey')">
+                    <i class="fas fa-check"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary cancel-btn d-none ms-1"
+                        data-member-id="@member.SubKey"
+                        onclick="cancelEdit('@member.SubKey')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </td>
+        </tr>
+    }
+</tbody>
+
+
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning mb-0">
+                                    <i class="fas fa-exclamation-circle me-2"></i>No team members assigned yet.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 0.5rem;
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+    .badge {
+        font-weight: 500;
+    }
+
+    .input-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+    }
+
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+    }
+
+    /* Style enhancements for the editable fields */
+    .form-control-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        border-radius: 0.2rem;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+    }
+
+    .form-control:disabled {
+        
+        border-color: #e9ecef;
+        cursor: not-allowed;
+        color: #495057;
+    }
+
+    .form-control:not(:disabled) {
+   
+        border: 1px solid #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+
+    .edit-btn {
+        transition: all 0.2s ease;
+    }
+
+        .edit-btn.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+    .save-btn, .cancel-btn {
+        transition: all 0.2s ease;
+    }
+
+        .save-btn:hover {
+            transform: scale(1.05);
+            background-color: #198754;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            transform: scale(1.05);
+            background-color: #6c757d;
+            color: white;
+        }
+
+    /* Highlight editable row */
+    tr.editing {
+        background-color: rgba(13, 110, 253, 0.05) !important;
+        box-shadow: inset 0 0 0 1px rgba(13, 110, 253, 0.2);
+    }
+
+        tr.editing td {
+            position: relative;
+        }
+
+            tr.editing td::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                pointer-events: none;
+                box-shadow: 0 0 0 1px rgba(13, 110, 253, 0.1);
+            }
+</style>
+
+<script>
+    // Enhanced toggle function with animation
+   
+
+    // Enhanced filter function with animation
+    function filterTeams() {
+        const filterValue = document.getElementById('filter').value;
+        const teams = document.querySelectorAll('.card.mb-3');
+
+        teams.forEach((team, index) => {
+            const hasMembers = team.querySelectorAll('tbody tr').length > 0;
+
+            let shouldShow = true;
+            switch (filterValue) {
+                case 'all':
+                    shouldShow = true;
+                    break;
+                case 'teams':
+                    shouldShow = hasMembers;
+                    break;
+                case 'categories':
+                    const bmsCode = team.querySelector('.badge.bg-secondary')?.nextElementSibling?.textContent.trim();
+                    shouldShow = bmsCode && bmsCode.length > 0;
+                    break;
+            }
+
+            // Animate appearance
+            if (shouldShow) {
+                team.style.display = 'block';
+                team.style.animation = `fadeIn 0.3s ease ${index * 0.05}s forwards`;
+            } else {
+                team.style.animation = `fadeOut 0.3s ease forwards`;
+                setTimeout(() => team.style.display = 'none', 300);
+            }
+        });
+    }
+
+    // Add CSS animations
+  
+</script>
+
+
+<script>
+    // Store original values when editing starts
+    const originalValues = {};
+
+    function toggleEditMode(memberId) {
+        const row = document.querySelector(`#memberRow_${memberId}`);
+        const editBtn = row.querySelector('.edit-btn');
+        const saveBtn = row.querySelector('.save-btn');
+        const cancelBtn = row.querySelector('.cancel-btn');
+
+        // Toggle edit mode
+        if (editBtn.classList.contains('active')) {
+            // Currently in edit mode, switch back to view mode
+            editBtn.classList.remove('active');
+            editBtn.innerHTML = '<i class="fas fa-pencil-alt"></i>';
+            saveBtn.classList.add('d-none');
+            cancelBtn.classList.add('d-none');
+            row.classList.remove('editing');
+
+            // Disable all inputs
+            row.querySelectorAll('input:not([readonly])').forEach(el => {
+                el.disabled = true;
+            });
+        } else {
+            // Entering edit mode
+            editBtn.classList.add('active');
+            editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+            saveBtn.classList.remove('d-none');
+            cancelBtn.classList.remove('d-none');
+            row.classList.add('editing');
+
+            // Store original values
+            originalValues[memberId] = {
+                role: row.querySelector('.role-input').value,
+                capturingRole: row.querySelector('.capturing-role-input').value,
+                station: row.querySelector('.station-input').value,
+                district: row.querySelector('.district-input').value,
+                province: row.querySelector('.province-input').value,
+                markingRegion: row.querySelector('.marking-region-input').value
+            };
+
+            // Enable all inputs
+            row.querySelectorAll('input:not([readonly])').forEach(el => {
+                el.disabled = false;
+                el.focus();
+            });
+        }
+    }
+
+    function cancelEdit(memberId) {
+        const row = document.querySelector(`#memberRow_${memberId}`);
+        const original = originalValues[memberId];
+
+        // Restore original values
+        if (original) {
+            row.querySelector('.role-input').value = original.role;
+            row.querySelector('.capturing-role-input').value = original.capturingRole;
+            row.querySelector('.station-input').value = original.station;
+            row.querySelector('.district-input').value = original.district;
+            row.querySelector('.province-input').value = original.province;
+            row.querySelector('.marking-region-input').value = original.markingRegion;
+        }
+
+        // Exit edit mode
+        row.querySelector('.edit-btn').classList.remove('active');
+        row.querySelector('.edit-btn').innerHTML = '<i class="fas fa-pencil-alt"></i>';
+        row.querySelector('.save-btn').classList.add('d-none');
+        row.querySelector('.cancel-btn').classList.add('d-none');
+        row.classList.remove('editing');
+
+        // Disable all inputs
+        row.querySelectorAll('input:not([readonly])').forEach(el => {
+            el.disabled = true;
+        });
+    }
+
+    function saveMemberData(memberId) {
+        const row = document.querySelector(`#memberRow_${memberId}`);
+
+        // Collect updated data
+        const updatedData = {
+            SubKey: memberId,
+            ExaminerNumber: row.querySelector('input[data-member-id]').dataset.memberId,
+            Role: row.querySelector('.role-input').value,
+            CapturingRole: row.querySelector('.capturing-role-input').value,
+            Station: row.querySelector('.station-input').value,
+            District: row.querySelector('.district-input').value,
+            Province: row.querySelector('.province-input').value,
+            MarkingRegion: row.querySelector('.marking-region-input').value
+        };
+
+        fetch('/ManageTeams/SaveMember', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.message || 'Data saved successfully!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    throw new Error(data.message || 'Error saving data');
+                }
+                // Exit edit mode
+                toggleEditMode(memberId);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'Error saving data!',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            });
+    }
+</script>
+

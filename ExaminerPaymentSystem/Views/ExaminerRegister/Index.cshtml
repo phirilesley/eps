@@ -1,0 +1,332 @@
+﻿@model IEnumerable<RegisterViewModel>
+
+@{
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+}
+  
+
+     <style>
+  
+    .status-approved {
+        color: white;
+        background-color: green;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-rejected {
+        color: white;
+        background-color: red;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-pending {
+        color: black;
+        background-color: orange;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+  </style>
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+   
+        <i class="fas fa-clipboard-list" style="color: #2a5a8a;"></i>
+        <h4 class="fw-bold mb-0" style="color: #153355;">
+            Attendance Register :
+            <span style="color: #2a5a8a;">@subjectCode / @paperCode
+                @if (!string.IsNullOrEmpty(regionCode))
+                {
+                    <text> Region: @regionCode</text>
+                }
+            </span>
+        </h4>
+    </div>
+    <hr style="border-top: 1px solid black;
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+@*     <div class="text-center mb-3">
+        <h4 class="fw-bold text-black">Examiner : <span class="text-black">@subjectCode / @paperCode</span></h4>
+        <hr class="border-2 border-primary w-50 mx-auto" />
+    </div> *@
+
+    <div class="card mt-4 mb-1 p-2 shadow rounded">
+        <div class="card-header">
+            <div class="row text-center">
+                <!-- Total Invited -->
+                <div class="col-6 col-md-2 mb-3">
+                    <div id="totalExaminersCounter" class="counter btn btn-primary text-white d-flex flex-column justify-content-center align-items-center py-3" style="height: 60px;" onclick="filterData('TotalInvited')">
+                        <h6 class="mb-0">Loading...</h6>
+                        <p class="mb-0">Total Invited</p>
+                    </div>
+                </div>
+                <!-- Confirmed Attending -->
+                <div class="col-6 col-md-2 mb-3">
+                    <div id="comingExaminersCounter" class="counter btn btn-success text-white d-flex flex-column justify-content-center align-items-center py-3" style="height: 60px;" onclick="filterData('ConfirmedAttending')">
+                        <h6 class="mb-0">Loading...</h6>
+                        <p class="mb-0">Confirmed</p>
+                    </div>
+                </div>
+                <!-- Pending -->
+                <div class="col-6 col-md-2 mb-3">
+                    <div id="pendingExaminersCounter" class="counter btn btn-warning text-dark d-flex flex-column justify-content-center align-items-center py-3" style="height: 60px;" onclick="filterData('Pending')">
+                        <h6 class="mb-0">Loading...</h6>
+                        <p class="mb-0">Pending</p>
+                    </div>
+                </div>
+                <!-- Not Attending -->
+                <div class="col-6 col-md-2 mb-3">
+                    <div id="notcomingExaminersCounter" class="counter btn btn-danger text-white d-flex flex-column justify-content-center align-items-center py-3" style="height: 60px;" onclick="filterData('NotAttending')">
+                        <h6 class="mb-0">Loading...</h6>
+                        <p class="mb-0">Not Attending</p>
+                    </div>
+                </div>
+                <!-- Recommended -->
+                <div class="col-6 col-md-2 mb-3">
+                    <div id="presentExaminersCounter" class="counter btn btn-info text-white d-flex flex-column justify-content-center align-items-center py-3" style="height: 60px;" onclick="filterData('Recommended')">
+                        <h6 class="mb-0">Loading...</h6>
+                        <p class="mb-0">Recommended</p>
+                    </div>
+                </div>
+                <!-- Absent -->
+                <div class="col-6 col-md-2 mb-3">
+                    <div id="absentExaminersCounter" class="counter btn btn-secondary text-white d-flex flex-column justify-content-center align-items-center py-3" style="height: 60px;" onclick="filterData('Absent')">
+                        <h6 class="mb-0">Loading...</h6>
+                        <p class="mb-0">Absent</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<div class="card p-4 shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="regTable" class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Examiner Number</th>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+
+                        <th>National ID</th>
+
+                        <th>Category</th>
+                        <th>Attendance</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    </div>
+
+
+
+
+
+    <script>
+        function updatePresence(subKey, isPresent) {
+            fetch('@Url.Action("UpdatePresence", "ExaminerRegister")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    subKey: subKey,
+                    isPresent: isPresent
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Determine the message and color based on isPresent value
+                        const statusMessage = isPresent ? 'Present' : 'Absent';
+                        const titleMessage = `Examiner ${statusMessage}`;
+                        const textMessage = `Examiner Updated ${statusMessage} Successfully.`;
+                        const backgroundColor = isPresent ? '#153355' : '#dc3545'; // Green for Present, Red for Absent
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: titleMessage,
+                            text: textMessage,
+                            showConfirmButton: false,
+                            timer: 1000, // 1 second
+                            background: backgroundColor,
+                            color: '#ffffff', // White text color for contrast
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false); // Reload table without resetting pagination
+                              updateCounts(); // Refresh counters after table reload
+                        });
+                    } else {
+                        throw new Error('Failed to update presence status.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating presence status:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: 'Failed to update presence status. Please try again.',
+                        showConfirmButton: true,
+                    });
+                });
+        }
+
+
+
+    </script>
+
+
+
+  
+            <script>
+                function updateCounts() {
+                    // Construct the URL with parameters from the ViewBag
+                    const url = `@Url.Action("CountAbsentAndPresent", "ExaminerRegister")?examCode=@ViewBag.ExamCode&subjectCode=@ViewBag.SubjectCode&paperCode=@ViewBag.PaperCode&activity=@ViewBag.Activity&regionCode=@ViewBag.RegionCode`;
+
+                    fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            const setCounterValue = (id, label, value) => {
+                                const counterElement = document.getElementById(id);
+                                if (counterElement) {
+                                    counterElement.innerHTML = `<h6 class="mb-0">${value}</h6><p class="mb-0">${label}</p>`;
+                                }
+                            };
+
+                            setCounterValue('totalExaminersCounter', 'Total Invited', data.total);
+                            setCounterValue('presentExaminersCounter', 'Recommended', data.presentCount);
+                            setCounterValue('absentExaminersCounter', 'Absent', data.absentCount);
+                            setCounterValue('comingExaminersCounter', 'Confirmed', data.comingCount);
+                            setCounterValue('notcomingExaminersCounter', 'Not Attending', data.notcomingCount);
+                            setCounterValue('pendingExaminersCounter', 'Pending', data.pendingCount);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching counts:', error);
+                        });
+                }
+
+            updateCounts();
+    
+    </script>
+
+
+
+    <script>
+        $('#regTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "lengthMenu": [
+                [10, 25, 50, 100, 250, 500, 1000],
+                [10, 25, 50, 100, 250, 500, 1000]
+            ],
+            "pageLength": 10,
+            "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                '<t>' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            "buttons": [
+                {
+                    extend: 'excelHtml5',
+                    className: 'btn btn-sm btn-success',
+                    text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'btn btn-sm btn-info',
+                    text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: 'btn btn-sm btn-danger',
+                    text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF',
+                    exportOptions: { columns: ':visible' }
+                }
+            ],
+            "ajax": {
+                url: "/ExaminerRegister/GetData",
+                type: "POST", // Use POST to send parameters in the body
+                data: function (d) {
+                    // Add your custom parameters here
+                    d.examCode = "@examCode"; // Pass examCode from ViewBag
+                    d.subjectCode = "@subjectCode"; // Pass subjectCode from ViewBag
+                    d.paperCode = "@paperCode"; // Pass paperCode from ViewBag
+                    d.activity = "@activity"; // Pass activity from ViewBag
+                    d.regionCode = "@regionCode"; // Pass regionCode from ViewBag
+                  
+                }
+            },
+            "columns": [
+                { "data": "examinerNumber", "name": "ExaminerNumber", "autoWidth": true },
+                { "data": "lastName", "name": "LastName", "autoWidth": true },
+                { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                { "data": "idNumber", "name": "IdNumber", className: "text-nowrap" },
+                { "data": "category", "name": "Category", "autoWidth": true },
+                {
+                    "data": "attendanceStatus",
+                    "name": "AttendanceStatus",
+                    "autoWidth": true,
+                    "render": function (data) {
+                        var statusClass = data === 'Yes' ? 'badge bg-success' :
+                            data === 'No' ? 'badge bg-danger' :
+                                'badge bg-warning';
+                        return `<span class="${statusClass}">${data}</span>`;
+                    }
+                },
+                {
+                    data: "status",
+                    render: function (data) {
+                        if (data === "Present") {
+                            return `<span style="color: green; font-weight: bold;">Present</span>`;
+                        } else if (data === "Absent") {
+                            return `<span style="color: red; font-weight: bold;">Absent</span>`;
+                        }
+                    }
+                },
+                {
+                    "render": function (data, type, row) {
+                        return `
+                                <div class="btn-group" role="group">
+                                    <input type="checkbox" class="text-white" style="background-color: #153355;" ${row.status === "Present" ? "checked" : ""}
+                                                onchange="updatePresence('${row.subKey}', this.checked)" />
+                                </div>`;
+                    }
+                }
+            ]
+        });
+
+        function filterData(status) {
+            var table = $('#regTable').DataTable();
+            table.ajax.url(`/ExaminerRegister/GetData?status=${encodeURIComponent(status)}`).load();
+        }
+    </script>
+
+
+
+

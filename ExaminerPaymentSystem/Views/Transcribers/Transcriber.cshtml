@@ -1,0 +1,609 @@
+﻿
+@inject SignInManager<ApplicationUser> SignInManager
+
+
+@{
+    ViewBag.Title = "Braille Transcriber";
+
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+
+}
+
+<style>
+    .card {
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-body {
+        padding: 10px;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .flex-item {
+        flex: 1 1 30%;
+        margin-right: 10px;
+    }
+
+        .flex-item label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .flex-item input, .flex-item select {
+            width: 100%;
+            padding: 5px;
+        }
+
+    .form-wrapper {
+        border: 1px solid #ced4da;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+</style>
+
+
+
+<div class="card mt-3 mb-5">
+
+    <div class="card-header">
+
+        <div class="row">
+            <div class="col-6 mt-3">
+                <h5>Transcriber Scripts</h5>
+            </div>
+            <div class="col-6 text-end mt-3">
+                <a id="saveButton" class="btn mb-3 text-white" style="background-color: #153355;">
+                    <i class="fas fa-save mr-2"></i>
+                    Save Data
+                </a>
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+
+
+
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="srcTable" class="table table-striped table-bordered table-hover">
+                <thead>
+                    <tr>
+                       
+                        <th>Last Name</th>
+                        <th>First Name</th>
+
+                        <th>ID Number</th>
+
+                        <th>Category</th>
+                
+
+                        <th>Scripts Trascribed</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+    
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    var globalExamCode = null;
+    $(document).ready(function () {
+        $('#ddlExamSession').change(function () {
+            var examcode = $(this).val();
+            globalExamCode = examcode;
+            if (examcode) {
+                $.ajax({
+                    url: '@Url.Action("GetSubjectsByExamSession", "PaperMarkingRate")',
+                    type: 'GET',
+                    data: { examcode: examcode },
+                    success: function (response) {
+                        var jsonData = response;//JSON.stringify(response);
+                        //alert(jsonData);
+                        var subjects = [];
+                        //alert('subject list declared');
+                        for (var i = 0; i < jsonData.length; i++) {
+                            var item = jsonData[i];
+                            if (item.hasOwnProperty('suB_SUBJECT_DESC') && item.hasOwnProperty('suB_SUBJECT_CODE')) {
+                                subjects.push(item.suB_SUBJECT_CODE + " " + item.suB_SUBJECT_DESC);
+                            }
+                            else {
+                                alert('property not found');
+                            }
+                        }
+                        var uniqueSubjects = new Set(subjects);
+
+                        // Convert the Set back to an array
+                        subjects = Array.from(uniqueSubjects);
+
+                        //alert(subjects);
+
+                        var dropdown = document.getElementById('ddlSubject');
+                        dropdown.innerHTML = "";
+                        var option1 = document.createElement('option');
+                        option1.text = "Select Subject";
+                        option1.value = "select_examtype";
+                        dropdown.appendChild(option1);
+                        //alert('default option appended');
+                        subjects.forEach(function (subject) {
+                            //alert('in loop');
+                            var option = document.createElement('option');
+                            //alert('option created');
+                            option.text = subject;
+                            //alert('option text added');
+                            option.value = subject.substring(0, 4);
+                            //alert('option value added')
+                            dropdown.appendChild(option);
+                            //alert('value appended');
+                        });
+                        // $('#examinerTable').hide();
+                    }
+                });
+            }
+        });
+
+        $('#ddlSubject').change(function () {
+            event.preventDefault();
+            //alert("form submission haulted");
+            var selectedSubjectFull = $(this).val();
+            var selectedSubject = selectedSubjectFull.substring(0, 4);
+            //alert(selectedSubject);
+            if (selectedSubject) {
+                //alert("value found");
+                $.ajax({
+                    url: '@Url.Action("GetPaperCodesBySubject", "PaperMarkingRate")',
+                    type: 'GET',
+                    data: {
+                        subject: selectedSubject,
+                        examcode: globalExamCode
+                    },
+                    success: function (response) {
+
+                        var jsonData = response;//JSON.stringify(response);
+                        //alert(jsonData);
+                        var paperCodes = [];
+                        //alert('subject list declared');
+                        for (var i = 0; i < jsonData.length; i++) {
+                            var item = jsonData[i];
+                            if (item.hasOwnProperty('ppR_PAPER_CODE')) {
+                                paperCodes.push(item.ppR_PAPER_CODE);
+                            }
+                            else {
+                                alert('property not found');
+                            }
+                        }
+
+                        var uniquePaperCodes = new Set(paperCodes);
+
+                        // Convert the Set back to an array
+                        paperCodes = Array.from(uniquePaperCodes);
+
+                        //here Toddy!
+
+                        var dropdown = document.getElementById('ddlPaperCode');
+                        dropdown.innerHTML = "";
+                        var option1 = document.createElement('option');
+                        option1.text = "Select Paper Code";
+                        option1.value = "select_papercode";
+                        dropdown.appendChild(option1);
+                        paperCodes.forEach(function (papercode) {
+                            var option = document.createElement('option');
+                            option.text = papercode;
+                            option.value = papercode;
+                            dropdown.appendChild(option);
+                        });
+
+                    },
+
+                });
+            }
+        });
+
+        // $('#ddlPaperCode').change(function () {
+
+        //     //add logic to choose paper here
+        // }
+
+    });
+
+
+    function validateBeforeSave() {
+        var ddlExamSession = document.getElementById("ddlExamSession").value;
+        var ddlSubject = document.getElementById("ddlSubject").value;
+        var ddlPaperCode = document.getElementById("ddlPaperCode").value;
+        var searchBms = document.getElementById("searchBmsCode").value;
+
+        const table = document.querySelector('#examinerTable');
+
+        // Get the tbody element within the table
+        const tbody = table.querySelector('tbody');
+
+        // Check if any rows are empty after trimming
+        var rowsEmpty = false;
+        tbody.querySelectorAll('tr').forEach(row => {
+            let isEmpty = !Array.from(row.cells).some(cell => {
+                if (cell.querySelector('input')) {
+                    const inputValue = cell.querySelector('input').value.trim();
+                    if (inputValue === '') {
+                        rowsEmpty = true;
+                        return true; // Terminate execution when input value is empty
+                    }
+                } else {
+                    const cellContent = cell.textContent.trim();
+                    if (cellContent === '') {
+                        rowsEmpty = true;
+                        return true; // Terminate execution when cell content is empty
+                    }
+                }
+                return false; // Continue checking other cells
+            });
+
+
+        });
+        /* if (rowsEmpty) {
+             //alert('Some cells have empty values. Execution terminated.');
+             Swal.fire({
+                 title: "Empty fields!",
+                 text: "Some cells have empty values. Execution terminated.",
+                 icon: "error"
+             });
+             event.preventDefault();
+             return;
+         } else {
+             //alert('all values available.');
+             postToController(); // Call postToController function if all values are not empty
+         }*/
+        postToController();
+    }
+
+
+    function postToController() {
+        event.preventDefault();
+        var ddlExamSession = document.getElementById("ddlExamSession").value;
+        var ddlSubject = document.getElementById("ddlSubject").value;
+        var ddlPaperCode = document.getElementById("ddlPaperCode").value;
+        var searchBms = document.getElementById("searchBmsCode").value;
+
+        // Get the table element
+        const table = document.querySelector('#examinerTable');
+
+        // Get the thead and tbody elements within the table
+        const thead = table.querySelector('thead');
+        const tbody = table.querySelector('tbody');
+
+        // Extract the column headers
+        const headers = Array.from(thead.querySelectorAll('th')).map(header => header.textContent.trim());
+
+
+        headers[0] = "EMS_EXAMINER_NUMBER";
+        headers[1] = "EMS_EXAMINER_NAME";
+        headers[2] = "EMS_NATIONAL_ID";
+        headers[3] = "EMS_MARKING_REG_CODE";
+        headers[4] = "EMS_ECT_EXAMINER_CAT_CODE";
+        headers[5] = "EMS_EXM_SUPERORD";
+        headers[6] = "EMS_EXAMINER_CODE";
+        headers[7] = "SCRIPTS_MARKED";
+
+
+
+        var proceed = true;
+        // Extract the cell values and format into JSON
+        const tableData = [];
+        tbody.querySelectorAll('tr').forEach(row => {
+            const rowData = {};
+            Array.from(row.cells).forEach((cell, index) => {
+                if (cell.querySelector('input')) {
+                    //if (cell.querySelector('input').value.trim() % 1 == 0)
+                    if (isNaN(cell.querySelector('input').value.trim())) {
+                        proceed = false;
+                        //alert("value " + cell.querySelector('input').value.trim() + " is not a valid number");
+                        //if (isNaN(cell.querySelector('input').value.trim())) {
+                    }
+                    else {
+                        rowData[headers[index]] = cell.querySelector('input').value.trim();
+                        proceed = true;
+                        //alert("value " + cell.querySelector('input').value.trim() + " is a valid number");
+                    }
+                }
+                else {
+                    rowData[headers[index]] = cell.textContent.trim();
+                }
+            });
+            tableData.push(rowData);
+        });
+
+        var newEMS_SUB_SUB_ID = globalExamCode + "" + ddlSubject.slice(0, 4);
+
+        // Add the values from the select elements to the JSON data
+        const jsonData = {
+            SUBJECT_CODE: ddlSubject.substring(0, 4),
+            PAPER_CODE: ddlPaperCode,
+            Exam_Code: ddlExamSession,
+            tableData: tableData.map(item => ({
+                ...item,
+
+                SCRIPTS_MARKED: parseInt(item.SCRIPTS_MARKED) || null // Convert to integer or null
+            }))
+        };
+
+        // Stringify the JSON data
+        const jsonString = JSON.stringify(jsonData);
+        //alert(jsonString);
+
+        // AJAX to save to DB
+
+        if (proceed) {
+            $.ajax({
+                url: '@Url.Action("InsertExaminerTransactions", "ExaminerScriptsMarked")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: jsonString, // Ensure that the JSON data is stringified before sending
+                success: function (response) {
+                    //alert(jsonString);
+                    // Check if response has success and message properties
+                    if (response.success) {
+                        //alert(response.message); // Display the message from the response
+                        Swal.fire({
+                            title: "Information updated!",
+                            text: "Information for examiners has been successfully updated",
+                            icon: "success"
+                        });
+                    } else {
+                        //alert(response.message);
+                        Swal.fire({
+                            title: "Information not updated!",
+                            text: "Information not updated, please try again",
+                            icon: "error"
+                        });
+                    }
+                },
+                error: function () {
+                    //alert("Error occurred while saving data!");
+                    Swal.fire({
+                        title: "Error!",
+                        text: "An error occured whilst servicing request, please try again.",
+                        icon: "error"
+                    });
+                }
+            });
+        }
+        else {
+            event.preventDefault();
+            Swal.fire({
+                title: "input value not allowed!",
+                text: "Please ensure that values put are valid numbers",
+                icon: "error"
+            });
+            return;
+        }
+
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        var table = $('#srcTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                url: "/ExaminerScriptsMarked/GetTData",
+                type: "POST",
+                data: function (d) {
+                    d.examCode = $('#ddlExamSession').val();
+                    d.subjectCode = $('#ddlSubject').val();
+                    d.paperCode = $('#ddlPaperCode').val();
+                    d.bmsCode = $('#searchBmsCode').val();
+                }
+            },
+            "columns": [
+             
+                { "data": "lastName", "name": "LastName", "autoWidth": true },
+                { "data": "firstName", "name": "FirstName", "autoWidth": true },
+
+                { "data": "idNumber", "name": "IdNumber", "autoWidth": true },
+
+                { "data": "category", "name": "Category", "autoWidth": true },
+           
+
+                {
+                    "data": "scriptMarked",
+                    "name": "ScriptsMarked",
+                    "autoWidth": true,
+                    "render": function (data, type, row) {
+                        return `
+                                <div class="btn-group" role="group">
+                                    <input type="text" name="scriptsMarked" class="form-control" value="${data != null ? data : ''}" />
+                                    <input type="hidden" name="subKey" value="${row.subKey}" />
+                                    <input type="hidden" name="examinerCode" value="${row.examinerCode}" />
+                                </div>
+                            `;
+                    }
+                }
+            ]
+        });
+
+        $('#searchButton').click(function () {
+            table.ajax.reload();
+        });
+
+        function saveData(showAlert) {
+            var tableData = [];
+            $('#srcTable tbody tr').each(function () {
+                var row = $(this);
+                var rowData = {
+                 
+                    lastName: row.find('td').eq(0).text(),
+                    firstName: row.find('td').eq(1).text(),
+
+                    idNumber: row.find('td').eq(2).text(),
+
+                    category: row.find('td').eq(3).text(),
+                
+
+                    scriptMarked: row.find('input[name="scriptsMarked"]').val(),
+                    subKey: row.find('input[name="subKey"]').val(),
+                    examinerCode: row.find('input[name="examinerCode"]').val()
+                };
+                tableData.push(rowData);
+            });
+
+            $.ajax({
+                url: '/ExaminerScriptsMarked/SaveATData',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(tableData),
+                success: function (response) {
+                    if (showAlert) {
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Saved!',
+                                text: 'Data has been saved successfully.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(function () {
+                                // Reload the page after the user clicks "OK"
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', 'Error saving data: ' + response.message, 'error');
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    if (showAlert) {
+                        Swal.fire('Error!', 'An error occurred: ' + error, 'error');
+                    }
+                }
+            });
+        }
+
+        $('#saveButton').click(function () {
+            saveData(true);
+        });
+
+        table.on('page.dt', function () {
+            saveData(false);
+        });
+    });
+</script>
+
+
+<script>
+    function searchExaminers() {
+        event.preventDefault();
+
+        var subjectCode = document.getElementById("ddlSubject").value.trim();
+        var paperCode = document.getElementById("ddlPaperCode").value.trim();
+
+
+        $.ajax({
+            url: '@Url.Action("GetTeamByBms", "ExaminerScriptsMarked")',
+            type: 'GET',
+            dataType: 'json',
+            data: $(searchForm).serialize(), // Serialize form data
+            success: function (response) {
+                const table = document.querySelector('#examinerTable');
+                const tbody = table.querySelector('tbody');
+
+                // Clear existing table rows
+                tbody.innerHTML = '';
+
+                // Check if response contains data
+                if (response && response.length > 0) {
+                    $('#examinerTable').show();
+                    response.forEach(examiner => {
+                        // Construct table row for each examiner
+                        var newRow = "<tr>" +
+
+                            "<td>" + examiner.emS_EXAMINER_NUMBER + "</td>" +
+                            "<td>" + examiner.emS_EXAMINER_NAME + "</td>" +
+                            "<td>" + examiner.emS_NATIONAL_ID + "</td>" +
+                            "<td>" + examiner.emS_MARKING_REG_CODE + "</td>" +
+                            "<td>" + examiner.emS_ECT_EXAMINER_CAT_CODE + "</td>" +
+                            "<td>" + examiner.emS_EXM_SUPERORD + "</td>" +
+                            "<td>" + examiner.emS_EXAMINER_CODE + "</td>" +
+                            "<td>" + '<input type="text" name="SCRIPTS_MARKED" class="form-control" value="' + (examiner.scriptS_MARKED || '') + '"/>' + "</td>" +
+                            "</tr>";
+                        // Append row to table body
+                        tbody.innerHTML += newRow;
+                    });
+
+                    // Enable the save button after fetching data
+                    $('#saveButton').prop('disabled', false);
+
+                    // Update the Number of Candidates field
+                    updateNumberOfCandidates(subjectCode, paperCode);
+                } else {
+                    // Display message when no data found
+                    var newRow = "<tr><td colspan='7'>No data available for this BMS Code.</td></tr>";
+                    tbody.innerHTML = newRow;
+
+                    // Disable the save button when no data found
+                    $('#saveButton').prop('disabled', true);
+
+                    // Clear number of candidates if no data found
+                    $('#numberOfCandidates').html('');
+                }
+            },
+            error: function () {
+                console.error("Error occurred while searching for examiners!");
+            }
+        });
+    }
+
+    function updateNumberOfCandidates(subjectCode, paperCode) {
+        // Perform AJAX request to fetch number of candidates
+        $.ajax({
+            url: '@Url.Action("GetNumberOfCandidatesBySubjectComponent", "Apportionment")',
+            type: 'GET',
+            data: {
+                subjectCode: subjectCode,
+                paperCode: paperCode
+            },
+            success: function (response) {
+                // Check if response is an array and not empty
+                if (Array.isArray(response) && response.length > 0) {
+                    // Assuming response is an array of objects, update UI with first item's number of candidates
+                    $('#numberOfCandidates').html('Apportioned Scripts: ' + response[0].numbeR_OF_CANDIDATES);
+                } else {
+                    // Handle case where response is empty or not as expected
+                    $('#numberOfCandidates').html('No data available.');
+                }
+            },
+            error: function () {
+                console.error("Error occurred while fetching number of candidates!");
+                $('#numberOfCandidates').html('Error occurred while fetching data.');
+            }
+        });
+    }
+
+
+
+</script>

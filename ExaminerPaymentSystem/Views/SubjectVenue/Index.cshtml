@@ -1,0 +1,243 @@
+﻿@model ExaminerPaymentSystem.Models.Other.SubjectVenue
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+@inject IActivityRepository activityRepo
+@inject IVenueRepository venueRepo
+
+@{
+    ViewBag.Title = "Manage Subject Venue";
+    IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+    IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+    IEnumerable<Venue> venues = await venueRepo.VenuesGetAll();
+    var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+    IEnumerable<Activity> activities = await activityRepo.GetAllActivitiesAsync();
+    int currentYear = DateTime.Now.Year;
+    int lastYear = currentYear - 1;
+
+    string examCode = ViewBag.SelectedExamCode ?? "";
+    string subjectCode = ViewBag.SelectedSubjectCode ?? "";
+    string paperCode = ViewBag.SelectedPaperCode ?? "";
+    string regionCode = ViewBag.SelectedRegionCode ?? "";
+
+}
+
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-marker" style="color: #2a5a8a;"></i>
+        <h4 class="fw-bold mb-0" style="color: #153355;">
+            Subject Venue: Marking at This Venue
+        </h4>
+    </div>
+    <hr style="border-top: 1px solid black;
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+<!-- Flash Messages -->
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<!-- Search Form -->
+<form id="searchForm" asp-action="SearchSubjectVenue" method="post" class="needs-validation mb-5" novalidate>
+    <div class="border rounded p-4 shadow-sm bg-light">
+        <div class="row g-3">
+            <!-- Exam Session Filter -->
+            <div class="col-md-3">
+                <label for="filterExamCode" class="form-label">Exam Session</label>
+                <select class="form-select" id="filterExamCode" name="examCode" required>
+                    <option value="">-- Select Session --</option>
+                    @foreach (var examCod in examCodes)
+                    {
+                        if (int.TryParse(examCod.EXM_EXAM_YEAR, out int examYear))
+                        {
+                            if (examCod.ACTIVATED_SESSION == "Activated")
+                            {
+                                <option value="@examCod.EXM_EXAM_CODE">@examCod.EXM_EXAM_LEVEL @examCod.EXM_EXAM_SESSION @examCod.EXM_EXAM_YEAR</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Subject Code Filter -->
+            <div class="col-md-3">
+                <label for="filterSubject" class="form-label">Subject Code</label>
+                <select class="form-select" id="filterSubject" name="subjectCode" required>
+                    <option value="">-- Select Subject --</option>
+                </select>
+            </div>
+
+            <!-- Paper Code Filter -->
+            <div class="col-md-3">
+                <label for="filterPaperCode" class="form-label">Paper Code</label>
+                <select class="form-select" id="filterPaperCode" name="paperCode" required>
+                    <option value="">-- Select Paper Code --</option>
+                </select>
+            </div>
+
+            <!-- Region Code Filter -->
+            <div class="col-md-3">
+                <div class="form-group" id="filterRegionCodeContainer" style="display: none;">
+                    <label for="filterRegionCode" class="form-label">Region Code</label>
+                    <select id="filterRegionCode" name="regionCode" class="form-select">
+                        <option value="">-- Select Region Code --</option>
+                        <option value="01">01 - Harare</option>
+                        <option value="02">02 - Manicaland</option>
+                        <option value="03">03 - Mashonaland East</option>
+                        <option value="04">04 - Matabeleland North</option>
+                        <option value="05">05 - Midlands</option>
+                        <option value="06">06 - Masvingo</option>
+                        <option value="07">07 - Mashonaland Central</option>
+                        <option value="08">08 - Mashonaland West</option>
+                        <option value="09">09 - Matabeleland South</option>
+                        <option value="10">10 - Bulawayo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="text-end mt-4">
+            <button class="btn text-white" style="background-color:#153355;" type="submit">
+                <i class="fas fa-search me-2"></i>Search
+            </button>
+        </div>
+    </div>
+</form>
+
+<script>
+    $(document).ready(function () {
+        var subjects = @Html.Raw(subjectArray);
+
+        // Function to populate subject dropdown based on selected exam code
+        $('#filterExamCode').change(function () {
+            var selectedExamCode = $(this).val();
+            var subjectSelect = $('#filterSubject');
+            subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+            // Filter subjects based on selected exam code and remove duplicates
+            var uniqueSubjects = {};
+            subjects.forEach(function (subject) {
+                var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                if (subSubIdPrefix === selectedExamCode) {
+                    uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                }
+            });
+
+            // Populate subject dropdown with unique subjects
+            Object.keys(uniqueSubjects).forEach(function (key) {
+                var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                console.log("Appended subject: " + key);
+            });
+        });
+
+        // Function to populate paper code dropdown based on selected subject
+        $('#filterSubject').change(function () {
+            var selectedSubjectId = $(this).val();
+            var paperCodeSelect = $('#filterPaperCode');
+            paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+            if (selectedSubjectId && selectedSubjectId.length >= 4) {
+                var subjectCheck = selectedSubjectId.substring(3, 4);
+
+
+                if (subjectCheck === '7') {
+                    $('#filterRegionCodeContainer').show();
+                    $('#filterRegionCode').attr('required', 'required');
+                } else {
+
+                    $('#filterRegionCodeContainer').hide();
+                    $('#filterRegionCode').removeAttr('required');
+                }
+            } else {
+                $('#filterRegionCodeContainer').hide();
+                $('#filterRegionCode').removeAttr('required');
+            }
+
+            if (selectedSubjectId) {
+                // Make an AJAX call to get the paper codes
+                $.ajax({
+                    url: '@Url.Action("GetPaperCodes", "Subjects")',
+                    type: 'GET',
+                    data: { subjectCode: selectedSubjectId },
+                    success: function (data) {
+                        data.forEach(function (paperCode) {
+                            paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching paper codes: " + error);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<!-- Update Form (Only appears after a search) -->
+@if (ViewBag.ShowUpdateForm != null && (bool)ViewBag.ShowUpdateForm)
+{
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+    <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+        <!-- Optional heading -->
+    </div>
+        <form asp-action="SaveSubjectVenue" method="post">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" name="examCode" value="@examCode" />
+        <input type="hidden" name="subject" value="@subjectCode" />
+        <input type="hidden" name="paperCode" value="@paperCode" />
+        <input type="hidden" name="region" value="@regionCode" />
+
+        <div class="card mt-3 shadow-sm">
+                <div class="card-header  text-white" style="background-color:#153355;">
+                <strong>Update Venue for @subjectCode/@paperCode -
+                    @if (!string.IsNullOrEmpty(regionCode))
+                    {
+                        <text> Region: @regionCode</text>
+                    }
+
+                </strong>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Venue</label>
+                    <select asp-for="Venue" class="form-select" required>
+                        <option value="">-- Select Venue --</option>
+                            @if (ViewBag.Venues != null)
+                            {
+                                foreach (var venue in ViewBag.Venues)
+                                {
+                                    <option value="@venue.Value"
+                                            selected="@(Model?.Venue != null && Model.Venue == venue.Value ? "selected" : null)">
+                                        @venue.Text
+                                    </option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="" disabled>No venues available</option>
+                            }
+
+                    </select>
+                </div>
+
+                    <button type="submit" class="btn text-white" style="background-color:#153355;">
+                    <i class="fas fa-save me-2"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </form>
+    </div>
+}
+
+

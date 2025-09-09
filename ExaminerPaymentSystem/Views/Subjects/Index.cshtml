@@ -1,0 +1,63 @@
+﻿@model Subjects
+@{
+    ViewBag.Title = "Subjects";
+}
+
+
+@using (Html.BeginForm())
+{
+    <div class="form-container">
+        <h2>Subjects</h2>
+
+        <div class="separator"></div>
+
+        <div class="form-group">
+            @Html.Label("ExaminerCode", "Select Exam Session: ")
+            @Html.DropDownList("ExaminerCode", new SelectList(ViewBag.ExamCodes, "EXM_EXAM_CODE", "ExamCaption"), "", new { @class = "form-control", id = "ddlExamSession" })
+            @Html.Label("SubjectCode", "Select Subject: ")
+            <select id="ddlSubject" name="SubjectCode" class="form-control"></select>
+
+        </div>
+
+    </div>
+}
+
+<script>
+    var globalExamCode = null;
+    $(document).ready(function () {
+        $('#ddlExamSession').change(function () {
+            var examcode = $(this).val();
+            globalExamCode = examcode;
+            if (examcode) {
+                $.ajax({
+                    url: '@Url.Action("GetSubjectsByExamSession", "Subjects")',
+                    type: 'GET',
+                    data: { examcode: examcode },
+                    success: function (response) {
+                        var jsonData = response;
+                        var subjects = [];
+                        for (var i = 0; i < jsonData.length; i++) {
+                            var item = jsonData[i];
+                            if (item.hasOwnProperty('SUB_SUBJECT_DESC') && item.hasOwnProperty('SUB_SUBJECT_CODE') && item.hasOwnProperty('SUB_SUB_ID')) {
+                                subjects.push(item.SUB_SUBJECT_CODE + " " + item.SUB_SUBJECT_DESC);
+                            }
+                        }
+                        var dropdown = document.getElementById('ddlSubject');
+                        dropdown.innerHTML = "";
+                        var option1 = document.createElement('option');
+                        option1.text = "Select Subject";
+                        option1.value = "select_examtype";
+                        dropdown.appendChild(option1);
+                        subjects.forEach(function (subject) {
+                            var option = document.createElement('option');
+                            option.text = subject;
+                            option.value = subject;
+                            dropdown.appendChild(option);
+                        });
+                        $('#paperTable').hide();
+                    }
+                });
+            }
+        });
+
+</script>

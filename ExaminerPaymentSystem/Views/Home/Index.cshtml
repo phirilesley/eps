@@ -1,0 +1,1634 @@
+﻿@using ExaminerPaymentSystem.Data
+@using Microsoft.AspNetCore.Identity
+@using System.Web.Helpers
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject Microsoft.Extensions.Options.IOptions<AppInfo> AppInfo
+
+@{
+    ViewData["Title"] = "Dashboard";
+
+    // Serialize data for JavaScript using Json.Serialize (built-in in ASP.NET Core)
+    var regionsJson = Json.Serialize(ViewBag.Regions);
+    var clusterDataJson = Json.Serialize(ViewBag.ClusterData);
+    var weeklyPresentJson = ViewBag.WeeklyPresentJson ?? "[]";
+}
+
+
+
+<style>
+    .btn-outline-custom {
+        border-color: #153355;
+        background-color: transparent;
+        transition: background-color 0.3s ease;
+    }
+
+        .btn-outline-custom:hover {
+            background-color: #153355;
+            color: #fff;
+        }
+
+    .welcome-text {
+        font-weight: 350; /* Coral color */
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use a suitable font family */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* Add a subtle text shadow */
+
+    }
+
+    .btn-outline-custom {
+        color: #153355;
+        border-color: #153355;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-custom:hover {
+            color: white;
+            background-color: #153355;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(21, 51, 85, 0.2);
+        }
+
+        .btn-outline-custom:active {
+            transform: translateY(0);
+        }
+
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e9ecef;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        height: 100%;
+    }
+
+        .stats-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+    .card-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .card-icon {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 1.5rem;
+        opacity: 0.2;
+        color: #6c757d;
+    }
+
+    .trend {
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Responsive adjustments */
+    @@media (max-width: 576px) {
+        .card-value
+
+    {
+        font-size: 1.5rem;
+    }
+
+    .stats-card {
+        padding: 1rem;
+    }
+
+    }
+    
+</style>
+
+@if (@AppInfo.Value.SystemName == "Exam Monitors System")
+{
+    @if (SignInManager.IsSignedIn(User))
+    {
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <style>
+            :root {
+                --primary: #153355;
+                --secondary: #4a7cbb;
+                --accent: #4e73df;
+                --light: #f8f9fc;
+                --dark: #2e3a59;
+                --success: #1cc88a;
+                --info: #36b9cc;
+                --warning: #f6c23e;
+                --danger: #e74a3b;
+            }
+
+            body {
+                background-color: #f8f9fc;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            
+            }
+
+            .dashboard-container {
+                max-width: 1600px;
+                margin: 0 auto;
+            }
+
+            .dashboard-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #e3e6f0;
+            }
+
+            .stats-card {
+                background: white;
+                border-radius: 8px;
+                padding: 15px;
+                box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+                transition: transform 0.2s;
+                height: 100%;
+            }
+
+                .stats-card:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+                }
+
+                .stats-card .card-value {
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    color: var(--primary);
+                    margin: 5px 0;
+                }
+
+                .stats-card .card-label {
+                    font-size: 0.8rem;
+                    color: #6e707e;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+
+                .stats-card .card-icon {
+                    position: absolute;
+                    right: 15px;
+                    top: 15px;
+                    opacity: 0.2;
+                    font-size: 1.5rem;
+                    color: var(--primary);
+                }
+
+                .stats-card .trend {
+                    font-size: 0.75rem;
+                    margin-top: 5px;
+                }
+
+            .chart-container {
+                background: white;
+                border-radius: 8px;
+                padding: 15px;
+                box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+                margin-bottom: 15px;
+                height: 100%;
+            }
+
+            .chart-title {
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: var(--primary);
+                margin-bottom: 10px;
+            }
+
+            .stats-table {
+                width: 100%;
+                font-size: 0.85rem;
+            }
+
+                .stats-table th {
+                    background-color: #f8f9fc;
+                    padding: 8px;
+                    text-align: left;
+                    font-weight: 600;
+                    color: var(--primary);
+                    font-size: 0.8rem;
+                }
+
+                .stats-table td {
+                    padding: 8px;
+                    border-bottom: 1px solid #e3e6f0;
+                    font-size: 0.8rem;
+                }
+
+                .stats-table tr:hover {
+                    background-color: #f8f9fc;
+                }
+
+            .section-title {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: var(--primary);
+                margin: 20px 0 15px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #e3e6f0;
+            }
+
+            .logo-container {
+                display: flex;
+                align-items: center;
+            }
+
+            .logo {
+                height: 40px;
+                margin-right: 10px;
+            }
+
+            .system-name {
+                font-weight: 700;
+                color: var(--primary);
+                font-size: 1.5rem;
+            }
+
+            .filter-btn {
+                background: white;
+                border: 1px solid #e3e6f0;
+                border-radius: 6px;
+                padding: 8px 15px;
+                font-size: 0.9rem;
+                color: var(--primary);
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+                .filter-btn:hover {
+                    background: #f8f9fc;
+                    border-color: var(--primary);
+                }
+
+            .filter-modal {
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 0.5rem 3rem rgba(0, 0, 0, 0.2);
+                z-index: 1050;
+                width: 90%;
+                max-width: 500px;
+                padding: 20px;
+            }
+
+            .filter-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1040;
+            }
+
+            .region-filter {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
+                .region-filter li {
+                    padding: 8px 0;
+                    border-bottom: 1px solid #f8f9fc;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+
+                    .region-filter li:hover {
+                        background-color: #f8f9fc;
+                        padding-left: 5px;
+                    }
+
+                    .region-filter li.active {
+                        background-color: #eef2f8;
+                        color: var(--primary);
+                        font-weight: 600;
+                        padding-left: 10px;
+                    }
+
+            .compact-chart-container {
+                height: 220px;
+            }
+
+            .compact-table-container {
+                max-height: 250px;
+                overflow-y: auto;
+            }
+
+            .loading-spinner {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100px;
+            }
+
+            .filter-tag {
+                display: inline-block;
+                background: #eef2f8;
+                border-radius: 15px;
+                padding: 3px 10px;
+                margin: 0 5px 5px 0;
+                font-size: 0.8rem;
+            }
+
+                .filter-tag i {
+                    margin-left: 5px;
+                    cursor: pointer;
+                }
+        </style>
+
+        <div class="dashboard-container mt-3">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div class="logo-container">
+
+                    <span class="system-name">Dashboard</span>
+                </div>
+                <div>
+
+                    @if (User.IsInRole("RegionalManager") || User.IsInRole("HR") || User.IsInRole("Admin") || User.IsInRole("PeerReviewer") || User.IsInRole("Accounts"))
+        {
+
+                    <span class="me-3 text-muted" style="font-size: 0.9rem;" id="lastUpdated">Last updated: Loading...</span>
+   
+                    <button class="btn btn-sm btn-outline-primary me-2">
+                        <i class="fas fa-download me-1"></i>Export
+                    </button>
+        }
+                    @if (User.IsInRole("AssistantClusterManager"))
+        {
+                        <span class="me-3 text-muted" style="font-size: 0.9rem;" id="centreAttached">Centre Attached: Loading...</span>
+
+                        <form asp-controller="Contract" asp-action="DownloadAssistantContract" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fas fa-download me-1"></i>Download Contract
+                            </button>
+                        </form>
+        }
+
+                    @if (User.IsInRole("ClusterManager"))
+                    {
+                        <span class="me-3 text-muted" style="font-size: 0.9rem;" id="centreAttached">Centre Attached: Loading...</span>
+     
+                        <form asp-controller="Contract" asp-action="DownloadManagerContract" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-primary me-2">
+                                <i class="fas fa-download me-1"></i>Download Contract
+                            </button>
+                        </form>
+                     
+                    }
+
+                    @if(User.IsInRole("ResidentMonitor")){
+
+                        <span class="me-3 text-muted" style="font-size: 0.9rem;" id="centreAttached">Centre Attached: Loading...</span>
+                    <form asp-controller="Contract" asp-action="DownloadResidentMonitorContract" method="post">
+                        <button type="submit" class="btn btn-sm btn-outline-primary me-2">
+                            <i class="fas fa-download me-1"></i>Download Contract
+                        </button>
+                    </form>
+        
+        }
+
+                    @if (User.IsInRole("RegionalManager") || User.IsInRole("HR") || User.IsInRole("Admin") || User.IsInRole("PeerReviewer") || User.IsInRole("Accounts"))
+        {
+
+                        <button class="filter-btn" id="filterToggle">
+                        <i class="fas fa-filter me-1"></i>Filters
+                    </button>
+
+        }
+                </div>
+            </div>
+
+            <!-- Active Filters Display -->
+            <div id="activeFilters" class="mb-3" style="display: none;">
+                <span class="me-2 small">Active filters:</span>
+            </div>
+
+            <!-- Filter Modal -->
+            <div class="filter-overlay" id="filterOverlay"></div>
+            <div class="filter-modal" id="filterModal">
+                <h5 class="mb-3">Filter Dashboard</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label small">Date Range</label>
+                            <input type="date" class="form-control form-control-sm" id="dateFrom" value="2025-08-20">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label small">To</label>
+                            <input type="date" class="form-control form-control-sm" id="dateTo" value="2025-08-30">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small">Filter by Region</label>
+                    <ul class="region-filter" id="regionList">
+                        <li class="active" data-region="all">All Regions</li>
+                        <!-- Regions will be populated from server data -->
+                    </ul>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button class="btn btn-sm btn-light me-2" id="closeFilter">Cancel</button>
+                    <button class="btn btn-sm btn-primary" id="applyFilter">Apply Filters</button>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Main Content (initially hidden) -->
+            <div id="dashboardContent" style="display: none;" class="mb-3">
+
+                @if (User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Directorate"))
+                {
+                    <!-- Monitor Stats -->
+                    <div class="section-title">Monitor Statistics</div>
+                    <div class="row g-2 mb-3" id="monitorStats">
+                        <!-- Cards will be populated by JavaScript -->
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <div class="chart-title">Monitor Distribution by Type</div>
+                                <div class="compact-chart-container">
+                                    <canvas id="monitorTypeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <div class="chart-title">Daily Attendance This Week</div>
+                                <div class="compact-chart-container">
+                                    <canvas id="attendanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (User.IsInRole("RegionalManager"))
+                {
+                    <!-- Monitor Stats -->
+                    <div class="section-title">Monitor Statistics</div>
+                    <div class="row g-2 mb-3" id="remmonitorStats">
+                        <!-- Cards will be populated by JavaScript -->
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <div class="chart-title">Monitor Distribution by Type</div>
+                                <div class="compact-chart-container">
+                                    <canvas id="monitorTypeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="chart-container">
+                                <div class="chart-title">Daily Attendance This Week</div>
+                                <div class="compact-chart-container">
+                                    <canvas id="attendanceChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @if (User.IsInRole("PeerReviewer") || User.IsInRole("Accounts"))
+                {
+                    <!-- Accounts Stats -->
+                    <div class="section-title">Accounts Statistics</div>
+                    <div class="row g-2 mb-3" id="accountStats">
+                        <!-- Cards will be populated by JavaScript -->
+                    </div>
+
+                    <!-- Claims Details -->
+                    <div class="row g-2">
+                        <div class="col-lg-6">
+                    <div class="chart-container">
+                        <div class="chart-title">Claims Status by Initiator</div>
+                        <div class="compact-chart-container">
+                            <canvas id="initiatorChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <div class="chart-title">Approval Rate by Reviewer</div>
+                        <div class="compact-table-container">
+                            <table class="stats-table" id="reviewerTable">
+                                <thead>
+                                    <tr>
+                                        <th>Reviewer</th>
+                                        <th>Claims Reviewed</th>
+                                        <th>Approval Rate</th>
+                                        <th>Avg. Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            }
+
+                @if (User.IsInRole("ResidentMonitor") || User.IsInRole("ClusterManager") || User.IsInRole("AssistantClusterManager"))
+        {
+                    <!-- Accounts Stats -->
+                    <div class="section-title" id="roleStatsHeading">Monitor Statistics</div>
+                    <div class="row g-2 mb-3" id="exmonitorStats">
+                        <!-- Cards will be populated by JavaScript -->
+                    </div>
+
+        }
+
+        </div>
+    </div>
+
+        <script>
+            const serverData = @Html.Raw(ViewBag.ServerDataJson);
+            serverData.lastUpdated = new Date().toLocaleString();
+             
+            console.log("Server data loaded:", serverData);
+
+            let monitorTypeChart = null;
+let attendanceChart = null;
+let initiatorChart = null;
+
+            // Filter state
+            let activeFilters = {
+                region: "all",
+                dateFrom: "2025-08-08",
+                dateTo: "2025-08-31"
+            };
+
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log("DOMContentLoaded fired");
+
+                // Show loading spinner initially
+                const loadingSpinner = document.getElementById('loadingSpinner');
+                const dashboardContent = document.getElementById('dashboardContent');
+
+                // Check if serverData is ready
+                function checkServerDataReady() {
+                    if (typeof serverData !== 'undefined' && serverData.regions && Array.isArray(serverData.regions)) {
+                        // Data is ready, initialize dashboard
+                        loadingSpinner.style.display = 'none';
+                        dashboardContent.style.display = 'block';
+                        initializeDashboard();
+                    } else {
+                        // Data not ready yet, check again
+                        console.log("Waiting for serverData to be ready...");
+                        setTimeout(checkServerDataReady, 100);
+                    }
+                }
+
+                // Start checking if serverData is ready
+                checkServerDataReady();
+
+                function initializeDashboard() {
+                    console.log("Initializing dashboard with regions:", serverData.regions);
+
+                   // Update last updated timestamp - check if element exists
+             const lastUpdatedEl = document.getElementById('lastUpdated');
+             if (lastUpdatedEl) {
+                 lastUpdatedEl.textContent = `Last updated: ${serverData.lastUpdated}`;
+             }
+
+             // Update centre attached - check if element exists
+                      // Update centre attached - check if element exists
+            const centreAttachedEl = document.getElementById('centreAttached');
+            if (centreAttachedEl && serverData.centreAttached) {
+                centreAttachedEl.textContent = `Centre Attached: ${serverData.centreAttached}`;
+            } else if (centreAttachedEl) {
+                centreAttachedEl.textContent = `Centre Attached: Not assigned`;
+            }
+
+                    // Populate regions filter
+                    const regionList = document.getElementById('regionList');
+                    if (regionList && serverData.regions && Array.isArray(serverData.regions)) {
+                        serverData.regions.forEach(region => {
+                            const li = document.createElement('li');
+                            li.textContent = region;
+                            li.setAttribute('data-region', region);
+                            regionList.appendChild(li);
+                        });
+
+                        // Set up region filter click events
+                        const regionItems = regionList.querySelectorAll('li');
+                        regionItems.forEach(item => {
+                            item.addEventListener('click', function() {
+                                regionItems.forEach(i => i.classList.remove('active'));
+                                this.classList.add('active');
+                                activeFilters.region = this.getAttribute('data-region');
+                            });
+                        });
+                    } else {
+                        console.error("Regions data is not available or not an array");
+                    }
+
+                    // Only populate elements that exist in the DOM based on user role
+                    const monitorStats = document.getElementById('monitorStats');
+                    if (monitorStats) {
+                        populateMonitorStats();
+                    }
+
+                        const remmonitorStats = document.getElementById('remmonitorStats');
+                    if (remmonitorStats) {
+                        populateRemMonitorStats();
+                    }
+
+                    const accountStats = document.getElementById('accountStats');
+                    if (accountStats) {
+                        populateAccountStats();
+                    }
+
+
+                      const exmonitorStats = document.getElementById('exmonitorStats');
+             if (exmonitorStats) {
+                 populateExMonitorStats();
+             }
+
+                      // Update role-based heading
+            updateRoleBasedHeading();
+                    // Initialize charts only if their canvas elements exist
+                    initCharts();
+
+                    // Set up filter modal functionality
+                    setupFilterModal();
+                }
+
+                 function populateExMonitorStats() {
+                const exmonitorStats = document.getElementById('exmonitorStats');
+                if (!exmonitorStats) return;
+
+                // Add safety checks for all values with proper PascalCase names
+                const totalDays = serverData.totalDays || 0;
+                const presentDays = serverData.presentDays || 0;
+                const absentDays = serverData.absentDays || 0; // Fixed typo: Absentdays -> AbsentDays
+
+                // Calculate percentage with safety check
+                const presentPercentage = totalDays > 0 ?
+                    ((presentDays / totalDays) * 100).toFixed(1) : 0;
+
+                const absentPercentage = totalDays > 0 ?
+                    ((absentDays / totalDays) * 100).toFixed(1) : 0;
+
+                exmonitorStats.innerHTML = `
+                    <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6">
+                        <div class="stats-card">
+                            <div class="card-label">Total Days</div>
+                            <div class="card-value">${totalDays.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                            <div class="trend text-muted">
+                                Total period
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6">
+                        <div class="stats-card">
+                            <div class="card-label">Present Days</div>
+                            <div class="card-value">${presentDays.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="trend text-success">
+                                <i class="fas fa-arrow-up"></i> ${presentPercentage}% attendance
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4 col-lg-4 col-md-4 col-sm-6">
+                        <div class="stats-card">
+                            <div class="card-label">Absent Days</div>
+                            <div class="card-value">${absentDays.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-user-times"></i>
+                            </div>
+                            <div class="trend text-danger">
+                                <i class="fas fa-arrow-up"></i> ${absentPercentage}% absence
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+                        function updateRoleBasedHeading() {
+                const roleStatsHeading = document.getElementById('roleStatsHeading');
+                if (!roleStatsHeading) return;
+
+                // Get the role status from server data
+                // Assuming serverData.RoleStatus contains "Resident Monitor", "Cluster Manager", etc.
+                const roleStatus = serverData.RoleStatus || "Monitor"; // Fallback to "Monitor"
+
+                // Replace "Monitor" with the specific role in the heading
+                roleStatsHeading.textContent = roleStatus + " Statistics";
+            }
+
+                      function populateMonitorStats() {
+                const monitorStats = document.getElementById('monitorStats');
+                if (!monitorStats) return;
+
+                // Your existing data retrieval code...
+                const totalMonitors = serverData.totalMonitors || 0;
+                const selectedMonitors = serverData.selectedMonitors || 0;
+                const totalRegisters = serverData.totalRegisters || 0;
+                const centreData = serverData.centreData || 0;
+                const clusterData = serverData.clusterData || 0;
+                const isResident = serverData.isResident || 0;
+                const rejectedMonitors = serverData.rejectedMonitors || 0;
+                const acceptedMonitors = serverData.acceptedMonitors || 0;
+                const deployedMonitors = serverData.deployedMonitors || 0;
+
+                // Calculate percentages...
+                const selectedPercentage = totalMonitors > 0 ? ((selectedMonitors / totalMonitors) * 100).toFixed(1) : 0;
+                const clusterPercentage = centreData > 0 ? ((clusterData / centreData) * 100).toFixed(1) : 0;
+                const isResidentPercentage = centreData > 0 ? ((isResident / centreData) * 100).toFixed(1) : 0;
+                const acceptedPercentage = totalMonitors > 0 ? ((acceptedMonitors / totalMonitors) * 100).toFixed(1) : 0;
+                const rejectedPercentage = totalMonitors > 0 ? ((rejectedMonitors / totalMonitors) * 100).toFixed(1) : 0;
+                const deployedPercentage = totalMonitors > 0 ? ((deployedMonitors / totalMonitors) * 100).toFixed(1) : 0;
+
+                monitorStats.innerHTML = `
+                    <!-- Use col-xl-3 col-lg-4 col-md-6 for better fitting -->
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-3">
+                        <div class="stats-card h-100">
+                            <div class="card-label">Total Monitors</div>
+                            <div class="card-value">${totalMonitors.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="trend text-muted small">
+                                Base count
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-3">
+                        <div class="stats-card h-100">
+                            <div class="card-label">Shortlisted</div>
+                            <div class="card-value">${acceptedMonitors.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="trend ${acceptedPercentage > 0 ? 'text-success' : 'text-muted'} small">
+                                ${acceptedPercentage}% of total
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-3">
+                        <div class="stats-card h-100">
+                            <div class="card-label">Rejected</div>
+                            <div class="card-value">${rejectedMonitors.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-user-times"></i>
+                            </div>
+                            <div class="trend ${rejectedPercentage > 0 ? 'text-danger' : 'text-muted'} small">
+                                ${rejectedPercentage}% of total
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-3">
+                        <div class="stats-card h-100">
+                            <div class="card-label">Selected</div>
+                            <div class="card-value">${selectedMonitors.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="trend ${selectedPercentage > 0 ? 'text-success' : 'text-muted'} small">
+                                ${selectedPercentage}% of total
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-3">
+                        <div class="stats-card h-100">
+                            <div class="card-label">Deployed</div>
+                            <div class="card-value">${deployedMonitors.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="trend ${deployedPercentage > 0 ? 'text-success' : 'text-muted'} small">
+                                ${deployedPercentage}% of total
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-3">
+                        <div class="stats-card h-100">
+                            <div class="card-label">Registers</div>
+                            <div class="card-value">${totalRegisters.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-user-clock"></i>
+                            </div>
+                            <div class="trend text-muted small">
+                                Total registered
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-3">
+                        <div class="stats-card h-100">
+                            <div class="card-label">Centers</div>
+                            <div class="card-value">${centreData.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-school"></i>
+                            </div>
+                            <div class="trend text-muted small">
+                                Total centers
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 mb-3">
+                        <div class="stats-card h-100">
+                            <div class="card-label">Clusters</div>
+                            <div class="card-value">${clusterData.toLocaleString()}</div>
+                            <div class="card-icon">
+                                <i class="fas fa-sitemap"></i>
+                            </div>
+                            <div class="trend ${clusterPercentage > 0 ? 'text-success' : 'text-muted'} small">
+                                ${clusterPercentage}% of centers
+                            </div>
+                        </div>
+                    </div>
+
+                
+                `;
+            }
+
+      
+                function populateRemMonitorStats() {
+                    const remmonitorStats = document.getElementById('remmonitorStats');
+                    if (!remmonitorStats) return;
+
+                    // Add safety checks for all values with proper PascalCase names
+                    const totalMonitors = serverData.totalMonitors || 0;
+                    const selectedMonitors = serverData.selectedMonitors || 0;
+                    const totalRegisters = serverData.totalRegisters || 0;
+                    const centreData = serverData.centreData || 0;
+                    const clusterData = serverData.clusterData || 0;
+                    const isResident = serverData.isResident || 0;
+                    const rejectedMonitors = serverData.rejectedMonitors || 0;
+                    const acceptedMonitors = serverData.acceptedMonitors || 0;
+                    const deployedMonitors = serverData.deployedMonitors || 0;
+
+                    // Calculate percentage with safety check
+                    const selectedPercentage = totalMonitors > 0 ?
+                        ((selectedMonitors / totalMonitors) * 100).toFixed(1) : 0;
+
+                    const clusterPercentage = centreData > 0 ?
+                        ((clusterData / centreData) * 100).toFixed(1) : 0;
+
+                    const isResidentPercentage = centreData > 0 ?
+                        ((isResident / centreData) * 100).toFixed(1) : 0;
+
+                    remmonitorStats.innerHTML = `
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Total Monitors</div>
+                                <div class="card-value">${totalMonitors.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="trend text-muted">
+                                    No change
+                                </div>
+                            </div>
+                        </div>
+                     
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Selected Monitors</div>
+                                <div class="card-value">${selectedMonitors.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="trend text-success">
+                                    <i class="fas fa-arrow-up"></i> ${selectedPercentage}% of total
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Registers</div>
+                                <div class="card-value">${totalRegisters.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-user-clock"></i>
+                                </div>
+                                <div class="trend text-muted">
+                                    No change
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Centers</div>
+                                <div class="card-value">${centreData.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-school"></i>
+                                </div>
+                                <div class="trend text-muted">
+                                    No change
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Clusters</div>
+                                <div class="card-value">${clusterData.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-sitemap"></i>
+                                </div>
+                                <div class="trend text-success">
+                                    <i class="fas fa-arrow-up"></i> ${clusterPercentage}% of total
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">IsResident</div>
+                                <div class="card-value">${isResident.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-house-user"></i>
+                                </div>
+                                <div class="trend text-success">
+                                    <i class="fas fa-arrow-up"></i> ${isResidentPercentage}% of total
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                            function populateAccountStats() {
+                    const accountStats = document.getElementById('accountStats');
+                    if (!accountStats) return;
+
+                    // Add safety checks for all values with proper PascalCase names
+                    const selectedMonitors = serverData.selectedMonitors || 0;
+                    const totalMonitors = serverData.totalMonitors || 1; // Use 1 to avoid division by zero
+                    const totalClaims = serverData.totalClaims || 0;
+                    const approvedClaims = serverData.approvedClaims || 0;
+                    const totalAmount = serverData.totalAmount || 0;
+
+                    // Calculate percentages with safety checks
+                    const presentPercentage = totalMonitors > 0 ?
+                        ((selectedMonitors / totalMonitors) * 100).toFixed(1) : 0;
+
+                    const claimsPercentage = selectedMonitors > 0 ?
+                        ((totalClaims / selectedMonitors) * 100).toFixed(1) : 0;
+
+                    const approvedPercentage = totalClaims > 0 ?
+                        ((approvedClaims / totalClaims) * 100).toFixed(1) : 0;
+
+                    const pendingClaims = Math.max(0, totalClaims - approvedClaims);
+                    const pendingPercentage = totalClaims > 0 ?
+                        ((pendingClaims / totalClaims) * 100).toFixed(1) : 0;
+
+                    const avgClaimValue = totalClaims > 0 ?
+                        (totalAmount / totalClaims) : 0;
+
+                    accountStats.innerHTML = `
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Present Monitors</div>
+                                <div class="card-value">${selectedMonitors.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-user-check"></i>
+                                </div>
+                                <div class="trend">${presentPercentage}% of total</div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Total Claims</div>
+                                <div class="card-value">${totalClaims.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </div>
+                                <div class="trend">${claimsPercentage}% of selected</div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Approved Claims</div>
+                                <div class="card-value">${approvedClaims.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="trend">${approvedPercentage}% of total claims</div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Pending Approval</div>
+                                <div class="card-value">${pendingClaims.toLocaleString()}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="trend">${pendingPercentage}% of total</div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Total Amount</div>
+                                <div class="card-value">$${totalAmount.toFixed(2)}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="trend text-success">
+                                    <i class="fas fa-arrow-up"></i> 8.2%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6">
+                            <div class="stats-card">
+                                <div class="card-label">Avg. Claim Value</div>
+                                <div class="card-value">$${avgClaimValue.toLocaleString(undefined, {maximumFractionDigits: 0})}</div>
+                                <div class="card-icon">
+                                    <i class="fas fa-calculator"></i>
+                                </div>
+                                <div class="trend text-danger">
+                                    No Data
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                             function initCharts() {
+    // Destroy existing charts before creating new ones
+    destroyAllCharts();
+
+    // Monitor Type Chart - only initialize if canvas exists
+    const monitorTypeChartEl = document.getElementById('monitorTypeChart');
+    if (monitorTypeChartEl) {
+        const typeCtx = monitorTypeChartEl.getContext('2d');
+
+        // Add safety checks with proper PascalCase names
+        const clusterManagers = serverData.clusterManagers || 0;
+        const residentMonitors = serverData.residentMonitors || 0;
+        const assistantClusterManagers = serverData.assistantClusterManagers || 0;
+        const totalMonitors = serverData.totalMonitors || 0;
+
+        // Calculate other monitors with safety check
+        const otherMonitors = Math.max(0, totalMonitors - clusterManagers - residentMonitors - assistantClusterManagers);
+
+        monitorTypeChart = new Chart(typeCtx, {  // Store in global variable
+            type: 'doughnut',
+            data: {
+                labels: ['Cluster Managers', 'Resident Monitors', 'Assistant Cluster Managers', 'Other Monitors'],
+                datasets: [{
+                    data: [
+                        clusterManagers,
+                        residentMonitors,
+                        assistantClusterManagers,
+                        otherMonitors
+                    ],
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a'],
+                    hoverBorderColor: 'rgba(234, 236, 244, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Attendance Chart - only initialize if canvas exists
+    const attendanceChartEl = document.getElementById('attendanceChart');
+    if (attendanceChartEl) {
+        const attendanceCtx = attendanceChartEl.getContext('2d');
+
+        // Add safety check with proper PascalCase name
+        const weeklyPresent = serverData.weeklyPresent || [0, 0, 0, 0, 0, 0, 0];
+
+        attendanceChart = new Chart(attendanceCtx, {  // Store in global variable
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Present Monitors',
+                    data: weeklyPresent,
+                    backgroundColor: '#4e73df',
+                    hoverBackgroundColor: '#2e59d9',
+                    borderColor: 'rgba(234, 236, 244, 1)',
+                    borderRadius: 5,
+                    maxBarThickness: 20
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value;
+                            },
+                            font: {
+                                size: 10
+                            }
+                        },
+                        grid: {
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
+
+    // Initiator Chart - only initialize if canvas exists
+    const initiatorChartEl = document.getElementById('initiatorChart');
+    if (initiatorChartEl) {
+        const initiatorCtx = initiatorChartEl.getContext('2d');
+
+        // Get the data with safety checks
+        const clusterManagers = serverData.clusterManagers || 0;
+        const assistantClusterManagers = serverData.assistantClusterManagers || 0;
+        const residentMonitors = serverData.residentMonitors || 0;
+        const totalMonitors = serverData.totalMonitors || 0;
+
+        initiatorChart = new Chart(initiatorCtx, {  // Store in global variable
+            type: 'polarArea',
+            data: {
+                labels: ['Cluster Managers', 'Assistant Cluster Managers', 'Resident Monitors', 'Total Monitors'],
+                datasets: [{
+                    data: [clusterManagers, assistantClusterManagers, residentMonitors, totalMonitors],
+                    backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e'],
+                    hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a'],
+                    hoverBorderColor: 'rgba(234, 236, 244, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+                // Populate reviewer table - only if table exists
+                const reviewerTable = document.getElementById('reviewerTable');
+    if (reviewerTable) {
+        const tbody = reviewerTable.querySelector('tbody');
+        if (tbody) {
+            // Get data with safety checks
+            const totalClaims = serverData.totalClaims || 0;
+            const approvedClaims = serverData.approvedClaims || 0;
+            const pendingClaims = Math.max(0, totalClaims - approvedClaims);
+
+            // Calculate percentages with safety checks
+            const approvedPercentage = totalClaims > 0 ?
+                Math.round((approvedClaims / totalClaims) * 100) : 0;
+
+            const pendingPercentage = totalClaims > 0 ?
+                Math.round((pendingClaims / totalClaims) * 100) : 0;
+
+            // Calculate average time (you can replace this with actual data if available)
+            const avgApprovalTime = totalClaims > 0 ? (2.4).toFixed(1) : '0.0';
+            const avgInitiationTime = totalClaims > 0 ? (3.1).toFixed(1) : '0.0';
+            const avgTotalTime = totalClaims > 0 ? (1.8).toFixed(1) : '0.0';
+
+            tbody.innerHTML = `
+                <tr>
+                    <td>Reviewer</td>
+                    <td>${approvedClaims.toLocaleString()}</td>
+                    <td>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-success" style="width: ${approvedPercentage}%"></div>
+                        </div>
+                        <span class="small">${approvedPercentage}%</span>
+                    </td>
+                    <td>${avgApprovalTime}h</td>
+                </tr>
+                <tr>
+                    <td>Initiator</td>
+                    <td>${pendingClaims.toLocaleString()}</td>
+                    <td>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-warning" style="width: ${pendingPercentage}%"></div>
+                        </div>
+                        <span class="small">${pendingPercentage}%</span>
+                    </td>
+                    <td>${avgInitiationTime}h</td>
+                </tr>
+                <tr>
+                    <td>Total</td>
+                    <td>${totalClaims.toLocaleString()}</td>
+                    <td>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-info" style="width: 100%"></div>
+                        </div>
+                        <span class="small">100%</span>
+                    </td>
+                    <td>${avgTotalTime}h</td>
+                </tr>
+            `;
+        }
+    }
+}
+
+                function setupFilterModal() {
+                    // Filter modal functionality
+                    const filterToggle = document.getElementById('filterToggle');
+                    const filterOverlay = document.getElementById('filterOverlay');
+                    const filterModal = document.getElementById('filterModal');
+                    const closeFilter = document.getElementById('closeFilter');
+                    const applyFilter = document.getElementById('applyFilter');
+
+                    if (filterToggle && filterOverlay && filterModal && closeFilter && applyFilter) {
+                        filterToggle.addEventListener('click', function() {
+                            filterOverlay.style.display = 'block';
+                            filterModal.style.display = 'block';
+                        });
+
+                        closeFilter.addEventListener('click', function() {
+                            filterOverlay.style.display = 'none';
+                            filterModal.style.display = 'none';
+                        });
+
+                        applyFilter.addEventListener('click', function() {
+                            // Get filter values
+                            activeFilters.dateFrom = document.getElementById('dateFrom').value;
+                            activeFilters.dateTo = document.getElementById('dateTo').value;
+
+                            // Update active filters display
+                            updateActiveFiltersDisplay();
+
+                            // Close modal
+                            filterOverlay.style.display = 'none';
+                            filterModal.style.display = 'none';
+
+                            // Make AJAX call to server for filtered data
+                            getFilteredData();
+                        });
+
+                        filterOverlay.addEventListener('click', function() {
+                            filterOverlay.style.display = 'none';
+                            filterModal.style.display = 'none';
+                        });
+                    }
+                }
+
+                function updateActiveFiltersDisplay() {
+                    const activeFiltersContainer = document.getElementById('activeFilters');
+                    if (!activeFiltersContainer) return;
+
+                    activeFiltersContainer.innerHTML = '<span class="me-2 small">Active filters:</span>';
+
+                    if (activeFilters.region !== "all") {
+                        const regionTag = document.createElement('span');
+                        regionTag.className = 'filter-tag';
+                        regionTag.innerHTML = `Region: ${activeFilters.region} <i class="fas fa-times" onclick="removeFilter('region')"></i>`;
+                        activeFiltersContainer.appendChild(regionTag);
+                    }
+
+                    if (activeFilters.dateFrom && activeFilters.dateTo) {
+                        const dateTag = document.createElement('span');
+                        dateTag.className = 'filter-tag';
+                        dateTag.innerHTML = `Date: ${activeFilters.dateFrom} to ${activeFilters.dateTo} <i class="fas fa-times" onclick="removeFilter('date')"></i>`;
+                        activeFiltersContainer.appendChild(dateTag);
+                    }
+
+                    if (activeFilters.region !== "all" || (activeFilters.dateFrom && activeFilters.dateTo)) {
+                        activeFiltersContainer.style.display = 'block';
+                    } else {
+                        activeFiltersContainer.style.display = 'none';
+                    }
+                }
+
+   
+
+            function getFilteredData() {
+    console.log('Sending filters:', activeFilters);
+    
+    // Show loading spinner
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const dashboardContent = document.getElementById('dashboardContent');
+    if (!loadingSpinner || !dashboardContent) return;
+
+    loadingSpinner.style.display = 'flex';
+    dashboardContent.style.display = 'none';
+
+    // Make AJAX call to server
+    fetch('/Home/GetFilteredData', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+
+        },
+        body: JSON.stringify({
+            Region: activeFilters.region,
+            DateFrom: activeFilters.dateFrom,
+            DateTo: activeFilters.dateTo,
+          
+        })
+    })
+    .then(response => {
+        console.log('Response status:', response.status, response.statusText);
+        if (!response.ok) {
+            throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Filtered data received:', data);
+        
+        // Debug: Check if data is actually filtered
+        if (data.CentreData === 1235) {
+            console.warn('WARNING: Data appears to be unfiltered. CentreData is still 1235 (original value)');
+            console.warn('This suggests the server-side filtering may not be working properly');
+        }
+        
+        // Update dashboard with filtered data
+        updateDashboard(data);
+
+        // Update last updated timestamp
+        const lastUpdated = document.getElementById('lastUpdated');
+        if (lastUpdated) {
+            lastUpdated.textContent = `Last updated: ${new Date().toLocaleString()}`;
+        }
+
+        // Hide loading spinner and show content
+        loadingSpinner.style.display = 'none';
+        dashboardContent.style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error fetching filtered data:', error);
+        loadingSpinner.style.display = 'none';
+        dashboardContent.style.display = 'block';
+        alert('Error applying filters. Please try again.');
+    });
+}
+
+      function updateDashboard(data) {
+    console.log('Updating dashboard with filtered data:', data);
+    
+    // **CRITICAL FIX: Completely replace serverData, don't just merge**
+    // Clear the existing serverData and assign the new filtered data
+    for (let key in serverData) {
+        delete serverData[key];
+    }
+    Object.assign(serverData, data);
+    
+    console.log('Updated serverData:', serverData);
+    
+    // DEBUG: Check if serverData has the correct values
+    console.log('serverData.TotalMonitors:', serverData.TotalMonitors);
+    console.log('serverData.CentreData:', serverData.CentreData);
+    console.log('serverData.acceptedMonitors:', serverData.acceptedMonitors);
+    
+    // Update all statistics cards
+    updateAllStatsCards();
+    
+    // Update charts with filtered data
+    updateCharts();
+    
+    // Update any other UI elements that need to reflect filtered data
+}
+
+function updateAllStatsCards() {
+    console.log('Updating all stats cards...');
+    console.log('Current serverData.TotalMonitors:', serverData.TotalMonitors);
+    console.log('Current serverData.CentreData:', serverData.CentreData);
+    
+    // Update monitor stats if the element exists
+    const monitorStats = document.getElementById('monitorStats');
+    if (monitorStats) {
+        console.log('Updating monitor stats with TotalMonitors:', serverData.TotalMonitors);
+        populateMonitorStats();
+    }
+
+    const remmonitorStats = document.getElementById('remmonitorStats');
+    if (remmonitorStats) {
+        console.log('Updating rem monitor stats');
+        populateRemMonitorStats();
+    }
+
+    const accountStats = document.getElementById('accountStats');
+    if (accountStats) {
+        console.log('Updating account stats');
+        populateAccountStats();
+    }
+
+    const exmonitorStats = document.getElementById('exmonitorStats');
+    if (exmonitorStats) {
+        console.log('Updating ex monitor stats');
+        populateExMonitorStats();
+    }
+    
+    // Update role-based heading
+    updateRoleBasedHeading();
+}
+
+function updateCharts() {
+    // Destroy existing charts first
+    destroyAllCharts();
+    
+    // Re-initialize charts with updated data
+    initCharts();
+}
+
+function destroyAllCharts() {
+    if (monitorTypeChart) {
+        monitorTypeChart.destroy();
+        monitorTypeChart = null;
+    }
+    if (attendanceChart) {
+        attendanceChart.destroy();
+        attendanceChart = null;
+    }
+    if (initiatorChart) {
+        initiatorChart.destroy();
+        initiatorChart = null;
+    }
+}
+
+                // Make functions available globally for filter tags
+                window.removeFilter = function(filterType) {
+                    if (filterType === 'region') {
+                        activeFilters.region = "all";
+                        // Reset region filter in modal
+                        const regionList = document.getElementById('regionList');
+                        if (regionList) {
+                            const regionItems = regionList.querySelectorAll('li');
+                            regionItems.forEach(li => {
+                                li.classList.remove('active');
+                                if (li.getAttribute('data-region') === 'all') {
+                                    li.classList.add('active');
+                                }
+                            });
+                        }
+                    } else if (filterType === 'date') {
+                        activeFilters.dateFrom = '';
+                        activeFilters.dateTo = '';
+                        const dateFrom = document.getElementById('dateFrom');
+                        const dateTo = document.getElementById('dateTo');
+                        if (dateFrom && dateTo) {
+                            dateFrom.value = '';
+                            dateTo.value = '';
+                        }
+                    }
+
+                    updateActiveFiltersDisplay();
+                    getFilteredData();
+                };
+            });
+        </script>
+    }
+    else
+    {
+        <div class="container text-center mt-5">
+            <img src="~/Images/logo.png" alt=" Logo" class="logo">
+            <h1 class="display-4 welcome-text">
+
+                @AppInfo.Value.SystemName
+            </h1>
+
+            <p class="lead">Simplifying your payment process.</p>
+
+
+            @if (!SignInManager.IsSignedIn(User))
+            {
+                <p>
+
+                    <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-custom btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </p>
+            }
+
+
+        </div>
+    }
+
+
+
+
+}
+else if (@AppInfo.Value.SystemName == "Examiner Payment System")
+{
+    <div class="container text-center mt-5">
+        <img src="~/Images/logo.png" alt=" Logo" class="logo">
+        <h1 class="display-4 welcome-text">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <span>Welcome to</span>
+            }
+            @AppInfo.Value.SystemName
+        </h1>
+
+        <p class="lead">Simplifying your payment process.</p>
+
+        
+
+
+        @if (!SignInManager.IsSignedIn(User))
+        {
+            <p>
+
+                <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-custom btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+            </p>
+        }
+
+
+    </div>
+}
+

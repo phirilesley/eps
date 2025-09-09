@@ -1,0 +1,420 @@
+﻿@model PaperMarkingRate
+@{
+    ViewBag.Title = "Paper Marking Rate";
+}
+
+<style>
+    /* Styles from the previous code snippet */
+    .form-container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 30px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+    }
+
+    label {
+        font-weight: bold;
+        width: 200px;
+        margin-right: 20px;
+    }
+
+    input[type="text"],
+    select {
+        flex: 1;
+        padding: 10px;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        width: 200px;
+        margin-right: 20px;
+    }
+
+    button[type="button"],
+    button[type="submit"] {
+
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+        button[type="button"]:hover,
+        button[type="submit"]:hover {
+            background-color: #153355;
+        }
+
+    .separator {
+        width: 100%;
+        height: 4px;
+        background-color: red;
+        margin: 30px 0;
+    }
+
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .flex-item {
+        width: calc(33.33% - 10px);
+    }
+
+    .search-button-container {
+        display: flex;
+        align-items: center;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2;
+    }
+
+    tr:hover {
+        background-color: #ddd;
+    }
+
+    #paperTable {
+        display: none;
+    }
+</style>
+
+
+@using (Html.BeginForm())
+{
+    <div class="form-container">
+        <h2>Paper Marking Rate</h2>
+
+        <div class="separator"></div>
+
+        <div class="form-group">
+            @Html.Label("ExaminerCode", "Select Exam Session: ")
+            @Html.DropDownList("ExaminerCode", new SelectList(ViewBag.ExamCodes, "EXM_EXAM_CODE", "ExamCaption"), "", new { @class = "form-control", id = "ddlExamSession" })
+            @Html.Label("SubjectCode", "Select Subject: ")
+            <select id="ddlSubject" name="SubjectCode" class="form-control"></select>
+
+        </div>
+
+        <div class="separator"></div>
+        <h4>Subject Paper Marking Rates</h4>
+
+        <div class="form-group" id="paperTable">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Paper Code</th>
+                        <th>Nature of Paper</th>
+                        <th>Marking Rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="separator"></div>
+        <div class="form-group">
+            <button type="submit" class="btn text-white" style="background-color: #153355;" onclick=" javascript:validateBeforeSave();" id="saveButton" disabled>
+                <i class="fas fa-save mr-2"></i>
+                Save</button>
+        </div>
+
+    </div>
+}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    var globalExamCode = null;
+    $(document).ready(function () {
+        $('#ddlExamSession').change(function () {
+            var examcode = $(this).val();
+            globalExamCode = examcode;
+            if (examcode) {
+                $.ajax({
+                    url: '@Url.Action("GetSubjectsByExamSession", "PaperMarkingRate")',
+                    type: 'GET',
+                    data: { examcode: examcode },
+                    success: function (response) {
+                        var jsonData = response;//JSON.stringify(response);
+                        //alert(jsonData);
+                        var subjects = [];
+                        //alert('subject list declared');
+                        for (var i = 0; i < jsonData.length; i++) {
+                            var item = jsonData[i];
+                            if (item.hasOwnProperty('suB_SUBJECT_DESC') && item.hasOwnProperty('suB_SUBJECT_CODE')) {
+                                subjects.push(item.suB_SUBJECT_CODE + " " + item.suB_SUBJECT_DESC);
+                            }
+                            else {
+                                alert('property not found');
+                            }
+                        }
+                        var uniqueSubjects = new Set(subjects);
+
+                        // Convert the Set back to an array
+                        subjects = Array.from(uniqueSubjects);
+
+                        //alert(subjects);
+
+                        var dropdown = document.getElementById('ddlSubject');
+                        dropdown.innerHTML = "";
+                        var option1 = document.createElement('option');
+                        option1.text = "Select Subject";
+                        option1.value = "select_examtype";
+                        dropdown.appendChild(option1);
+                        //alert('default option appended');
+                        subjects.forEach(function (subject) {
+                            //alert('in loop');
+                            var option = document.createElement('option');
+                            //alert('option created');
+                            option.text = subject;
+                            //alert('option text added');
+                            option.value = subject;
+                            //alert('option value added')
+                            dropdown.appendChild(option);
+                            //alert('value appended');
+                        });
+                        // $('#paperTable').hide();
+                    }
+                });
+            }
+        });
+
+        $('#ddlSubject').change(function () {
+            event.preventDefault();
+            //alert("form submission haulted");
+            var selectedSubjectFull = $(this).val();
+            var selectedSubject = selectedSubjectFull.substring(0, 4);
+            //alert(selectedSubject);
+            if (selectedSubject) {
+                //alert("value found");
+                $.ajax({
+                    url: '@Url.Action("GetPaperCodesBySubject", "PaperMarkingRate")',
+                    type: 'GET',
+                    data: {
+                        subject: selectedSubject,
+                        examcode: globalExamCode
+                    },
+                    success: function (response) {
+                        const table = document.querySelector('#paperTable');
+                        const tbody = table.querySelector('tbody');
+                        // Check if the tbody has rows
+                        if (tbody.rows.length > 0) {
+                            while (tbody.firstChild) {
+                                tbody.removeChild(tbody.firstChild);
+                            }
+                        }
+
+                        var paperCodes = response;
+                        if (paperCodes && paperCodes.length > 0) {
+                            $('#paperTable').show();
+                            for (var i = 0; i < paperCodes.length; i++) {
+                                var papercodes = paperCodes[i];
+                                var newRow = "<tr>" +
+                                    "<td>" + papercodes.ppR_PAPER_CODE + "</td>" +
+                                    "<td>" + papercodes.ppR_PAPER_DESC + "</td>" +
+                                    "<td>" + '<input type="text" name="PaperMarkingRates" class="form-control" value = "' + papercodes.ppR_MARKING_RATE + '"/>' + "</td>" +
+                                    "</tr>"
+                                $("#paperTable tbody").append(newRow);
+                                //activate button
+                                $('#saveButton').prop('disabled', false);
+                            }
+                        } else {
+                            var newRow1 = "<tr>" +
+                                "<td> No data for this subject</td>" +
+                                "</tr>"
+                            $("#paperTable tbody").append(newRow1);
+                        }
+                    },
+                    error: function () {
+                        console.log('Error occurred while fetching paper codes');
+                    }
+                });
+            }
+        });
+    });
+
+    function validateBeforeSave() {
+        var ddlExamSession = document.getElementById("ddlExamSession").value;
+        var ddlSubject = document.getElementById("ddlSubject").value;
+
+        const table = document.querySelector('#paperTable');
+
+        // Get the tbody element within the table
+        const tbody = table.querySelector('tbody');
+
+        // Check if any rows are empty after trimming
+        var rowsEmpty = false;
+        tbody.querySelectorAll('tr').forEach(row => {
+            let isEmpty = !Array.from(row.cells).some(cell => {
+                if (cell.querySelector('input')) {
+                    const inputValue = cell.querySelector('input').value.trim();
+                    if (inputValue === '') {
+                        rowsEmpty = true;
+                        return true; // Terminate execution when input value is empty
+                    }
+                } else {
+                    const cellContent = cell.textContent.trim();
+                    if (cellContent === '') {
+                        rowsEmpty = true;
+                        return true; // Terminate execution when cell content is empty
+                    }
+                }
+                return false; // Continue checking other cells
+            });
+
+
+        });
+        if (rowsEmpty) {
+            //alert('Some cells have empty values. Execution terminated.');
+            Swal.fire({
+                title: "Empty fields!",
+                text: "Some cells have empty values. Execution terminated.",
+                icon: "error"
+            });
+            event.preventDefault();
+            return;
+        } else {
+            //alert('all values available.');
+            postToController(); // Call postToController function if all values are not empty
+        }
+    }
+
+
+    function postToController() {
+        event.preventDefault();
+        var ddlExamSession = document.getElementById("ddlExamSession").value;
+        var ddlSubject = document.getElementById("ddlSubject").value;
+
+        // Get the table element
+        const table = document.querySelector('#paperTable');
+
+        // Get the thead and tbody elements within the table
+        const thead = table.querySelector('thead');
+        const tbody = table.querySelector('tbody');
+
+        // Extract the column headers
+        const headers = Array.from(thead.querySelectorAll('th')).map(header => header.textContent.trim());
+
+        // Modify the headers as needed
+        // Example: Replace the first header with "Student Name" instead of "Name"
+        headers[0] = "PPR_PAPER_CODE";
+        headers[1] = "PPR_PAPER_DESC";
+        headers[2] = "PPR_MARKING_RATE";
+
+
+        var proceed = true;
+        // Extract the cell values and format them into JSON
+        const tableData = [];
+        tbody.querySelectorAll('tr').forEach(row => {
+            const rowData = {};
+            Array.from(row.cells).forEach((cell, index) => {
+                if (cell.querySelector('input')) {
+                    const inputValue = cell.querySelector('input').value.trim();
+                    const numberValue = parseFloat(inputValue);
+
+                    // Check if it's a valid number
+                    if (isNaN(numberValue)) {
+                        proceed = false;
+                        alert("Value " + inputValue + " is not a valid number.");
+                    } else {
+                        // Accept both decimals and integers (including values like 1.00)
+                        rowData[headers[index]] = inputValue;
+                        proceed = true;
+                    }
+                } else {
+                    rowData[headers[index]] = cell.textContent.trim();
+                }
+            });
+            tableData.push(rowData);
+        });
+
+        var newPPR_SUB_SUB_ID = globalExamCode + "" + ddlSubject.slice(0, 4);
+
+        // Add the values from the select elements to the JSON data
+        const jsonData = {
+            SUB_SUB_ID: newPPR_SUB_SUB_ID,
+            tableData: tableData
+        };
+
+        // Stringify the JSON data
+        const jsonString = JSON.stringify(jsonData);
+
+        //alert(jsonString);
+
+        //give me AJAX to save to DB
+
+        //alert(proceed);
+
+        if (proceed) {
+            $.ajax({
+                url: '@Url.Action("UpdatePaperMarkingRate", "PaperMarkingRate")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: jsonString, // Ensure that the JSON data is stringified before sending
+                success: function (response) {
+                    //alert(jsonString);
+                    // Check if response has success and message properties
+                    if (response.success) {
+                        //alert(response.message); // Display the message from the response
+                        Swal.fire({
+                            title: "Information updated!",
+                            text: "Information for subjects has been successfully updated",
+                            icon: "success"
+                        });
+                    } else {
+                        //alert(response.message);
+                        Swal.fire({
+                            title: "Information not updated!",
+                            text: "Information not updated, please try again",
+                            icon: "error"
+                        });
+                    }
+                },
+                error: function () {
+                    //alert("Error occurred while saving data!");
+                    Swal.fire({
+                        title: "Error!",
+                        text: "An error occured whilst servicing request, please try again.",
+                        icon: "error"
+                    });
+                }
+            });
+        }
+        else {
+            event.preventDefault();
+            Swal.fire({
+                title: "input value not allowed!",
+                text: "Please ensure that values put are decimal values",
+                icon: "error"
+            });
+            return;
+        }
+
+        // AJAX request to save to DB
+
+    }
+</script>

@@ -1,0 +1,201 @@
+﻿@model TandSAdvanceFees
+
+@{
+    ViewBag.Title = "Update Advance Fees";
+}
+
+<style>
+    /* Styles from previous code snippet */
+    .form-container {
+        max-width: 1200px; /* Increased width of the form */
+        margin: auto;
+        padding: 30px; /* Increased padding for a bigger form */
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 25px; /* Increased margin between form groups */
+        display: flex; /* Use flexbox for aligning items */
+        align-items: center; /* Align items vertically */
+    }
+
+    label {
+        font-weight: bold;
+        width: 200px; /* Increased width for labels */
+        margin-right: 20px; /* Increased spacing between label and input */
+    }
+
+    input[type="text"],
+    select {
+        flex: 1; /* Allow text fields to grow */
+        padding: 10px; /* Increased padding for text fields */
+        border: 2px solid #ccc; /* Increased border thickness */
+        border-radius: 4px;
+        box-sizing: border-box;
+        width: 200px; /* Set width to match Select Subject and National ID Number */
+        margin-right: 20px; /* Increased spacing between fields */
+    }
+
+    button[type="button"],
+    button[type="submit"] { /* Style for both search and submit buttons */
+
+        color: white;
+        padding: 10px 15px; /* Increased padding for buttons */
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+        button[type="button"]:hover,
+        button[type="submit"]:hover { /* Hover effect for both buttons */
+            background-color: #153355;
+        }
+
+    /* Style for horizontal line */
+    .separator {
+        width: 100%;
+        height: 4px; /* Increased height for separator lines */
+        background-color: red; /* Set color to orange */
+        margin: 30px 0; /* Increased margin between separator lines */
+    }
+
+    /* Style for flex container */
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    /* Style for form group within flex container */
+    .flex-item {
+        width: calc(33.33% - 10px); /* Adjusted width for three fields in a row */
+    }
+
+    /* Style for search button container */
+    .search-button-container {
+        display: flex;
+        align-items: center; /* Align items vertically */
+    }
+
+    /* Table styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+        /* Set column widths */
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 20%; /* Adjust width for the first column */
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 20%; /* Adjust width for the second column */
+        }
+
+    /* Adjust width for other columns as needed */
+
+    /* Hover effect */
+    tbody tr:hover {
+        background-color: #f2f2f2; /* Light gray background on hover */
+    }
+</style>
+
+<script>
+    @if ((bool)ViewBag.IsSuccess)
+    {
+        <text>
+            $(document).ready(function () {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Update Successful',
+                    text: 'The fees have been updated successfully.',
+                    showConfirmButton: false,
+                    timer: 3000 // Close the popup after 3 seconds
+                });
+            });
+        </text>
+    }
+</script>
+
+
+
+@using (Html.BeginForm("UpdateFees", "TandS", FormMethod.Post, new { id = "updateForm" }))
+{
+    @Html.HiddenFor(model => model.Id)
+
+    <div class="form-container">
+        <h2>Update Rates</h2>
+        <div class="separator"></div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FEE_TEA, "Rates for Tea")
+                    @Html.TextBoxFor(model => model.FEE_TEA, new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FEE_BREAKFAST, "Rates for Breakfast")
+                    @Html.TextBoxFor(model => model.FEE_BREAKFAST, new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FEE_TRANSPORT, "Rates for Transport")
+                    @Html.TextBoxFor(model => model.FEE_TRANSPORT, new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FEE_LUNCH, "Rates for Lunch")
+                    @Html.TextBoxFor(model => model.FEE_LUNCH, new { @class = "form-control" })
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FEE_ACCOMMODATION_RES, "Rates for Accommodation (Residential)")
+                    @Html.TextBoxFor(model => model.FEE_ACCOMMODATION_RES, new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FEE_ACCOMMODATION_NONRES, "Rates for Accommodation (Non-Residential)")
+                    @Html.TextBoxFor(model => model.FEE_ACCOMMODATION_NONRES, new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FEE_DINNER, "Rates for Dinner")
+                    @Html.TextBoxFor(model => model.FEE_DINNER, new { @class = "form-control" })
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.FEE_OVERNIGHTALLOWANCE, "Rates for Overnight Allowance")
+                    @Html.TextBoxFor(model => model.FEE_OVERNIGHTALLOWANCE, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+
+        <div class="separator"></div>
+        <div class="form-group">
+            <button type="submit" class="btn text-white" style="background-color: #153355;">
+                <i class="fas fa-save mr-2"></i>
+                Save
+            </button>
+        </div>
+    </div>
+}

@@ -1,0 +1,381 @@
+﻿@model CalculateScriptViewModel
+@using ExaminerPaymentSystem.Data
+@using ExaminerPaymentSystem.Interfaces
+@using ExaminerPaymentSystem.ViewModels.Examiners
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+
+@{
+    ViewBag.Title = "Scripts Data";
+
+    IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+    IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+    var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+    int currentYear = DateTime.Now.Year;
+    int lastYear = currentYear - 1;
+
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+
+}
+
+
+<script>
+    $(document).ready(function () {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '@TempData["SuccessMessage"]',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+        </text>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '@TempData["ErrorMessage"]',
+                    showConfirmButton: true
+                });
+        </text>
+    }
+                            });
+</script>
+
+
+
+<h1 class="mb-3 text-center" style="color:#123255;">Calculate Pay Sheet</h1>
+
+<!-- First Form: Search Form -->
+<form id="searchForm" asp-action="GetTransactions" class="needs-validation mb-5" novalidate>
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <!-- Optional heading -->
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="ExamCode" class="form-control" id="calExamCode" required>
+                        <option value="">-- Select Session --</option>
+                        @foreach (var examCod in examCodes)
+                        {
+                            if (int.TryParse(examCod.EXM_EXAM_YEAR, out int examYear))
+                            {
+                                if (examCod.ACTIVATED_SESSION == "Activated")
+                                {
+                                    <option value="@examCod.EXM_EXAM_CODE">@examCod.EXM_EXAM_LEVEL @examCod.EXM_EXAM_SESSION @examCod.EXM_EXAM_YEAR</option>
+                                }
+                            }
+                        }
+                    </select>
+                    <label asp-for="ExamCode">Exam Session:</label>
+              
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="SubjectCode" class="form-control" id="calSubject" required>
+                        <option value="">-- Select Subject --</option>
+                    </select>
+                    <label asp-for="SubjectCode">Subject Code:</label>
+
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="PaperCode" class="form-control" id="calPaperCode" required>
+                        <option value="">-- Select Paper Code --</option>
+                    </select>
+                    <label asp-for="PaperCode">Paper Code</label>
+
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="form-group" id="calRegionCodeContainer" style="display: none;">
+                    <label for="calRegionCode" class="form-label">Region Code:</label>
+                    <select id="calRegionCode" name="regionCode" class="form-select">
+                        <option value="">--- Select Region Code ---</option>
+                        <option value="01">01 - Harare</option>
+                        <option value="02">02 - Manicaland</option>
+                        <option value="03">03 - Mashonaland East</option>
+                        <option value="04">04 - Matabeleland North</option>
+                        <option value="05">05 - Midlands</option>
+                        <option value="06">06 - Masvingo</option>
+                        <option value="07">07 - Mashonaland Central</option>
+                        <option value="08">08 - Mashonaland West</option>
+                        <option value="09">09 - Matabeleland South</option>
+                        <option value="10">10 - Bulawayo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row mb-3">
+            <div class="col-12  mb-3">
+                <div class="form-floating">
+                    <input asp-for="CapturingRate" id="capturingRate" class="form-control form-control-sm" required />
+                    <label asp-for="CapturingRate">Capturing Rate</label>
+                    <span asp-validation-for="CapturingRate" class="text-danger"></span>
+                </div>
+            </div>
+            </div>
+
+
+        <div class="row mb-3">
+            <div class="col-12  mb-3">
+                <button class="btn text-white w-100" type="submit" style="background-color: #153355;">
+                    <i class="fas fa-search mr-2"></i>
+                    Calculate
+                </button>
+            </div>
+          @*   <div class="col-12 col-md-6 mb-3">
+
+                <button class="btn text-white w-100" type="submit" style="background-color: #153355;">
+                    <i class="fas fa-search mr-2"></i>
+                    Calculate  All
+                </button>
+            </div> *@
+        </div>
+
+
+
+
+    </div>
+</form>
+
+<div id="resultsSection" style="display:none;">
+    <table id="transactionTable" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Examiner Number</th>
+                <th>Name</th>
+                <th>Id Number</th>
+                <th>Category</th>
+                <th>Subject</th>
+                <th>Scripts Marked</th>
+                <th>Responsibility</th>
+                <th>Coordination</th>
+                <th>Grand Total</th>
+                <th>Capturing</th>
+                <th>Final Total</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+    }
+
+
+}
+
+
+
+<script>
+    $(document).ready(function () {
+    
+
+        document.getElementById("capturingRate").addEventListener("input", function (event) {
+            var value = event.target.value;
+            if (!(/^\d*\.?\d*$/.test(value))) {
+                event.target.value = value.slice(0, -1);
+            }
+        });
+    });
+</script>
+
+
+
+<script>
+    $(document).ready(function () {
+        var subjects = @Html.Raw(subjectArray);
+
+        // Function to populate subject dropdown based on selected exam code
+        $('#calExamCode').change(function () {
+            console.log("Exam code selection changed");
+            var selectedExamCode = $(this).val();
+            console.log("Selected exam code: " + selectedExamCode);
+            var subjectSelect = $('#calSubject');
+            subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+            // Filter subjects based on selected exam code and remove duplicates
+            var uniqueSubjects = {};
+            subjects.forEach(function (subject) {
+                var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                if (subSubIdPrefix === selectedExamCode) {
+                    uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                }
+            });
+
+            // Populate subject dropdown with unique subjects
+            Object.keys(uniqueSubjects).forEach(function (key) {
+                var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                console.log("Appended subject: " + key);
+            });
+        });
+
+        // Function to populate paper code dropdown based on selected subject
+        $('#calSubject').change(function () {
+            console.log("Subject selection changed");
+            var selectedSubjectId = $(this).val();
+            console.log("Selected subject ID: " + selectedSubjectId);
+            var paperCodeSelect = $('#calPaperCode');
+            paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+            if (selectedSubjectId && selectedSubjectId.length >= 4) {
+                var subjectCheck = selectedSubjectId.substring(3, 4);
+                console.log("Checking subject at 4th position: " + subjectCheck);
+
+                if (subjectCheck === '7') {
+                    console.log("Subject has '7' at 4th position, showing regionCode dropdown.");
+                    $('#calRegionCodeContainer').show();
+                    $('#calRegionCode').attr('required', 'required');
+                } else {
+                    console.log("Subject does not have '7' at 4th position, hiding regionCode dropdown.");
+                    $('#caRegionCodeContainer').hide();
+                    $('#calRegionCode').removeAttr('required');
+                }
+            } else {
+                console.log("No subject selected or too short, hiding regionCode dropdown.");
+                $('#calRegionCodeContainer').hide();
+                $('#calRegionCode').removeAttr('required');
+            }
+
+            if (selectedSubjectId) {
+                // Make an AJAX call to get the paper codes
+                $.ajax({
+                    url: '@Url.Action("GetPaperCodes", "Subjects")',
+                    type: 'GET',
+                    data: { subjectCode: selectedSubjectId },
+                    success: function (data) {
+                        data.forEach(function (paperCode) {
+                            paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+                            console.log("Appended paper code: " + paperCode.ppR_PAPER_CODE);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching paper codes: " + error);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $('#searchForm').on('submit', function (event) {
+            event.preventDefault(); // Prevent page reload
+
+            // Show progress bar
+            Swal.fire({
+                title: 'Calculating...',
+                html: `<div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
+                                 style="width: 100%;"
+                                 aria-valuenow="100"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                            </div>
+                       </div>`,
+                allowOutsideClick: false,
+                showConfirmButton: false
+            });
+
+            // AJAX Request
+            $.ajax({
+                url: '/Transaction/GetTransactions', // Update with your controller path if needed
+                type: 'POST',
+                data: $('#searchForm').serialize(), // Serialize form data
+                success: function (response) {
+                    if (response.success) {
+                       Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            html: `Transactions for <strong>Subject:</strong> ${response.subjectCode}, <strong>Paper:</strong> ${response.paperCode} processed successfully.`,
+            didClose: () => {
+                // Load data into the table
+                if (response.data && response.data.length > 0) {
+                    var tbody = $('#transactionTable tbody');
+                    tbody.empty(); // Clear previous results
+
+                    response.data.forEach(item => {
+                        tbody.append(`
+                            <tr>
+                            <td>${item.examinerNumber}</td>
+                                <td>${item.name}</td>
+                                <td>${item.idNumber}</td>
+                                <td>${item.category}</td>
+                                <td>${item.subject}</td>
+                                <td>${item.scriptsMarked}</td>
+                                <td>${item.responsibility}</td>
+                                <td>${item.coodination}</td>
+                                <td>${item.grandTotal}</td>
+                                <td>${item.capturing}</td>
+                                <td>${item.finalTotal}</td>
+                            </tr>
+                        `);
+                    });
+
+                    // Show the results section
+                    $('#resultsSection').show();
+
+                    // Optional: initialize or reinitialize DataTable
+                    if ($.fn.DataTable.isDataTable('#transactionTable')) {
+                        $('#transactionTable').DataTable().clear().destroy();
+                    }
+                    $('#transactionTable').DataTable();
+                }
+            }
+        });
+                    } else {
+                       Swal.fire({
+                           icon: 'warning',
+        title: 'Critical Error!',
+       html: `<div style="color:#dc3545; font-weight: 600;">Failed to process transactions for <strong>Subject:</strong> ${response.subjectCode}, <strong>Paper:</strong> ${response.paperCode}.<br>${response.message}</div>`,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#dc3545'
+
+        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', xhr.responseText); // For debugging
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An unexpected error occurred.'
+                    });
+                }
+            });
+        });
+    });
+
+</script>
+
+

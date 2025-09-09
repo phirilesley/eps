@@ -1,0 +1,723 @@
+﻿@model ExaminerPaymentSystem.Models.ExamMonitors.ApproveRegisterViewModel
+@{
+    ViewData["Title"] = "Approve Register";
+
+    // These values should be passed from the controller
+    bool isRegionalManager = ViewBag.IsRegionalManager ?? false;
+    bool isClusterManager = ViewBag.IsClusterManager ?? false;
+    string regionCode = ViewBag.RegionCode ?? "";
+
+    // Ensure only one mode is active at a time
+    if (isRegionalManager)
+    {
+        isClusterManager = false;
+    }
+}
+<link href="/css/monitorlist.css" rel="stylesheet" />
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .daily-advance-entry {
+        transition: all 0.3s ease;
+        border-left: 3px solid #153355;
+        ;
+    }
+
+        .daily-advance-entry:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);
+        }
+
+    .form-control-sm {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.875rem;
+        border-width: 1px;
+    }
+
+    .day-total-display {
+        font-size: 0.9rem;
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .grand-totals {
+        background: linear-gradient(135deg, #e2eaeb, #e2eaeb);
+    }
+
+    .total-amount {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        min-width: 70px;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .text-uppercase {
+        letter-spacing: 0.5px;
+    }
+
+    /* Mobile responsiveness */
+    @@media (max-width: 768px) {
+        .daily-advance-entry {
+            padding: 0.75rem;
+        }
+
+        .top-section, .bank-section {
+            flex-direction: column;
+        }
+
+        .form-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .reference-section {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .examiner-details, .bank-accounts {
+            flex-direction: column;
+        }
+
+        .personal-info, .address-info, .bank-account {
+            padding: 10px 0;
+        }
+
+        .zimsec-claim-form {
+            border: none;
+        }
+
+        .calculation-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .multiply-symbol {
+            padding: 0;
+            transform: rotate(90deg);
+        }
+    }
+
+    /* ZIMSEC Official Styling */
+    .zimsec-claim-form {
+        margin: 0 auto;
+        border: 2px solid #153355; /* ZIMSEC green */
+        font-family: 'Times New Roman', serif;
+        background: white;
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        background-color: #f8f8f8;
+        border-bottom: 2px solid #153355;
+    }
+
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .logo {
+        height: 70px;
+        width: auto;
+    }
+
+    .header-text {
+        line-height: 1.2;
+    }
+
+    .organization {
+        font-weight: bold;
+        font-size: 16px;
+        color: #153355;
+        text-transform: uppercase;
+    }
+
+    .form-title {
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .reference-section {
+        text-align: right;
+        font-size: 12px;
+    }
+
+    .reference-number {
+        font-weight: bold;
+    }
+
+    .examiner-details {
+        display: flex;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .personal-info, .address-info {
+        flex: 1;
+        padding: 0 10px;
+    }
+
+    .bank-accounts {
+        display: flex;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        gap: 15px;
+    }
+
+    .bank-account {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .usd-account {
+        border-left: 3px solid #153355;
+    }
+
+    .zig-account {
+        border-left: 3px solid #153355;
+    }
+
+    .account-header {
+        font-weight: bold;
+        color: black;
+        padding: 5px;
+        margin: -10px -10px 10px -10px;
+        text-align: center;
+    }
+
+    .usd-account .account-header {
+        background-color: #e2eaeb; /* Blue for USD */
+    }
+
+    .zig-account .account-header {
+        background-color: #e2eaeb; /* Green for ZIG */
+    }
+
+    .detail-row {
+        margin-bottom: 8px;
+        display: flex;
+    }
+
+    .detail-label {
+        font-weight: bold;
+        min-width: 120px;
+        color: #153355;
+    }
+
+    .detail-value {
+        border-bottom: 1px dotted #999;
+        flex: 1;
+        padding-left: 5px;
+    }
+    .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .card-header {
+        background: linear-gradient(120deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 15px 20px;
+        border-bottom: none;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .compact-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .header-content {
+        flex: 1;
+    }
+
+    .header-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: white;
+    }
+
+    .user-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 10px 0;
+    }
+
+    .info-badge {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+    }
+
+        .info-badge i {
+            margin-right: 5px;
+        }
+
+    .header-description {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .header-badges {
+        text-align: right;
+    }
+
+    .role-badge {
+        background: var(--warning);
+        color: #000;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+        margin-bottom: 5px;
+    }
+
+    .date-badge {
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--dark);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+
+    .table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        padding: 10px;
+    }
+
+    .table td {
+        padding: 10px;
+        vertical-align: middle;
+    }
+
+    .form-control-sm {
+        padding: 5px 10px;
+        font-size: 0.875rem;
+    }
+
+    .btn {
+        border-radius: 6px;
+        padding: 8px 20px;
+        font-weight: 500;
+    }
+
+    .btn-success {
+        background: var(--success);
+        border: none;
+    }
+
+    .accent-line {
+        height: 3px;
+        width: 50px;
+        background: var(--success);
+        margin-top: 5px;
+        margin-bottom: 15px;
+    }
+
+    .btn-custom {
+        background-color: #153355;
+        color: white;
+        border: 1px solid #153355;
+    }
+
+        .btn-custom:hover {
+            background-color: #0f2642;
+            border-color: #0f2642;
+            color: white;
+        }
+
+    @@media (max-width: 768px) {
+        .compact-header
+
+    {
+        flex-direction: column;
+    }
+
+    .header-badges {
+        text-align: left;
+        margin-top: 10px;
+    }
+
+    .user-info {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+    @if (TempData["SuccessMessage"] != null)
+    {
+                    <text>
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: '@TempData["SuccessMessage"]',
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                    </text>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+                    <text>
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                    text: '@TempData["ErrorMessage"]',
+                                showConfirmButton: true
+                            });
+                    </text>
+    }
+            });
+</script>
+
+@* <div class="container-fluid px-4 mt-3">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2">
+        <div>
+            <div class="header-container mb-4">
+                <h5 class="fw-bold text-gradient mb-1">
+                    @ViewData["Title"]
+                    @if (User.IsInRole("RegionalManager"))
+                    {
+                        <span class="region-badge text-white">Region: @regionCode</span>
+                    }
+                </h5>
+                <div class="accent-line"></div>
+            </div>
+        </div>
+    </div> *@
+
+ 
+    
+        <div class="zimsec-claim-form mt-3">
+            <div class="form-header">
+                <div class="logo-section">
+                    <img src="~/Images/logo.jpeg" alt="ZIMSEC Logo" class="logo">
+                    <div class="header-text">
+                        <div class="organization">ZIMBABWE SCHOOL EXAMINATIONS COUNCIL</div>
+                        <div class="form-title">@Model.Role.ToUpper() 'S  DAILY REGISTER</div>
+                    </div>
+                </div>
+                <div class="reference-section">
+                    <div class="reference-number">Ref: ZIMSEC/DAILY/2025/</div>
+                    <div class="date-claimed">Date: <span id="current-date"></span></div>
+                </div>
+            </div>
+
+            <div class="examiner-details">
+                <div class="personal-info">
+                    <div class="detail-row">
+                        <span class="detail-label">Name:</span>
+                        <span class="detail-value">@Model.FullName</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">National ID:</span>
+                        <span class="detail-value">@Model.NationalId</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="detail-value">@Model.Role</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Centre Attached:</span>
+                        <span class="detail-value">@Model.CentreName</span>
+                    </div>
+                </div>
+
+                <div class="address-info">
+                    <div class="detail-row">
+                        <span class="detail-label">Phone:</span>
+                        <span class="detail-value">@Model.Phone</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Cluster:</span>
+                        <span class="detail-value">@Model.ClusterName</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">District:</span>
+                        <span class="detail-value">@Model.District</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Region:</span>
+                        <span class="detail-value">@Model.Region</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Accounts Section -->
+            <div class="bank-accounts">
+                <div class="bank-account usd-account">
+                    <div class="account-header">USD ACCOUNT DETAILS</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Bank Name:</span>
+                        <span class="detail-value">@Model.BankNameUsd</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Branch:</span>
+                        <span class="detail-value">@Model.BranchUsd</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Account Number:</span>
+                        <span class="detail-value">@Model.AccountNumberUsd</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Account Type:</span>
+                        <span class="detail-value">USD</span>
+                    </div>
+                </div>
+
+                <div class="bank-account zig-account">
+                    <div class="account-header">ZIG ACCOUNT DETAILS</div>
+                    <div class="detail-row">
+                        <span class="detail-label">Bank Name:</span>
+                        <span class="detail-value">@Model.BankNameZwg</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Branch:</span>
+                        <span class="detail-value">@Model.BranchZwg</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Account Number:</span>
+                        <span class="detail-value">@Model.AccountNumberZwg</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Account Type:</span>
+                        <span class="detail-value">ZIG</span>
+                    </div>
+                </div>
+            </div>
+
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+
+          
+
+            <form id="approvalForm" asp-action="Approve" method="post">
+                <input type="hidden" asp-for="SubKey" />
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th style="width: 120px;">Date</th>
+                                <th> Activity/Comment</th>
+                                <th>Cluster Manager Comment</th>
+                                <th>Regional Manager Comment</th>
+                                <th style="width: 100px;">Present</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.RegisterDates.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        @Model.RegisterDates[i].Date.ToString("dd/MM/yyyy")
+                                        <input type="hidden" asp-for="@Model.RegisterDates[i].Id" />
+                                        <input type="hidden" asp-for="@Model.RegisterDates[i].Date" />
+                                        <input type="hidden" class="examiner-comment" value="@Model.RegisterDates[i].Comment" />
+                                        <input type="hidden" class="cluster-comment" value="@Model.RegisterDates[i].ClusterManagerComment" />
+                                    </td>
+                                    <td>@Model.RegisterDates[i].Comment</td>
+                                    <td>
+                                        @if (isClusterManager)
+                                        {
+                                            <input type="text"
+                                                   asp-for="@Model.RegisterDates[i].ClusterManagerComment"
+                                                   class="form-control form-control-sm editable-field cluster-manager-comment"
+                                                   placeholder="Enter cluster manager comment" />
+                                        }
+                                        else
+                                        {
+                                            @Model.RegisterDates[i].ClusterManagerComment
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (isRegionalManager)
+                                        {
+                                            <input type="text"
+                                                   asp-for="@Model.RegisterDates[i].RegionalManagerComment"
+                                                   class="form-control form-control-sm editable-field regional-manager-comment"
+                                                   placeholder="Enter regional manager comment" />
+                                        }
+                                        else
+                                        {
+                                            @Model.RegisterDates[i].RegionalManagerComment
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="checkbox" asp-for="@Model.RegisterDates[i].IsPresent"
+                                               class="present-checkbox"
+                                               data-index="@i" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-custom px-4">
+                        <i class="fas fa-check-circle mr-2"></i> Save Approvals
+                    </button>
+                    <a href="/ExamMonitorApproval/RegisterIndex" class="btn btn-secondary px-4 ml-2">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to List
+                    </a>
+                </div>
+            </form>
+
+
+     
+        </div>
+
+
+    </div>
+
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        .editable-field {
+            border: 2px solid #0d6efd;
+            background-color: #f8f9fa;
+        }
+
+        .badge {
+            font-size: 0.85rem;
+        }
+
+        .validation-error {
+            border-color: #dc3545 !important;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const isRegionalManager = @isRegionalManager.ToString().ToLower();
+            const isClusterManager = @isClusterManager.ToString().ToLower();
+            const form = document.getElementById('approvalForm');
+            const checkboxes = document.querySelectorAll('.present-checkbox');
+            const clusterCommentInputs = document.querySelectorAll('.cluster-manager-comment');
+            const regionalCommentInputs = document.querySelectorAll('.regional-manager-comment');
+
+            // Auto-populate comments when checkbox is checked
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const index = this.getAttribute('data-index');
+                    const examinerComment = document.querySelectorAll('.examiner-comment')[index].value;
+                    const clusterComment = document.querySelectorAll('.cluster-comment')[index].value;
+
+                    if (this.checked) {
+                        if (isClusterManager) {
+                            // For Cluster Manager, populate with Examiner Comment
+                            const clusterInput = document.querySelectorAll('.cluster-manager-comment')[index];
+                            if (clusterInput && !clusterInput.value) {
+                                clusterInput.value = examinerComment;
+                            }
+                        } else if (isRegionalManager) {
+                            // For Regional Manager, populate with Cluster Manager Comment
+                            const regionalInput = document.querySelectorAll('.regional-manager-comment')[index];
+                            if (regionalInput && !regionalInput.value) {
+                                regionalInput.value = clusterComment || examinerComment;
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Form validation
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                const errorMessages = [];
+
+                checkboxes.forEach((checkbox, index) => {
+                    if (!checkbox.checked) {
+                        // For unchecked boxes, require appropriate comment
+                        if (isClusterManager) {
+                            const clusterComment = clusterCommentInputs[index] ? clusterCommentInputs[index].value : '';
+                            if (!clusterComment.trim()) {
+                                isValid = false;
+                                if (clusterCommentInputs[index]) {
+                                    clusterCommentInputs[index].classList.add('validation-error');
+                                }
+                                errorMessages.push(`Comment required for absent date: ${document.querySelectorAll('.examiner-comment')[index].previousElementSibling.textContent.trim()}`);
+                            }
+                        } else if (isRegionalManager) {
+                            const regionalComment = regionalCommentInputs[index] ? regionalCommentInputs[index].value : '';
+                            if (!regionalComment.trim()) {
+                                isValid = false;
+                                if (regionalCommentInputs[index]) {
+                                    regionalCommentInputs[index].classList.add('validation-error');
+                                }
+                                errorMessages.push(`Comment required for absent date: ${document.querySelectorAll('.examiner-comment')[index].previousElementSibling.textContent.trim()}`);
+                            }
+                        }
+                    }
+
+                    // Remove validation error style if present
+                    if (clusterCommentInputs[index]) {
+                        clusterCommentInputs[index].classList.remove('validation-error');
+                    }
+                    if (regionalCommentInputs[index]) {
+                        regionalCommentInputs[index].classList.remove('validation-error');
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Validation failed:\n' + errorMessages.join('\n'));
+                }
+            });
+
+            // Remove validation error style when user starts typing
+            clusterCommentInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    this.classList.remove('validation-error');
+                });
+            });
+
+            regionalCommentInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    this.classList.remove('validation-error');
+                });
+            });
+        });
+    </script>
+}

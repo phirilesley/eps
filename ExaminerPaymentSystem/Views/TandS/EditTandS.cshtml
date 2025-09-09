@@ -1,0 +1,248 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model TandSViewModel
+@{
+    ViewBag.Title = "TandS Claim";
+}
+
+
+<link href="~/css/tands.css" rel="stylesheet" />
+
+<script src="~/js/tnscalculater2.js"></script>
+<script src="~/js/sweetalert2.all.js"></script>
+
+
+
+ <form method="post" asp-controller="TandS" asp-action="EditTandS" enctype="multipart/form-data" class="container">
+<div class="table-responsive-sm">
+    <table id="myTable" class="table table-bordered">
+        <thead>
+            <tr>
+                <th style="padding: 5px;">Date</th>
+                <th style="padding: 5px;">Departure Time</th>
+                <th style="padding: 5px;">Arrival Time</th>
+                <th style="padding: 5px;">Place (From/To)</th>
+                <th style="padding: 5px;">Busfare</th>
+                <th style="padding: 5px;">Acc (Bed/B/fast)</th>
+                <th style="padding: 5px;">Lunch</th>
+                <th style="padding: 5px;">Dinner</th>
+                <th style="padding: 5px;">Total</th>
+                <th style="padding: 5px;">Action</th>
+            </tr>
+        </thead>
+            <tbody>
+                @if (Model.TANDSDETAILS != null && Model.TANDSDETAILS.Any())
+                {
+                    var i = 0;
+                    foreach (var details in Model.TANDSDETAILS)
+                    {
+                        <tr>
+                            <td><input type="date" name="TANDSDETAILS[@i].EMS_DATE" value="@details.EMS_DATE?.ToString()" class="form-control form-control-sm"></td>
+                            <td><input name="TANDSDETAILS[@i].EMS_DEPARTURE" value="@details.EMS_DEPARTURE" class="form-control form-control-sm"></td>
+                            <td><input type="text" name="TANDSDETAILS[@i].EMS_ARRIVAL" value="@details.EMS_ARRIVAL" class="form-control form-control-sm"></td>
+                            <td><input name="TANDSDETAILS[@i].EMS_PLACE" value="@details.EMS_PLACE" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="TANDSDETAILS[@i].EMS_BUSFARE" value="@details.EMS_BUSFARE" oninput="calculateTotal(this)" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="TANDSDETAILS[@i].EMS_ACCOMMODATION" value="@details.EMS_ACCOMMODATION" oninput="calculateTotal(this)" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="TANDSDETAILS[@i].EMS_LUNCH" value="@details.EMS_LUNCH" oninput="calculateTotal(this)" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="TANDSDETAILS[@i].EMS_DINNER" value="@details.EMS_DINNER" oninput="calculateTotal(this)" class="form-control form-control-sm"></td>
+                            <td><input type="number" name="TANDSDETAILS[@i].EMS_TOTAL" value="@details.EMS_TOTAL" id="TANDSDETAILS[@i].EMS_TOTAL" readonly class="form-control form-control-sm"></td>
+
+                            <td>
+                                <div class="d-flex">
+                                    <button class="btn btn-success btn-sm me-1" type="button" onclick="addRow()">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" type="button" onclick="deleteRow(this)">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                }
+            </tbody>
+
+
+    </table>
+</div>
+
+<p class="fw-bold mt-3 text-center" style="font-weight: 700; font-size: 1rem; color: #4CAF50;">
+    <span>Total:</span>
+    <span id="totala" style="font-weight: 900; font-size: 1rem; color: #333;">
+        @String.Format("{0:C}", Model.EMS_TOTAL)
+    </span>
+</p>
+
+
+    <p class="text-center" style="font-size: 1rem; font-weight: 700; color: #4CAF50;">
+        Total: <span id="total" style="font-weight: 900; font-size: 1rem; color: #333;">$0.00</span>
+    </p>
+
+    <hr />
+
+    <p class="grandTotal text-end" style="font-size: 1rem; font-weight: 700; color: #2196F3;">
+        Grand Total: <span id="totalF" class="fw-bold" style="font-size: 1rem; color: #333; padding: 0.2rem 0.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); background: #f9f9f9;">$0.00</span>
+    </p>
+
+    <div class="separator"></div>
+
+    <label class="mb-3 custom-label-note">NB : Fill below Advance Details</label>
+
+    <!-- Bootstrap grid for 3-column layout -->
+    <div class="form-section">
+        <div class="row">
+            <!-- Dinner -->
+            <div class="col-md-4 form-group" id="dinnerField">
+                <label for="dinner">Dinner:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input type="text" class="form-control fee" id="dinner" readonly name="diner"
+                           value="@ViewBag.FEE_DINNER" style="font-weight: bold;">
+                    <input type="text" class="form-control quantity" id="dinner_quantity"
+                           name="TANDSADVANCE.ADV_DINNER" placeholder="Number of Days"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                    @(string.IsNullOrEmpty(ViewBag.FEE_DINNER?.ToString()) || ViewBag.FEE_DINNER.ToString() == "0.00" ? "readonly" : "disabled")>
+                </div>
+            </div>
+
+            <!-- Lunch -->
+            <div class="col-md-4 form-group" id="lunchField">
+                <label for="lunch">Lunch:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input type="text" class="form-control fee" id="lunch" readonly name="lunch"
+                           value="@ViewBag.FEE_LUNCH" style="font-weight: bold;">
+                    <input type="text" class="form-control quantity" id="lunch_quantity"
+                           name="TANDSADVANCE.ADV_LUNCH" placeholder="Number of Days"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                    @(string.IsNullOrEmpty(ViewBag.FEE_LUNCH?.ToString()) || ViewBag.FEE_LUNCH.ToString() == "0.00" ? "readonly" : "disabled")>
+                </div>
+            </div>
+
+            <!-- Res (Accommodation) -->
+
+            <div class="col-md-4 form-group" id="resField">
+                <label for="res">Res:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input type="text" class="form-control fee" id="res" readonly name="company_provided_price"
+                           value="@ViewBag.FEE_ACCOMMODATION_RES" style="font-weight: bold;">
+                    <input type="text" class="form-control quantity" id="company_provided_quantity"
+                           name="TANDSADVANCE.ADV_ACCOMMODATION_RES" placeholder="Number of Days"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                    @(string.IsNullOrEmpty(ViewBag.FEE_ACCOMMODATION_RES?.ToString()) || ViewBag.FEE_ACCOMMODATION_RES.ToString() == "0.00" ? "readonly" : "disabled")>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Repeat similar structure for other fields -->
+        <div class="row">
+            <!-- Overnight Allowance -->
+            <div class="col-md-4 form-group" id="overnightField">
+                <label for="overnight">Overnight Allowance:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input type="text" class="form-control fee" id="overnight" readonly name="overnight"
+                           value="@ViewBag.FEE_OVERNIGHTALLOWANCE" style="font-weight: bold;">
+                    <input type="text" class="form-control quantity" id="overnight_quantity"
+                           name="TANDSADVANCE.ADV_OVERNIGHTALLOWANCE" placeholder="Number of Days"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                    @(string.IsNullOrEmpty(ViewBag.FEE_OVERNIGHTALLOWANCE?.ToString()) || ViewBag.FEE_OVERNIGHTALLOWANCE.ToString() == "0.00" ? "readonly" : "disabled")>
+                </div>
+            </div>
+
+            <!-- Non Res -->
+            <div class="col-md-4 form-group" id="nonResField">
+                <label for="non_res">Non Res:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input type="text" class="form-control fee" id="non_res" readonly name="non_res"
+                           value="@ViewBag.FEE_ACCOMMODATION_NONRES" style="font-weight: bold;">
+                    <input type="text" class="form-control quantity" id="non_res_quantity"
+                           name="TANDSADVANCE.ADV_ACCOMMODATION_NONRES" placeholder="Number of Days"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                    @(string.IsNullOrEmpty(ViewBag.FEE_ACCOMMODATION_NONRES?.ToString()) || ViewBag.FEE_ACCOMMODATION_NONRES.ToString() == "0.00" ? "readonly" : "disabled")>
+                </div>
+            </div>
+
+            <!-- BusFare -->
+            <div class="col-md-4 form-group" id="busFareField">
+                <label for="bus_fare">Bus Fare:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input type="text" class="form-control fee" id="bus_fare" readonly name="bus_fare"
+                           value="@ViewBag.FEE_TRANSPORT" style="font-weight: bold;">
+                    <input type="text" class="form-control quantity" id="bus_fare_quantity"
+                           name="TANDSADVANCE.ADV_TRANSPORT" placeholder="Number of Days"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                    @(string.IsNullOrEmpty(ViewBag.FEE_TRANSPORT?.ToString()) || ViewBag.FEE_TRANSPORT.ToString() == "0.00" ? "readonly" : "disabled")>
+                </div>
+            </div>
+
+
+            <div class="col-md-4 form-group" id="breakfastField">
+                <label for="breakfast">Breakfast:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input type="text" class="form-control fee" id="breakfast" readonly name="breakfast"
+                           value="@ViewBag.FEE_BREAKFAST" style="font-weight: bold;">
+                    <input type="text" class="form-control quantity" id="breakfast_quantity" name="TANDSADVANCE.ADV_BREAKFAST"
+                           placeholder="Number of Days" oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                    @(string.IsNullOrEmpty(ViewBag.FEE_BREAKFAST?.ToString()) || ViewBag.FEE_BREAKFAST.ToString() == "0.00" ? "readonly" : "disabled")>
+                </div>
+            </div>
+
+
+            <div class="col-md-4 form-group" id="teasField">
+                <label for="teas">Teas:</label>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">$</span>
+                    </div>
+                    <input type="text" class="form-control fee" id="teas" readonly name="teas" value="@ViewBag.FEE_TEA" style="font-weight: bold;">
+                    <input type="text" class="form-control quantity" id="teas_quantity" name="TANDSADVANCE.ADV_TEAS" placeholder="Number of Days"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '');"
+                    @(string.IsNullOrEmpty(ViewBag.FEE_TEA?.ToString()) || ViewBag.FEE_TEA.ToString() == "0.00" ? "readonly" : "disabled")>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+    <!-- Total Display -->
+    <p class="text-center" style="font-size: 1rem; font-weight: 700; color: #4CAF50;">
+        Total: <span id="total" style="font-weight: 900; font-size: 1rem; color: #333;">$0.00</span>
+    </p>
+
+    <hr />
+
+    <p class="grandTotal text-end" style="font-size: 1rem; font-weight: 700; color: #2196F3;">
+        Grand Total: <span id="totalF" class="fw-bold" style="font-size: 1rem; color: #333; padding: 0.2rem 0.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); background: #f9f9f9;">$0.00</span>
+    </p>
+
+
+
+
+   
+
+
+                                 </form>

@@ -1,0 +1,1750 @@
+﻿@using ExaminerPaymentSystem.Data
+@using Microsoft.AspNetCore.Identity
+@using ExaminerPaymentSystem.Interfaces
+@using ExaminerPaymentSystem.Interfaces.ExaminerRecruitmentInterface
+@using ExaminerPaymentSystem.Models.ExaminerRecruitment
+@model ExaminerPaymentSystem.ViewModel.ExaminerRecutiments.ExaminerRecruitmentViewModel
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+@inject IVenueRepository venueRepo
+@inject IExaminerRecruitmentVenueDetailsRepository ExaminerRecruitsVenue
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ExaminerPaymentSystem</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link href="~/css/home.css" rel="stylesheet" />
+@*     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" integrity="sha384-tViUnnbYAV00FLIhhi3v/dWt3Jxw4gZQcNoSCxCIFNJVCx7/D55/wXsrNIRANwdD" crossorigin="anonymous"> *@
+
+
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <script src="~/js/sweetalert2.all.js"></script>
+   
+    
+    <link rel="stylesheet" href="~/ExaminerPaymentSystem.styles.css" asp-append-version="true" />
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   
+</head>
+<body>
+    @{
+        IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+        IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+        IEnumerable<Venue> venues = await venueRepo.VenuesGetAll();
+        IEnumerable<ExaminerRecruitmentVenueDetails> examinerRecruitsVenues = await ExaminerRecruitsVenue.GetAllAsync();
+
+            // IEnumerable<PaperMarkingRate> paperCodes = await papercodesRepo.GetPaperCodeById();
+      
+
+        var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+        int currentYear = DateTime.Now.Year;
+        int lastYear = currentYear - 1;
+    }
+    <style>
+        .nav-item {
+            font-size: 15px; /* Adjust the font size as needed */
+            padding: 5px 0; /* Adjust the padding as needed */
+        }
+    </style>
+    <header>
+   
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light  border-bottom box-shadow mb-3" style="background-color:#153355;color:white;">
+            <div class="container-fluid">
+                <div class="div-image-reround mr-3">
+                   @*  <img class="image-reround" src="~/Images/logo.jpeg" alt="Logo"> *@
+                </div>@if (SignInManager.IsSignedIn(User))
+                    {
+                     <img class="image-reround" src="~/Images/logo.jpeg" alt="Logo"> 
+              @*  <a class="navbar-brand text-white" asp-area="" asp-controller="Home" asp-action="Index">Examiner Payment System</a> *@
+                    }
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+
+                    <partial name="_LoginPartial" />
+                     @if (SignInManager.IsSignedIn(User))
+                    {
+                        <ul class="navbar-nav flex-grow-1">
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+
+                            @if (User.IsInRole("PMS"))
+                            {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" asp-area="" asp-controller="Examiner" asp-action="Index">Examiner Details</a>
+                                    </li>
+
+                                       <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="TandS" asp-action="Index">Apply T n S</a>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Maintain Examiners
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                      
+                                        <a class="dropdown-item" asp-area="" asp-controller="Examiner" asp-action="ExaminerList">Examiners</a>
+                               
+                                    </div>
+                                </li>
+
+                             
+
+                               @*  <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="ExaminerRegister" asp-action="Index">Attendance Register</a>
+                                </li> *@
+                              
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="Index">Scripts Marked</a>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Approval
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="Approval">Scripts Approval</a>
+                                    </div>
+                                </li>
+                           
+                         
+                              
+                                
+                              
+
+                            }
+
+
+                              @if ( User.IsInRole("BT") || User.IsInRole("PBT"))
+                                {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="Examiner" asp-action="Index">Examiner Details</a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="TandS" asp-action="Index">Apply T n S</a>
+                                </li>
+
+                                @if (User.IsInRole("PBT"))
+                                {
+
+
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Braille Transcribers
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                            <a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="AandTList">Transcribers List</a>
+                                            <a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="Transcriber">Transcribers(Scripts Transcribed)</a>
+                                            <a class="dropdown-item" asp-area="" asp-controller="ExaminerRegister" asp-action="IndexT">Transcribers Attendance Register</a>
+                                        </div>
+                                    </li>
+
+                                }
+
+                        }
+
+
+
+
+                            @if (User.IsInRole("Examiner") || User.IsInRole("DPMS") || User.IsInRole("BMS") || User.IsInRole("RPMS") || User.IsInRole("A"))
+                            {
+
+
+                                if (User.IsInRole("Examiner") || User.IsInRole("A"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" asp-area="" asp-controller="Examiner" asp-action="Index">Update Examiner Details</a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" asp-area="" asp-controller="TandS" asp-action="Index">Apply T n S</a>
+                                    </li>
+                                }
+
+                                if (User.IsInRole("DPMS") || User.IsInRole("BMS") || User.IsInRole("RPMS"))
+                                {
+                                       <li class="nav-item">
+                                        <a class="nav-link text-white" asp-area="" asp-controller="Examiner" asp-action="Index">Update Examiner Details</a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" asp-area="" asp-controller="TandS" asp-action="Index">Apply T n S</a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="Index">Scripts Marked</a>
+                                    </li>
+                                    if (User.IsInRole("DPMS")  || User.IsInRole("RPMS"))
+                                    {
+                                        <li class="nav-item dropdown">
+                                            <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                Approval
+                                            </a>
+                                            <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                                <a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="Approval">Scripts Approval</a>
+                                            </div>
+                                        </li>
+                                    }
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Maintain Examiners
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+
+                                            <a class="dropdown-item" asp-area="" asp-controller="Examiner" asp-action="ExaminerList">Examiners </a>
+                                       
+                                        </div>
+                                    </li>
+
+                             
+
+                             @*        <li class="nav-item">
+                                        <a class="nav-link text-white" asp-area="" asp-controller="ExaminerRegister" asp-action="Index">Attendance Register</a>
+                                    </li> *@
+                                }
+
+                            }
+
+                            @if (User.IsInRole("OfficerSpecialNeeds"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="AandTList">Transcribers List</a>
+
+                                </li>
+
+                                <li class="nav-item text-white">
+                                    <a class="nav-link" asp-area="" asp-controller="Users" asp-action="IndexTranscribers">Mantain Users</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="ExaminerRegister" asp-action="IndexT">Attendance Register</a>
+                                </li>
+                                <li class="nav-item">
+
+                                    <a class="nav-link text-white" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="TranscriberApproval">Scripts Transcribed Approval</a>
+                                  
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="Transcriber">Transcribers(Scripts Transcribed)</a>
+                                  
+                                </li>
+                              
+                            }
+
+
+                            @if (User.IsInRole("SubjectManager") || User.IsInRole("CentreSupervisor"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Maintain Examiners
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <li><a class="nav-link" data-bs-toggle="modal" data-bs-target="#exListModal">Examiners</a></li>
+                                        <li><a class="nav-link" data-bs-toggle="modal" data-bs-target="#usersModal"> Users</a></li>
+                                        <a class="nav-link" asp-area="" asp-controller="Users" asp-action="IndexTranscribers">Transcribers(Users)</a>
+                               
+                                    </ul>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="approvalsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Approvals
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="approvalsDropdown">
+                                        @if (User.IsInRole("CentreSupervisor"))
+                                        {
+                                            <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#tandsApprovalModal">T n S Approval</a></li>
+                                        }
+                                        @if (User.IsInRole("SubjectManager"))
+                                        {
+                                            <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#tandsApprovalModal">T n S List</a></li>
+                                        }
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="Approval">Scripts Marked Approval</a></li>
+                                       
+                                            <li><a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="TranscriberApproval">Scripts Transcribed Approval</a></li>
+                                        
+                                    </ul>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Braille Transcribers
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exaVenue">Transcribers T n S List</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="AandTList">Transcribers List</a>
+                                      
+                                        <a class="dropdown-item" asp-area="" asp-controller="ExaminerRegister" asp-action="IndexT">Transcribers Attendance Register</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="Transcriber">Transcribers(Scripts Transcribed)</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="TranscriberApproval">Scripts Transcribed Approval</a>
+                                    </div>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                 
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="scriptsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Scripts Data
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="scriptsDropdown">
+                                        <li> <a class="dropdown-item" asp-area="" asp-controller="MarksCaptured" asp-action="Index">Marks Captured</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-controller="MarksCaptured" asp-action="ScriptsData">Scripts Marked</a></li>
+                                    </ul>
+                                </li>
+
+                                @if (User.IsInRole("SubjectManager"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#registerModal">Attendance Register</a>
+                                </li>
+
+                            }
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Reports
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="SubjectStats">T and S Stats</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="TandSStats">T and S Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="ScriptsStats">Script Marked Stats</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="MissingScriptsMarked">Script Marked Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="ReportRegister">Register Report</a>
+
+                                    </div>
+                                </li>
+                            }
+
+
+                            
+
+                            @if (User.IsInRole("Accounts") || User.IsInRole("AssistantAccountant") || User.IsInRole("PeerReviewer"))
+                            {
+                                @if (User.IsInRole("Accounts") || User.IsInRole("AssistantAccountant"))
+                                {
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Process Payments
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                         
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleVenue">T n S Approve List</a>
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleVenue2">T n S Full List</a>
+                                            <a class="dropdown-item" asp-area="" asp-controller="Transaction" asp-action="Index">Calculate PaySheet</a>
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleeeVenue">Transcribers T n S List</a>
+
+
+
+                                        </div>
+                                    </li>
+                                }
+
+                                @if (User.IsInRole("PeerReviewer"))
+                                {
+                                 
+
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Review Payments
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleVenue">Review T n S List</a>
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleVenue2">Review Full List</a>
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleeeVenue">Transcribers T n S List</a>
+
+
+
+                                        </div>
+                                    </li>
+                                }
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Maintain Rates
+                                    </a>  
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <a class="dropdown-item" asp-area="" asp-controller="PaperMarkingRate" asp-action="Index">Paper Marking Rates</a>
+                                        <a class="dropdown-item " asp-area="" asp-controller="CategoryRate" asp-action="Index">Category Marking Rates</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="Transaction" asp-action="RateAndTax">Mantain WHT and Current Rate</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="TandS" asp-action="AdvanceFees">T n S Rates</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="BrailleTranscriptionRate" asp-action="Index">Braille Transcription Rate</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="MarksCaptured" asp-action="AccountsMarksCaptured">Marks Captured</a>
+                               
+                                    </div>
+                                </li>
+
+                          
+                              
+                                @if (User.IsInRole("Accounts") || User.IsInRole("AssistantAccountant") || User.IsInRole("PeerReviewer"))
+                                {
+
+                                    <li class="nav-item">
+                                        <a class="nav-link text-white" asp-area="" asp-controller="Bank" asp-action="Index">Maintain Banks</a>
+                                    </li>
+
+                                    <li class="nav-item dropdown">
+                                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            Reports
+                                        </a>
+                                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                            <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="SubjectStats">T and S Stats</a>
+                                            <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="TandSStats">T and S Report</a>
+                                            <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="BankingReport">Banking Details Report</a>
+                                            <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="ScriptsStats">Script Marked Stats</a>
+                                            <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="MissingScriptsMarked">Missing Script Marked</a>
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleTVenue">T and S  Transcribers Report</a>
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleModal">Accounts T n S Report</a>
+                                            <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#reportsModal">Examiner Payments Reports</a>
+                                            <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="MasterReport">Master Reports</a>
+                                        </div>
+                                    </li>
+                                }
+
+                        }
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+
+                                    <a class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#exListModal">Examiners List</a>
+                                  @*   <a class="nav-link text-white" asp-area="" asp-controller="Examiner" asp-action="ExaminerList">Examiners List</a> *@
+
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="Bank" asp-action="Index">Maintain Banks</a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="Venue" asp-action="Index">Maintain Venues</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="AuditTrail" asp-action="Index">Audit Trail</a>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                       Maintain T n S
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleVenue2">T n S Full List</a>
+
+                                    </div>
+                                </li>
+
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Maintain Users
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+
+                                        <a class="nav-link" data-bs-toggle="modal" data-bs-target="#usersModal">Maintain Examiners</a>
+                                        <a class="nav-link" asp-area="" asp-controller="Users" asp-action="IndexTranscribers">Maintain Braille Transcribers</a>
+                                        <a class="nav-link" asp-area="" asp-controller="Users" asp-action="IndexStaff">Maintain Zimsec Staff</a>
+
+                                    </div>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Braille Transcribers
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="AandTList">Transcribers List</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="ExaminerRegister" asp-action="IndexT">Transcribers Attendance Register</a>
+                                       
+                                    </div>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Reports
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="SubjectStats">T and S Stats</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="TandSStats">T and S Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="BankingReport">Banking Details Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="ReportRegister">Register Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="ReportDeletedTandS">Deleted T and S Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="ScriptsStats">Script Marked Stats</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="MissingScriptsMarked">Missing Script Marked</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleModal">Accounts T n S Reports</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#reportsModal">Examiner Payments Reports</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="MasterReport">Master Reports</a>
+                                      
+                                    </div>
+                                </li>
+
+                            }
+
+
+                            @if (User.IsInRole("SuperAdmin"))
+                            {
+                                <li class="nav-item">
+
+                                 @*    <a class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#exListModal">Examiners List</a> *@
+                                      <a class="nav-link text-white" asp-area="" asp-controller="SuperAdmin" asp-action="ExaminerList">Examiners List</a>
+
+                                </li>
+                                <li class="nav-item">
+
+                                    @*    <a class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#exListModal">Examiners List</a> *@
+                                    <a class="nav-link text-white" asp-area="" asp-controller="SuperAdmin" asp-action="TranscribersList">Transcribers</a>
+
+                                </li>
+                                <li class="nav-item">
+
+                                    <a class="nav-link text-white" asp-area="" asp-controller="SuperAdmin" asp-action="TandSList">T n S List</a>
+
+                                </li>
+                           
+
+                        
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Maintain Users
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+
+                                        <a class="nav-link" asp-area="" asp-controller="SuperAdmin" asp-action="UsersList">Maintain Examiners</a>
+                                        <a class="nav-link" asp-area="" asp-controller="SuperAdmin" asp-action="TranscribersUsers">Maintain Braille Transcribers</a>
+                                        <a class="nav-link" asp-area="" asp-controller="SuperAdmin" asp-action="ZimsecUsers">Maintain Zimsec Staff</a>
+
+                                    </div>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Braille Transcribers
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <a class="dropdown-item" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="AandTList">Transcribers List</a>
+                                        <a class="dropdown-item" asp-area="" asp-controller="ExaminerRegister" asp-action="IndexT">Transcribers Attendance Register</a>
+
+                                    </div>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Reports
+                                    </a>
+                                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="SubjectStats">T and S Stats</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="TandSStats">T and S Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="BankingReport">Banking Details Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="ReportRegister">Register Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="ReportDeletedTandS">Deleted T and S Report</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="ScriptsStats">Script Marked Stats</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="MissingScriptsMarked">Missing Script Marked</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleModal">Accounts T n S Reports</a>
+                                        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#reportsModal">Examiner Payments Reports</a>
+                                        <a class="nav-link text-black" asp-area="" asp-controller="Reports" asp-action="MasterReport">Master Reports</a>
+
+                                    </div>
+                                </li>
+
+                            }
+
+
+
+                            <div class="modal fade" id="exListModal" tabindex="-1" aria-labelledby="exListLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="exListLabel">Select Session ,Subject ,Paper and Region</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="exListForm" method="post" action="@Url.Action("ExaminerList", "Examiner")">
+                                                <div class="form-group">
+                                                    <label for="exListExamCode" class="text-black">Exam Level and Session:</label>
+                                                    <select id="exListExamCode" name="examCode" class="form-control" required>
+                                                        <option value="">-- Select Session --</option>
+                                                        int currentYear = DateTime.Now.Year;
+                                                        int lastYear = currentYear - 1;
+
+
+                                                        @foreach (var examCode in examCodes)
+                                                        {
+                                                            int examYear;
+
+
+                                                            if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) && (examYear == currentYear))
+                                                            {
+                                                                if (examCode.ACTIVATED_SESSION == "Activated")
+                                                                {
+                                                                    <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL  @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="exListSubject" class="text-black">Subject:</label>
+                                                    <select id="exListSubject" name="subjectCode" class="form-control" required>
+                                                        <option value="">-- Select Subject --</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="exListPaperCode" class="text-black">Paper Code:</label>
+                                                    <select id="exListPaperCode" name="paperCode" class="form-control" required>
+                                                        <option value="">-- Select Paper Code --</option>
+                                                    </select>
+                                                </div>
+
+                                                @* <div class="form-group mt-3">
+                                                    <label for="regionCode" class="text-black">Choose Region:</label>
+                                                    <select id="regionCode" name="regionCode" class="form-control" required>
+                                                        <option value="">---Select Region Code---</option>
+                                                        <option value="01">01-Harare</option>
+                                                        <option value="02">02-Manicaland</option>
+                                                        <option value="03">03-Mashonaland East</option>
+                                                        <option value="04">04-Matabeleland North</option>
+                                                        <option value="05">05-Midlands</option>
+                                                        <option value="06">06-Masvingo</option>
+                                                        <option value="07">07-Mashonaland Central</option>
+                                                        <option value="08">08-Mashonaland West</option>
+                                                        <option value="09">09-Matabeleland South</option>
+                                                        <option value="10">10-Bulawayo</option>
+                                                    </select>
+                                                </div> *@
+
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="exListForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="modal fade" id="usersModal" tabindex="-1" aria-labelledby="usersLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="usersLabel">Select Session ,Subject ,Paper and Region</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="usersForm" method="post" action="@Url.Action("Index", "Users")">
+                                                <div class="form-group">
+                                                    <label for="usersExamCode text-black" class="text-black">Exam Level and Session:</label>
+                                                    <select id="usersExamCode" name="examCode" class="form-control" required>
+                                                        <option value="">-- Select Session --</option>
+                                                        int currentYear = DateTime.Now.Year;
+                                                        int lastYear = currentYear - 1;
+
+
+                                                        @foreach (var examCode in examCodes)
+                                                        {
+                                                            int examYear;
+
+
+                                                            if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) && (examYear == currentYear))
+                                                            {
+                                                                if (examCode.ACTIVATED_SESSION == "Activated")
+                                                                {
+                                                                    <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="usersSubject" class="text-black">Subject:</label>
+                                                    <select id="usersSubject" name="subjectCode" class="form-control" required>
+                                                        <option value="">-- Select Subject --</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="usersPaperCode" class="text-black">Paper Code:</label>
+                                                    <select id="usersPaperCode" name="paperCode" class="form-control" required>
+                                                        <option value="">-- Select Paper Code --</option>
+                                                    </select>
+                                                </div>
+
+                                              @*   <div class="form-group mt-3">
+                                                    <label for="regionCode" class="text-black">Choose Region:</label>
+                                                    <select id="regionCode" name="regionCode" class="form-control" required>
+                                                        <option value="">---Select Region Code---</option>
+                                                        <option value="01">01-Harare</option>
+                                                        <option value="02">02-Manicaland</option>
+                                                        <option value="03">03-Mashonaland East</option>
+                                                        <option value="04">04-Matabeleland North</option>
+                                                        <option value="05">05-Midlands</option>
+                                                        <option value="06">06-Masvingo</option>
+                                                        <option value="07">07-Mashonaland Central</option>
+                                                        <option value="08">08-Mashonaland West</option>
+                                                        <option value="09">09-Matabeleland South</option>
+                                                        <option value="10">10-Bulawayo</option>
+                                                    </select>
+                                                </div> *@
+
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="usersForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="modal fade" id="tandsApprovalModal" tabindex="-1" aria-labelledby="tandsApprovalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="tandsApprovalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="tandsApprovalForm" method="post" action="@Url.Action("ApprovalList", "TandS")">
+                                                <div class="form-group">
+                                                    <label for="Venue" class="text-black">Venue:</label>
+                                                    <select id="Venue" name="venue" class="form-control" required>
+                                                        <option value="">-- Select Venue --</option>
+                                                        @foreach (var venue in venues)
+                                                        {
+                                                            if (venue.Status == "Active")
+                                                            {
+                                                                <option value="@venue.Name">@venue.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="form-group mt-3">
+                                                    <label for="tandsApprovalExamCode" class="text-black">Exam Level and Session:</label>
+                                                    <select id="tandsApprovalExamCode" name="examCode" class="form-control" required>
+                                                        <option value="">-- Select Session --</option>
+                                                        int currentYear = DateTime.Now.Year;
+                                                        int lastYear = currentYear - 1;
+
+
+                                                        @foreach (var examCode in examCodes)
+                                                        {
+                                                            int examYear;
+
+
+                                                            if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) && (examYear == currentYear))
+                                                            {
+                                                                if (examCode.ACTIVATED_SESSION == "Activated")
+                                                                {
+                                                                    <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="tandsApprovalSubject" class="text-black">Subject:</label>
+                                                    <select id="tandsApprovalSubject" name="subjectCode" class="form-control" required>
+                                                        <option value="">-- Select Subject --</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="tandsApprovalPaperCode" class="text-black">Paper Code:</label>
+                                                    <select id="tandsApprovalPaperCode" name="paperCode" class="form-control" required>
+                                                        <option value="">-- Select Paper Code --</option>
+                                                    </select>
+                                                </div>
+
+                                                
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button  type="submit" form="tandsApprovalForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="registerModalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="registerForm" method="post" action="@Url.Action("Index", "ExaminerRegister")">
+                                                <div class="form-group">
+                                                    <label for="registerExamCode" class="text-black">Exam Level and Session:</label>
+                                                    <select id="registerExamCode" name="examCode" class="form-control" required>
+                                                        <option value="">-- Select Session --</option>
+                                                        int currentYear = DateTime.Now.Year;
+                                                        int lastYear = currentYear - 1;
+
+
+                                                        @foreach (var examCode in examCodes)
+                                                        {
+                                                            int examYear;
+
+
+                                                            if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) && (examYear == currentYear))
+                                                            {
+                                                                if (examCode.ACTIVATED_SESSION == "Activated")
+                                                                {
+                                                                    <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="registerSubject" class="text-black">Subject:</label>
+                                                    <select id="registerSubject" name="subjectCode" class="form-control" required>
+                                                        <option value="">-- Select Subject --</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="registerPaperCode" class="text-black">Paper Code:</label>
+                                                    <select id="registerPaperCode" name="paperCode" class="form-control" required>
+                                                        <option value="">-- Select Paper Code --</option>
+                                                    </select>
+                                                </div>
+
+                                             @*    <div class="form-group mt-3">
+                                                    <label for="regionCode" class="text-black">Choose Region:</label>
+                                                    <select id="regionCode" name="regionCode" class="form-control" required>
+                                                        <option value="">---Select Region Code---</option>
+                                                        <option value="01">01-Harare</option>
+                                                        <option value="02">02-Manicaland</option>
+                                                        <option value="03">03-Mashonaland East</option>
+                                                        <option value="04">04-Matabeleland North</option>
+                                                        <option value="05">05-Midlands</option>
+                                                        <option value="06">06-Masvingo</option>
+                                                        <option value="07">07-Mashonaland Central</option>
+                                                        <option value="08">08-Mashonaland West</option>
+                                                        <option value="09">09-Matabeleland South</option>
+                                                        <option value="10">10-Bulawayo</option>
+                                                    </select>
+                                                </div> *@
+
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="registerForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="exampleModalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="selectionForm" method="post" action="@Url.Action("TravellingAndSubstance", "Reports")">
+                                                <div class="form-group">
+                                                    <label for="Venue" class="text-black">Venue:</label>
+                                                    <select id="Venue" name="venue" class="form-control" required>
+                                                        <option value="">-- Select Venue --</option>
+                                                        @foreach (var venue in venues)
+                                                        {
+                                                            if (venue.Status == "Active")
+                                                            {
+                                                                <option value="@venue.Name">@venue.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="form-group mt-3">
+                                                    <label for="ExamCode" class="text-black">Exam Level and Session:</label>
+                                                    <select id="ExamCode" name="examCode" class="form-control" required>
+                                                        <option value="">-- Select Session --</option>
+                                                        int currentYear = DateTime.Now.Year;
+                                                        int lastYear = currentYear - 1;
+
+
+                                                        @foreach (var examCode in examCodes)
+                                                        {
+                                                            int examYear;
+
+
+                                                            if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) && (examYear == currentYear))
+                                                            {
+                                                                if (examCode.ACTIVATED_SESSION == "Activated")
+                                                                {
+                                                                    <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL  @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="Subject" class="text-black">Subject:</label>
+                                                    <select id="Subject" name="subject" class="form-control" required>
+                                                        <option value="">-- Select Subject --</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="PaperCode" class="text-black">Paper Code:</label>
+                                                    <select id="PaperCode" name="paperCode" class="form-control" required>
+                                                        <option value="">-- Select Paper Code --</option>
+                                                    </select>
+                                                </div>
+
+                                           
+
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="selectionForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="modal fade" id="reportsModal" tabindex="-1" aria-labelledby="reportsModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="reportsModalLabel">Select Session ,Subject ,Paper and Region</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="reportsForm" method="post" action="@Url.Action("ExaminerPayments", "Reports")">
+                                               @*  <div class="form-group">
+                                                    <label for="regionCode" class="text-black">Choose Region:</label>
+                                                    <select id="regionCode" name="regionCode" class="form-control" required>
+                                                        <option value="">---Select Region Code---</option>
+                                                        <option value="01">01-Harare</option>
+                                                        <option value="02">02-Manicaland</option>
+                                                        <option value="03">03-Mashonaland East</option>
+                                                        <option value="04">04-Matabeleland North</option>
+                                                        <option value="05">05-Midlands</option>
+                                                        <option value="06">06-Masvingo</option>
+                                                        <option value="07">07-Mashonaland Central</option>
+                                                        <option value="08">08-Mashonaland West</option>
+                                                        <option value="09">09-Matabeleland South</option>
+                                                        <option value="10">10-Bulawayo</option>
+                                                    </select>
+                                                </div> *@
+                                                <div class="form-group mt-3">
+                                                    <label for="reportsExamCode" class="text-black">Exam Level and Session:</label>
+                                                    <select id="reportsExamCode" name="examCode" class="form-control" required>
+                                                        <option value="">-- Select Session --</option>
+                                                        int currentYear = DateTime.Now.Year;
+                                                        int lastYear = currentYear - 1;
+
+
+                                                        @foreach (var examCode in examCodes)
+                                                        {
+                                                            int examYear;
+
+
+                                                            if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) && (examYear == currentYear))
+                                                            {
+                                                                if (examCode.ACTIVATED_SESSION == "Activated")
+                                                                {
+                                                                    <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL  @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="reportsSubject" class="text-black">Subject:</label>
+                                                    <select id="reportsSubject" name="subject" class="form-control" required>
+                                                        <option value="">-- Select Subject --</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="reportsPaperCode" class="text-black">Paper Code:</label>
+                                                    <select id="reportsPaperCode" name="paperCode" class="form-control" required>
+                                                        <option value="">-- Select Paper Code --</option>
+                                                    </select>
+                                                </div>
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="reportsForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="modal fade" id="exampleVenue" tabindex="-1" aria-labelledby="exampleVenueModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="exampleVenueModalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="venueForm" method="post" action="@Url.Action("TandSList", "TandS")">
+                                                <div class="form-group">
+                                                    <label for="Venue" class="text-black">Venue:</label>
+                                                    <select id="Venue" name="venue" class="form-control" required>
+                                                        <option value="">-- Select Venue --</option>
+                                                        @foreach (var venue in venues)
+                                                        {
+                                                            if (venue.Status == "Active")
+                                                            {
+                                                                <option value="@venue.Name">@venue.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="venueExamCode" class="text-black">Exam Level and Session:</label>
+                                                    <select id="venueExamCode" name="examCode" class="form-control" required>
+                                                        <option value="">-- Select Session --</option>
+                                                        int currentYear = DateTime.Now.Year;
+                                                        int lastYear = currentYear - 1;
+
+
+                                                        @foreach (var examCode in examCodes)
+                                                        {
+                                                            int examYear;
+
+
+                                                            if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) && (examYear == currentYear))
+                                                            {
+                                                                if (examCode.ACTIVATED_SESSION == "Activated")
+                                                                {
+                                                                    <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="venueSubject" class="text-black">Subject:</label>
+                                                    <select id="venueSubject" name="subjectCode" class="form-control" required>
+                                                        <option value="">-- Select Subject --</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="venuePaperCode" class="text-black">Paper Code:</label>
+                                                    <select id="venuePaperCode" name="paperCode" class="form-control" required>
+                                                        <option value="">-- Select Paper Code --</option>
+                                                    </select>
+                                                </div>
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="venueForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="modal fade" id="exampleVenue2" tabindex="-1" aria-labelledby="exampleVenueModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="exampleVenue2ModalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="venueForm2" method="post" action="@Url.Action("TandSFullList", "TandS")">
+                                                <div class="form-group">
+                                                    <label for="Venue2" class="text-black">Venue:</label>
+                                                    <select id="Venue2" name="venue" class="form-control" required>
+                                                        <option value="">-- Select Venue --</option>
+                                                        @foreach (var venue in venues)
+                                                        {
+                                                            if (venue.Status == "Active")
+                                                            {
+                                                                <option value="@venue.Name">@venue.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="venueExamCode2" class="text-black">Exam Level and Session:</label>
+                                                    <select id="venueExamCode2" name="examCode" class="form-control" required>
+                                                        <option value="">-- Select Session --</option>
+                                                        int currentYear = DateTime.Now.Year;
+                                                        int lastYear = currentYear - 1;
+
+
+                                                        @foreach (var examCode in examCodes)
+                                                        {
+                                                            int examYear;
+
+
+                                                            if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) && (examYear == currentYear))
+                                                            {
+                                                                if (examCode.ACTIVATED_SESSION == "Activated")
+                                                                {
+                                                                    <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                                }
+                                                            }
+                                                        }
+
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="venueSubject2" class="text-black">Subject:</label>
+                                                    <select id="venueSubject2" name="subjectCode" class="form-control" required>
+                                                        <option value="">-- Select Subject --</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="form-group mt-3">
+                                                    <label for="venuePaperCode2" class="text-black">Paper Code:</label>
+                                                    <select id="venuePaperCode2" name="paperCode" class="form-control" required>
+                                                        <option value="">-- Select Paper Code --</option>
+                                                    </select>
+                                                </div>
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="venueForm2" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+                            <div class="modal fade" id="exampleeeVenue" tabindex="-1" aria-labelledby="exampleeeVenueModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="exampleeeVenueModalLabel">Select Venue</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="venueeeForm" method="post" action="@Url.Action("TandSAccountsBTList", "TandS")">
+                                                <div class="form-group">
+                                                    <label for="Venue" class="text-black">Venue:</label>
+                                                    <select id="Venue" name="venue" class="form-control" required>
+                                                        <option value="">-- Select Venue --</option>
+                                                        @foreach (var venue in venues)
+                                                        {
+                                                            if (venue.Status == "Active")
+                                                            {
+                                                                <option value="@venue.Name">@venue.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                              
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="venueeeForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="modal fade" id="exaVenue" tabindex="-1" aria-labelledby="exaVenueModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="exaVenueModalLabel">Select Venue</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="venueeForm" method="post" action="@Url.Action("BTTandSList", "TandS")">
+                                                <div class="form-group">
+                                                    <label for="Venue" class="text-black">Venue:</label>
+                                                    <select id="Venue" name="venue" class="form-control" required>
+                                                        <option value="">-- Select Venue --</option>
+                                                        @foreach (var venue in venues)
+                                                        {
+                                                            if (venue.Status == "Active")
+                                                            {
+                                                                <option value="@venue.Name">@venue.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="venueeForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal fade" id="exampleTVenue" tabindex="-1" aria-labelledby="exampleTVenueModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title text-black" id="exampleTVenueModalLabel">Select Venue</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+
+                                            <form id="venueTForm" method="post" action="@Url.Action("TravellingAndSubstanceT", "Reports")">
+                                                <div class="form-group">
+                                                    <label for="Venue" class="text-black">Venue:</label>
+                                                    <select id="Venue" name="venue" class="form-control" required>
+                                                        <option value="">-- Select Venue --</option>
+                                                        @foreach (var venue in venues)
+                                                        {
+                                                            if (venue.Status == "Active")
+                                                            {
+                                                                <option value="@venue.Name">@venue.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+
+                                            </form>
+
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" form="venueTForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                     
+                        </ul>
+                    }
+                 
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+
+
+
+ 
+    <div class="container mb-4">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+ 
+    </div>
+
+
+
+
+
+
+    
+<!-- Modal -->
+    <div class="modal fade" id="examinerModalForm" tabindex="-1" aria-labelledby="examinerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <!-- Added modal-lg for wider modal -->
+        <div class="modal-content">
+                <form id="examinerInvitaionForm" asp-controller="ExaminerRecruitmentInvitation" asp-action="InviteIndex" method="get">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-black" id="examinerModalLabel">Select Session</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <!-- Training Level -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="Experience" class="levelSelect form-select academicQualification" required>
+                                        <option value="">Select Training Level</option>
+                                        <option value="A">A-Level</option>
+                                        <option value="O">O-Level</option>
+                                        <option value="G7">G-7</option>
+                                    </select>
+                                    <label for="levelSelect">Level to be trained</label>
+                                </div>
+                            </div>
+
+                            <!-- Subject -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="Subject" class="subjectSelect form-select subject">
+                                        <option value="">Select training subject</option>
+                                    </select>
+                                    <label for="subjectSelect">Training Subject</label>
+                                </div>
+                            </div>
+
+                            <!-- Paper Code -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="PaperCode" class="paperCodeSelect form-select">
+                                        <option value="">Select training paper code</option>
+                                    </select>
+                                    <label for="paperCodeSelect">Training Paper Code</label>
+                                </div>
+                            </div>
+
+                            <!-- Region -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="Region" class="form-select regionSelect">
+                                        <option value="">Select your region</option>
+                                        <option value="01">01-Harare</option>
+                                        <option value="02">02-Manicaland</option>
+                                        <option value="03">03-Mashonaland East</option>
+                                        <option value="04">04-Matabeleland North</option>
+                                        <option value="05">05-Midlands</option>
+                                        <option value="06">06-Masvingo</option>
+                                        <option value="07">07-Mashonaland Central</option>
+                                        <option value="08">08-Mashonaland West</option>
+                                        <option value="09">09-Matabeleland South</option>
+                                        <option value="10">10-Bulawayo</option>
+                                    </select>
+                                    <label>Region</label>
+                                </div>
+                            </div>
+
+                            
+                            <!-- Venue details -->
+                            <div class="form-group">
+                                <label for="Venue" class="text-black">Venues</label>
+                                <select  name="ExaminerRecruitsVenue" class="form-control venue" required>
+                                    <option value="">-- Select Venue --</option>
+                                    @foreach (var venue in examinerRecruitsVenues)
+                                    {
+             
+                                            <option value="@venue.Id">@venue.VenueName</option>
+                                        
+                                    }
+                                </select>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-block cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-block">Set</button>
+                    </div>
+                </form>
+
+        </div>
+    </div>
+</div>
+
+
+
+<!-- register modal -->
+    <div class="modal fade" id="examinerRegisterModal" tabindex="-1" aria-labelledby="examinerRegisterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="examinerRegisterForm" asp-controller="ExaminerRecruitmentRegister" asp-action="RegisterIndex" method="get">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-black" id="examinerRegisterModalLabel">Select Session</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <!-- Training Level -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="Experience" class="levelSelect form-select academicQualification" required>
+                                        <option value="">Select Training Level</option>
+                                        <option value="A">A-Level</option>
+                                        <option value="O">O-Level</option>
+                                        <option value="G7">G-7</option>
+                                    </select>
+                                    <label for="levelSelect">Level to be trained</label>
+                                </div>
+                            </div>
+
+                            <!-- Subject -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="Subject" class="subjectSelect form-select subject">
+                                        <option value="">Select training subject</option>
+                                    </select>
+                                    <label for="subjectSelect">Training Subject</label>
+                                </div>
+                            </div>
+
+                            <!-- Paper Code -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="PaperCode" class="paperCodeSelect form-select">
+                                        <option value="">Select training paper code</option>
+                                    </select>
+                                    <label for="paperCodeSelect">Training Paper Code</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-block cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-block">Select</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- Assesment modal -->
+    <div class="modal fade" id="examinerAssesmentModal" tabindex="-1" aria-labelledby="examinerAssesmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form id="examinerAssementForm" asp-controller="ExaminerRecruitmentAssessment" asp-action="CapturerIndex" method="get">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-black" id="examinerAssesmentModalLabel">Select Session</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <!-- Training Level -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="Experience" class="levelSelect form-select academicQualification" required>
+                                        <option value="">Select Training Level</option>
+                                        <option value="A">A-Level</option>
+                                        <option value="O">O-Level</option>
+                                        <option value="G7">G-7</option>
+                                    </select>
+                                    <label for="levelSelect">Level to be trained</label>
+                                </div>
+                            </div>
+
+                            <!-- Subject -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="Subject" class="subjectSelect form-select subject">
+                                        <option value="">Select training subject</option>
+                                    </select>
+                                    <label for="subjectSelect">Training Subject</label>
+                                </div>
+                            </div>
+
+                            <!-- Paper Code -->
+                            <div class="col-12 col-md-12 mb-3">
+                                <div class="form-floating">
+                                    <select name="PaperCode" class="paperCodeSelect form-select">
+                                        <option value="">Select training paper code</option>
+                                    </select>
+                                    <label for="paperCodeSelect">Training Paper Code</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-block cancelBtn" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-block">Select</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Attach event listener to elements with the class 'cancelBtn'
+        document.querySelectorAll('.cancelBtn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var form1 = document.getElementById('examinerRegisterForm');
+                var form2 = document.getElementById('examinerInvitaionForm');
+                var form3 = document.getElementById('examinerAssementForm');
+
+                if (form1) form1.reset();
+                if (form2) form2.reset();
+                if (form3) form3.reset();
+            });
+        });
+
+    </script>
+
+
+
+
+
+
+
+    <footer class="border-top footer text-muted text-white" style="background-color: #153355;">
+        <div class="container text-white">
+            &copy; 2024 - Examiner Payment System 
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/sweetalert2.all.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/datatables.js"></script>
+    <script src="~/js/datatables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+
+@*     filter subjectst Kasu *@
+
+     <script>
+        $(document).ready(function () {
+            // Delegate event handler for dynamically added rows
+            $(document).on('change', '.academicQualification', function () {
+                const $row = $(this).closest('.teaching-experience-row');
+                const selectedValue = $(this).val();
+                let prefix = '';
+
+                // Determine prefix based on selected value
+                if (selectedValue === 'A') {
+                    prefix = '6';
+                } else if (selectedValue === 'O') {
+                    prefix = '4';
+                } else if (selectedValue === 'G7') {
+                    prefix = '7';
+                }
+
+                const $subjectDropdown = $row.find('.subject'); // Find the corresponding subject dropdown
+                if (prefix) {
+                    $.ajax({
+                        url: `/ExaminerRecruitment/GetSubjects`,
+                        type: 'GET',
+                        data: { prefix: prefix },
+                        success: function (data) {
+                            $subjectDropdown.empty(); // Reset options
+                            $subjectDropdown.append('<option value="">Select Subject</option>'); // Default option
+
+                            $.each(data, function (index, subject) {
+                                $subjectDropdown.append(
+                                    $('<option>', {
+                                        value: subject.suB_SUBJECT_CODE, // Use the appropriate field for the value
+                                        text: subject.suB_SUBJECT_DESC, // Use the appropriate field for the display text
+                                    })
+                                );
+                            });
+                        },
+                        error: function () {
+                            alert('Error fetching subjects. Please try again.');
+                        },
+                    });
+                } else {
+                    $subjectDropdown.empty().append('<option value="">Select Subject</option>'); // Reset dropdown if no level selected
+                }
+            });
+
+            // Add and remove rows dynamically
+            $(document).on('click', '.add-row', function () {
+                const $newRow = $('.teaching-experience-row:first').clone();
+                $newRow.find('input, select').val(''); // Clear input values
+                $newRow.find('.remove-row').show(); // Show remove button
+
+                // Update the name attributes with the correct index
+                const rowCount = $('#teachingExperienceList .teaching-experience-row').length;
+                $newRow.find('input, select').each(function () {
+                    const name = $(this).attr('name');
+                    const newName = name.replace(/\[\d+\]/, `[${rowCount}]`); // Replace the index with the new row count
+                    $(this).attr('name', newName);
+                });
+
+                $('#teachingExperienceList').append($newRow);
+            });
+
+            $(document).on('click', '.remove-row', function () {
+                $(this).closest('.teaching-experience-row').remove();
+            });
+
+
+
+
+            $(document).ready(function () {
+                $('.levelSelect').on('change', function () {
+                    const selectedLevelValue = $(this).val();
+                    let subjectPrefix = '';
+
+                    // Determine prefix based on selected value
+                    if (selectedLevelValue === 'A') {
+                        subjectPrefix = '6';
+                    } else if (selectedLevelValue === 'O') {
+                        subjectPrefix = '4';
+                    } else if (selectedLevelValue === 'G7') {
+                        subjectPrefix = '7';
+                    }
+
+                    const $subjectDropdown = $('.subjectSelect'); // Find the corresponding subject dropdown
+
+                    if (subjectPrefix) {
+                        $.ajax({
+                            url: `/ExaminerRecruitment/GetSubjectByLevelProfessional`,
+                            type: 'GET',
+                            data: { subjectPrefix: subjectPrefix },
+                            success: function (data) {
+                                $subjectDropdown.empty(); // Reset options
+                                $subjectDropdown.append('<option value="">Select Subject</option>'); // Default option
+
+                                $.each(data, function (index, subject) {
+                                    $subjectDropdown.append(
+                                        $('<option>', {
+                                            value: subject.subSubjectCode,
+                                            text: subject.subSubjectDesc
+                                        })
+                                    );
+                                });
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error fetching subjects:', error);
+                                alert('An error occurred while fetching subjects. Please try again.');
+                            }
+                        });
+                    } else {
+                        $subjectDropdown.empty().append('<option value="">Select Subject</option>'); // Reset dropdown if no level selected
+                    }
+                });
+            });
+
+
+
+            $(document).ready(function () {
+                $(".subjectSelect").on("change", function () {
+                    const subjectCode = $(this).val(); // Get selected subject code
+                    const $paperCodeDropdown = $('.paperCodeSelect'); // Paper Code dropdown using ID
+
+                    // Clear existing options and show loading indicator
+                    $paperCodeDropdown.prop('disabled', true).empty().append('<option value="">Loading...</option>');
+
+                    if (!subjectCode) {
+                        $paperCodeDropdown.prop('disabled', false).empty().append('<option value="">Select subject first</option>');
+                        return; // Exit if no subject is selected
+                    }
+
+                    // AJAX call to fetch paper codes
+                    $.ajax({
+                        url: `/ExaminerRecruitment/GetPaperCodesBySubjectCode`,
+                        type: 'GET',
+                        data: { subjectCode: subjectCode },
+                        success: function (data) {
+                            $paperCodeDropdown.empty(); // Reset options
+                            $paperCodeDropdown.append('<option value="">Select Paper Code</option>'); // Default option
+
+                            $.each(data, function (index, paperCode) {
+                                $paperCodeDropdown.append(
+                                    $('<option>', {
+                                        value: paperCode,
+                                        text: paperCode
+                                    })
+                                );
+                            });
+                            $paperCodeDropdown.prop('disabled', false); // Re-enable dropdown
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error fetching paper codes:', error);
+                            $paperCodeDropdown.prop('disabled', false).empty().append('<option value="">Error loading paper codes</option>');
+                            alert('An error occurred while fetching paper codes. Please try again.');
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('NationalId').addEventListener('input', function (event) {
+                // Replace any character that is not a letter, digit, or space
+                const regex = /[^A-Z0-9]/g; // Matches any character that's not uppercase A-Z or digit 0-9
+                const input = event.target;
+
+                // Transform input value to uppercase and remove invalid characters
+                input.value = input.value.toUpperCase().replace(regex, '');
+            });
+
+            document.getElementById('PhoneHome').addEventListener('input', function (event) {
+                const input = event.target;
+                const value = input.value;
+
+                // Ensure the input starts with '07'
+                if (!value.startsWith('07')) {
+                    input.value = '07' + value.replace(/^0*/, '').substring(0); // Remove any leading zeros and ensure no duplicates
+                }
+
+                // Optionally enforce a maximum length for the phone number
+                if (input.value.length > 10) {
+                    input.value = input.value.substring(0, 10); // Limit to 10 characters
+                }
+            });
+
+        });
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll("input[type='text'], input[type='number'], textarea").forEach(input => {
+                input.addEventListener("input", function () {
+                    this.value = this.value.toUpperCase();
+                });
+            });
+        });
+
+
+    </script>
+
+
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

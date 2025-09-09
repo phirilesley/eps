@@ -1,0 +1,353 @@
+﻿@model ExamMonitor
+
+@{
+    ViewData["Title"] = "Monitor Details";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4 mt-5">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="display-6">
+                    <i class="fas fa-user-tie me-2"></i>@Model.FirstName @Model.LastName
+                </h2>
+                <div>
+                    <span class="badge bg-primary">@Model.Status</span>
+                    <span class="badge bg-secondary ms-2">@Model.Region Region</span>
+                </div>
+            </div>
+            <hr class="mt-2 mb-4">
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Personal Information Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header  text-white" style="background-color:#153355;">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-id-card me-2"></i>Personal Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">National ID</label>
+                                <p class="fw-bold">@Model.NationalId</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">First Name</label>
+                                <p class="fw-bold">@Model.FirstName</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Gender</label>
+                                <p class="fw-bold">@(Model.Sex == "M" ? "Male" : Model.Sex == "F" ? "Female" : "Other")</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Monitor ID</label>
+                                <p class="fw-bold">@Model.MonitorId</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Last Name</label>
+                                <p class="fw-bold">@Model.LastName</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Age</label>
+                                <p class="fw-bold">@Model.Age</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact & Assignment Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header text-white" style="background-color:#153355;">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>Assignment & Contact
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Region</label>
+                                <p class="fw-bold">@Model.Region</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">District</label>
+                                <p class="fw-bold">@Model.District</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Centre Number</label>
+                                <p class="fw-bold">@Model.Centre</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Station</label>
+                                <p class="fw-bold">@Model.Station</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Phone</label>
+                                <p class="fw-bold">@Model.Phone</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Experience</label>
+                                <p class="fw-bold">@Model.Experience</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Qualifications Card -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header text-white" style="background-color:#153355;">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>Professional Qualifications
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.ProfessionalQualifications != null && Model.ProfessionalQualifications.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Programme Name</th>
+                                        <th>Institution</th>
+                                        <th>Start Year</th>
+                                        <th>End Year</th>
+                                        <th>Date Added</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var qualification in Model.ProfessionalQualifications.OrderByDescending(q => q.Date))
+                                    {
+                                        <tr>
+                                            <td>@qualification.ProgrammeName</td>
+                                            <td>@qualification.InstitutionName</td>
+                                            <td>@qualification.StartYear</td>
+                                            <td>@qualification.EndYear</td>
+                                            <td>@qualification.Date.ToString("yyyy-MM-dd")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>No professional qualifications added yet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents Card -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header text-white" style="background-color:#153355;">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-file-alt me-2"></i>Documents & Attachments
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Attachments != null && Model.Attachments.Any())
+                    {
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-file-pdf text-danger me-2"></i>Academic Qualifications
+                                        </h6>
+                                        @if (!string.IsNullOrEmpty(Model.Attachments.First().AcademicQualifications))
+                                        {
+                                            <p class="card-text">@Model.Attachments.First().AcademicQualifications</p>
+                                            <a href="@Url.Action("DownloadFile", "ExamMonitors", new { nationalId = Model.NationalId, fileType = "academic" })"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-download me-1"></i>Download
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <p class="card-text text-muted">No academic qualifications document uploaded</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-id-card text-info me-2"></i>National ID Document
+                                        </h6>
+                                        @if (!string.IsNullOrEmpty(Model.Attachments.First().NationalIdDocs))
+                                        {
+                                            <p class="card-text">@Model.Attachments.First().NationalIdDocs</p>
+                                            <a href="@Url.Action("DownloadFile", "ExamMonitors", new { nationalId = Model.NationalId, fileType = "nationalId" })"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-download me-1"></i>Download
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <p class="card-text text-muted">No national ID document uploaded</p>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>No documents uploaded yet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banking Information Row -->
+    <div class="row">
+        <!-- ZWG Banking Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-money-bill-wave me-2"></i>ZWG Banking Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Bank Name</label>
+                        <p class="fw-bold">@(string.IsNullOrEmpty(Model.BankNameZwg) ? "Not provided" : Model.BankNameZwg)</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Branch</label>
+                        <p class="fw-bold">@(string.IsNullOrEmpty(Model.BranchZwg) ? "Not provided" : Model.BranchZwg)</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Account Number</label>
+                        <p class="fw-bold">@(string.IsNullOrEmpty(Model.AccountNumberZwg) ? "Not provided" : Model.AccountNumberZwg)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- USD Banking Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-dollar-sign me-2"></i>USD Banking Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Bank Name</label>
+                        <p class="fw-bold">@(string.IsNullOrEmpty(Model.BankNameUsd) ? "Not provided" : Model.BankNameUsd)</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Branch</label>
+                        <p class="fw-bold">@(string.IsNullOrEmpty(Model.BranchUsd) ? "Not provided" : Model.BranchUsd)</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Account Number</label>
+                        <p class="fw-bold">@(string.IsNullOrEmpty(Model.AccountNumberUsd) ? "Not provided" : Model.AccountNumberUsd)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between">
+                <a href="/ExamMonitors/Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to List
+                </a>
+                <div>
+                    <!-- Edit Button -->
+                 
+                    <!-- Delete Button -->
+                    <button class="btn btn-danger" onclick="confirmDelete('@Model.NationalId')">
+                        <i class="fas fa-trash me-2"></i>Delete
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+    function confirmDelete(nationalId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // AJAX call to delete the record
+                       fetch(`/ExamMonitors/DeleteMonitor/${nationalId}`, {
+                        method: 'POST',
+                        headers: {
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire(
+                        'Deleted!',
+                        data.message,
+                        'success'
+                    ).then(() => {
+                        // Redirect to recruitment page after success
+                        window.location.href = '/ExamMonitors/Index';
+                    });
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        data.message,
+                        'error'
+                    );
+                }
+            })
+            .catch(error => {
+                Swal.fire(
+                    'Error!',
+                    'An error occurred during deletion.',
+                    'error'
+                );
+            });
+        }
+    });
+}
+    </script>
+}

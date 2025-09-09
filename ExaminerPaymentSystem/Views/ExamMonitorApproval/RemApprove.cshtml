@@ -1,0 +1,76 @@
+﻿@model ExaminerPaymentSystem.Models.ExamMonitors.ApproveRegisterViewModel
+@{
+    ViewData["Title"] = "Approve Register";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white py-3">
+            <h2 class="h5 mb-0">Approve Register for @Model.UserName</h2>
+            <span class="badge bg-warning text-dark">All dates will be approved</span>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success" role="alert">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <form asp-action="Approve" method="post">
+                <input type="hidden" asp-for="SubKey" />
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th style="width: 120px;">Date</th>
+                                <th>Comment</th>
+                                <th style="width: 100px;">Present</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.RegisterDates.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        @Model.RegisterDates[i].Date.ToString("dd/MM/yyyy")
+                                        <input type="hidden" asp-for="@Model.RegisterDates[i].Id" />
+                                        <input type="hidden" asp-for="@Model.RegisterDates[i].Date" />
+                                    </td>
+                                    <td>@Model.RegisterDates[i].Comment</td>
+                                    <td class="text-center">
+                                        <input type="checkbox" asp-for="@Model.RegisterDates[i].IsPresent" checked="checked" readonly="readonly"
+                                               style="pointer-events: none;" class="form-check-input" />
+                                        <input type="hidden" asp-for="@Model.RegisterDates[i].IsPresent" value="true" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-success px-4">
+                        <i class="fas fa-check-circle mr-2"></i> Approve All
+                    </button>
+                    <a href="/ExamMonitorApproval/RegisterIndex" class="btn btn-secondary px-4 ml-2">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to List
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+   
+}

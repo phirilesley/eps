@@ -1,0 +1,117 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model ConfirmAttendanceViewModel
+
+
+@{
+    Layout = "~/Views/Shared/Confimation.cshtml";
+}
+
+<style>
+    .email-container {
+        font-family: 'Arial', sans-serif;
+        max-width: 600px;
+        margin: 0 auto;
+        border: 1px solid #dcdcdc;
+        padding: 20px;
+        background-color: #f9f9f9;
+        color: #333;
+    }
+
+    .header {
+        background-color: #153355;
+        color: #ffffff;
+        padding: 10px 20px;
+        text-align: center;
+    }
+
+        .header h1 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+    .content p {
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .content ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 10px 0;
+    }
+
+        .content ul li {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+    .buttons {
+        margin: 20px 0;
+        text-align: center;
+    }
+
+        .buttons a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 5px;
+            color: #fff;
+            background-color: #153355;
+            transition: background-color 0.3s ease;
+        }
+
+            .buttons a.contact {
+                background-color: #ff6f61;
+            }
+
+            .buttons a:hover {
+                background-color: #145dbf;
+            }
+
+    .footer {
+        text-align: center;
+        font-size: 14px;
+        margin-top: 20px;
+        border-top: 1px solid #dcdcdc;
+        padding-top: 10px;
+    }
+
+</style>
+
+
+
+<div class="email-container">
+    <!-- Header -->
+    <div class="header">
+        <h1>UPDATE PERSONAL DETAILS !!!!!</h1>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      
+
+        <p> Please update your personal details and banking details.</p>
+
+        
+
+      
+
+     
+        <p style="color:red;">Note: Please make sure you update your banking details correctly</p>
+        <!-- Contact Button -->
+        <div class="buttons">
+            <a href="@Url.Action("Index", "Examiner")" class="contact">Update Details</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Thank you for your patience and understanding.</p>
+        <p>Best regards,<br><strong>ZIMSEC</strong></p>
+    </div>
+</div>
+
+
+

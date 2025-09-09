@@ -1,0 +1,466 @@
+﻿@model IEnumerable<RegisterViewModel>
+
+@{
+    string examCode = ViewBag.ExamCode ?? "";
+
+    string activity = ViewBag.Activity ?? "";
+
+
+}
+
+
+<style>
+    #allExaminersTable, #selectedExaminersTable {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+        #allExaminersTable th, #selectedExaminersTable th {
+            text-align: center;
+        }
+
+        #allExaminersTable td, #selectedExaminersTable td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    .status-approved {
+        color: white;
+        background-color: green;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-rejected {
+        color: white;
+        background-color: red;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-pending {
+        color: black;
+        background-color: orange;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    /*    #regTable {
+            font-size: 0.78rem;
+        } */
+    .btn-outline-primary {
+        border-color: #153355;
+        color: #153355;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem;
+        white-space: nowrap;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #153355;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(21, 51, 85, 0.2);
+        }
+
+    .bi {
+        font-size: 1.1rem;
+    }
+</style>
+
+
+<div class="text-center mb-4 mt-4">
+        <div class="d-flex align-items-center justify-content-center gap-2">
+            <i class="fas fa-users" style="color: #2a5a8a;"></i>
+            <h4 class="fw-bold mb-0" style="color: #153355;">
+                Select Transcribers/Signers/Interpreters
+            </h4>
+        </div>
+        <hr style="
+        border-top: 1px solid black;
+        width: 100px;
+        margin: 8px auto;
+        ">
+    </div>
+
+ 
+
+
+
+    <div class="card mt-2 mb-1 p-1 shadow rounded">
+        <div class="card-header p-1">
+            <div class="row g-0 text-center">
+                <!-- Total Invited -->
+                <div class="col">
+                    <div id="totalExaminersCounter" class="counter btn btn-primary text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('TotalInvited')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">Total Available</small>
+                    </div>
+                </div>
+                <!-- Confirmed Attending -->
+                <div class="col">
+
+                    <div id="selectedExaminersCounter" class="counter btn btn-success text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('Selected')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">Selected</small>
+
+                    </div>
+                </div>
+                <!-- Pending -->
+                <div class="col">
+                    <div id="pbtExaminersCounter" class="counter btn btn-warning text-dark d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('PBT')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">PBT</small>
+                    </div>
+                </div>
+                <!-- Not Attending -->
+                <div class="col">
+                    <div id="btExaminersCounter" class="counter btn btn-danger text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('BT')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">BT</small>
+                    </div>
+                </div>
+                <!-- Recommended -->
+                <div class="col">
+                    <div id="sExaminersCounter" class="counter btn btn-info text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('S')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">S</small>
+                    </div>
+                </div>
+                <!-- Absent -->
+                <div class="col">
+                    <div id="iExaminersCounter" class="counter btn btn-secondary text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('I')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">I</small>
+                    </div>
+                </div>
+
+            <div class="col">
+                <div id="aExaminersCounter" class="counter btn btn-secondary text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('A')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">A</small>
+                </div>
+            </div>
+         
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="table-responsive mt-4">
+        <table id="regTable" class="table table-sm table-bordered table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Sex</th>
+                    <th>Category</th>
+                    <th>Station</th>
+                    <th>Province</th>
+                    <th>Action</th>
+                    <th>Sel</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+
+
+
+
+
+    <script>
+        function updateSelect(idNumber, isSelected, category) {
+            const examCode = '@examCode';
+      
+            const activity = '@activity';
+
+            fetch('@Url.Action("UpdateSelect", "Transcribers")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    idNumber: idNumber,
+                    isSelected: isSelected,
+                    examCode: examCode,
+
+                    activity: activity,
+                    category: category,
+                
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        const statusMessage = isSelected ? 'Selected' : 'Removed';
+                        const titleMessage = `Examiner ${statusMessage}`;
+                        const textMessage = `Examiner Updated ${statusMessage} Successfully.`;
+                        const backgroundColor = isSelected ? '#153355' : '#dc3545';
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: titleMessage,
+                            text: textMessage,
+                            showConfirmButton: false,
+                            timer: 1000,
+                            background: backgroundColor,
+                            color: '#ffffff',
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload();
+                            updateCounts();
+                        });
+                    } else {
+                        throw new Error('Failed to update presence status.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating presence status:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: 'Failed to update presence status. Please try again.',
+                        showConfirmButton: true,
+                    });
+                });
+        }
+
+    </script>
+
+
+
+    <script>
+        function updateCounts() {
+            // Construct the URL with parameters from the ViewBag
+        const url = `@Url.Action("CountTransStats", "Transcribers")?examCode=@ViewBag.ExamCode&activity=@ViewBag.Activity`;
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const setCounterValue = (id, label, value) => {
+                        const counterElement = document.getElementById(id);
+                        if (counterElement) {
+                            counterElement.innerHTML = `<h6 class="mb-0">${value}</h6><p class="mb-0">${label}</p>`;
+                        }
+                    };
+
+                    setCounterValue('totalExaminersCounter', 'Total Available', data.total);
+                    setCounterValue('selectedExaminersCounter', 'Selected', data.selectedCount);
+                    setCounterValue('pbtExaminersCounter', 'PBT', data.pbtCount);
+                    setCounterValue('btExaminersCounter', 'BT', data.btCount);
+                    setCounterValue('sExaminersCounter', 'S', data.sCount);
+                    setCounterValue('iExaminersCounter', 'I', data.iCount);
+                 setCounterValue('aExaminersCounter', 'A', data.aCount);
+                   
+                })
+                .catch(error => {
+                    console.error('Error fetching counts:', error);
+                });
+        }
+
+        updateCounts();
+
+    </script>
+
+
+
+    <script>
+        $(document).ready(function () {
+            var table = $('#regTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "lengthMenu": [
+                    [10, 25, 50, 100, 250, 500, 1000],
+                    [10, 25, 50, 100, 250, 500, 1000]
+                ],
+                "pageLength": 100,
+
+                "buttons": [
+                    {
+                        extend: 'excelHtml5',
+                        className: 'btn btn-sm btn-success',
+                        text: '<i class="fa fa-file-excel"></i> Excel',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        className: 'btn btn-sm btn-info',
+                        text: '<i class="fa fa-file-csv"></i> CSV',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        className: 'btn btn-sm btn-danger',
+                        text: '<i class="fa fa-file-pdf"></i> PDF',
+                        exportOptions: { columns: ':visible' }
+                    }
+                ],
+                "ajax": {
+                    url: "/Transcribers/GetData",
+                    type: "POST",
+                    data: function (d) {
+                        d.examCode = "@examCode";
+                        
+                        d.activity = "@activity";
+                    
+                    }
+                },
+                "columns": [
+                    {
+                        "data": "name",
+                        "name": "Name",
+                        "width": "80px",
+                    },
+
+                    {
+                        "data": "sex",
+                        "name": "Sex",
+                        "width": "30px",
+                    },
+                    {
+                        "data": "category",
+                        "width": "60px",
+                        "className": "dt-body-center",
+                        "render": function (data, type, row) {
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+                            return `<select class="form-control form-control-sm" onchange="updateCategory('${row.idNumber}', this.value)" ${isDisabled}>
+                                    <option value="PBT" ${data === 'PBT' ? 'selected' : ''}>PBT</option>
+                                    <option value="BT" ${data === 'BT' ? 'selected' : ''}>BT</option>
+                                    <option value="S" ${data === 'S' ? 'selected' : ''}>S</option>
+                                    <option value="I" ${data === 'I' ? 'selected' : ''}>I</option>
+                                   <option value="A" ${data === 'A' ? 'selected' : ''}>A</option>
+    
+                                </select>`;
+                        }
+                    },
+                  
+
+
+                    {
+                        "data": "station",
+                        "name": "Station",
+
+                    },
+
+                    {
+                        "data": "province",
+                        "name": "Province",
+                        "width": "60px",
+
+                    },
+                        {
+        "render": function (data, type, row) {
+            const isDisabled = row.registerStatus === "Present"; // Check if register status is "Present"
+
+            return `<div class="text-center">
+                <input type="checkbox" class="form-check-input"
+                    ${row.status === "Selected" ? "checked" : ""}
+                    ${isDisabled ? "disabled" : ""}
+                    onchange="updateSelect('${row.idNumber}', this.checked,
+                    '${row.category}')" />
+            </div>`;
+        }
+    },
+                  
+                    {
+
+                        "data": "status",
+                        "render": function (data) {
+                            return data === "Selected"
+                                ? `<span class="badge bg-success">Selected</span>`
+                                : `<span class="badge bg-secondary">Pending</span>`;
+                        }
+                    }
+                ],
+                "order": [[1, "asc"]],
+                "initComplete": function () {
+                    // This ensures proper column alignment after table initialization
+                    this.api().columns.adjust().draw();
+
+                    // Fix for potential horizontal scrollbar issues
+                    $('.dataTables_scrollBody').css('overflow-x', 'auto');
+                },
+                "drawCallback": function () {
+                    // Re-align columns on each draw
+                    this.api().columns.adjust();
+                }
+            });
+
+            // Handle window resize events
+            $(window).on('resize', function () {
+                table.columns.adjust();
+            });
+        });
+
+        function filterData(status) {
+            var table = $('#regTable').DataTable();
+            table.ajax.url(`/Transcribers/GetData?status=${encodeURIComponent(status)}`).load();
+        }
+
+        function updateCategory(idNumber, value) {
+            var examCode = '@examCode';
+  
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/Transcribers/UpdateCategory',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    category: value,
+                    examCode: examCode,
+             
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Category updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                },
+                error: function (xhr) {
+                    let errorMessage = "Error updating category";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: errorMessage,
+
+                        showConfirmButton: true
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                }
+            });
+        }
+
+
+
+
+
+    </script>
+
+
+
+

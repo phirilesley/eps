@@ -1,0 +1,620 @@
+﻿@inject SignInManager<ApplicationUser> SignInManager
+@{
+    ViewData["Title"] = "Claim Forms";
+
+    string regionCode = ViewBag.RegionCode ?? "";
+}
+<link href="/css/monitorlist.css" rel="stylesheet" />
+<style>
+    .badge.bg-pink {
+        background-color: #ff69b4;
+        color: white;
+    }
+
+    .btn-sm .fa-icon {
+        font-size: 0.9em;
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .display-6 {
+        font-size: 1.5rem;
+    }
+
+    .dataTables_filter {
+        float: none !important;
+        text-align: left !important;
+        margin-bottom: 15px;
+    }
+
+        .dataTables_filter .input-group {
+            width: 100%;
+        }
+
+    .badge {
+        font-size: 100%;
+        padding: 0.35em 0.65em;
+    }
+
+    table.dataTable tbody td {
+        vertical-align: middle;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    /* Make Select2 match Bootstrap form control height */
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px !important;
+    }
+
+</style>
+
+
+<div class="container-fluid px-4 mt-3">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2">
+        <div>
+            <div class="header-container mb-4">
+                <h5 class="display-6 fw-bold text-gradient mb-1">
+                    @ViewData["Title"]
+                    @if (User.IsInRole("RegionalManager"))
+                    {
+                        <span class="region-badge">Region: @regionCode</span>
+                    }
+                </h5>
+                <div class="accent-line"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card border-0 shadow-sm mb-2 p-2">
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Region Filter - 2 columns on md screens (1/5 = 20%) -->
+
+
+                <div class="col-md-2">
+                    <label for="regionFilter" class="form-label">Region</label>
+                    <select id="regionFilter" class="form-select">
+                        <option value="">All Regions</option>
+                        <option value="01">01 - Harare</option>
+                        <option value="02">02 - Manicaland</option>
+                        <option value="03">03 - Mashonaland East</option>
+                        <option value="04">04 - Matabeleland North</option>
+                        <option value="05">05 - Midlands</option>
+                        <option value="06">06 - Masvingo</option>
+                        <option value="07">07 - Mashonaland Central</option>
+                        <option value="08">08 - Mashonaland West</option>
+                        <option value="09">09 - Matabeleland South</option>
+                        <option value="10">10 - Bulawayo</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label for="sessionFilter" class="form-label">Session</label>
+                    <select id="sessionFilter" class="form-select">
+                        <option value="">All Sessions</option>
+                        @if (ViewBag.Sessions != null)
+                        {
+                            @foreach (var session in ViewBag.Sessions)
+                            {
+                                <option value="@session.Value">@session.Text</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="" disabled>No sessions available</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Gender Filter - 2 columns -->
+                <div class="col-md-2">
+                    <label for="phaseFilter" class="form-label">Phase</label>
+                    <select id="phaseFilter" class="form-select">
+                        <option value="">All Phases</option>
+                        @if (ViewBag.Phases != null)
+                        {
+                            @foreach (var phase in ViewBag.Phases)
+                            {
+                                <option value="@phase.Value">@phase.Text</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="" disabled>No phases available</option>
+                        }
+                    </select>
+                </div>
+
+
+
+
+
+                <!-- Reset Button - 3 columns (matches input width) -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <button id="resetFiltersBtn" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-undo me-2"></i>Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        $(document).ready(function() {
+            // Initialize all Select2 elements
+            $('.select2').select2({
+                width: '100%',
+                placeholder: function() {
+                    return $(this).data('placeholder') || "Select an option";
+                },
+                allowClear: true
+            });
+        });
+    </script>
+
+    <!-- Data Table Card -->
+    <div class="card border-0 shadow-sm p-2">
+        <!-- Table Container with Forced Visibility -->
+        <div id="claimDataContainer" style="display: block; visibility: visible; opacity: 1;">
+            <!-- Basic Table Structure -->
+            <table id="claimTable" class="table table-striped" style="width:100%; visibility: visible !important;">
+                <thead style="display: table-header-group !important;">
+                    <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>NationalId</th>
+                        <th>Centre</th>
+                        <th>Role</th>
+                        <th>Date</th>
+                        <th>Regional Manager</th>
+                        <th>initiator</th>
+                        <th>Reviewer</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody style="display: table-row-group !important;">
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+
+
+
+    </div>
+
+
+
+
+@if (User.IsInRole("Accounts"))
+{
+    @section Scripts {
+            <script>
+                $(document).ready(function() {
+                console.log("Starting data load...");
+
+
+
+                // Initialize table variable only once
+                var table = initializeDataTable();
+                var currentFilters = {
+                regionFilter: '',
+                phaseFilter : '',
+                sessionFilter:''
+                };
+
+                // Load data initially
+                loadAndRenderTable();
+
+                function initializeDataTable() {
+                return $('#claimTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                responsive: true,
+                serverSide: false,
+                ajax: null
+                });
+                }
+
+                function loadAndRenderTable() {
+                console.log("Loading monitor data with filters:", currentFilters);
+                currentFilters.regionFilter = $('#regionFilter').val();
+
+                $.ajax({
+                url: '/ExamMonitorsTandSs/GetApprovedTandSs',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(currentFilters),
+                success: function(response) {
+                console.log("Data received:", response);
+                var data = response.data || response;
+
+                if (!Array.isArray(data)) {
+                console.error("Data is not an array:", data);
+
+                return;
+                }
+
+                table.clear().draw();
+
+                           if (data.length === 0) {
+                    table.draw(); // DataTables will auto show "No records found"
+                    return;
+                }
+
+                data.forEach(function(item) {
+                table.row.add([
+                item.firstName || '-',
+                item.lastName || '-',
+                item.nationalId || '-',
+                item.centre || '-',
+                item.status || '-',
+                item.date || '-',
+                item.regionalManager || '-',
+                item.initiator || '-',
+                item.reviewer || '-',
+
+
+
+                ` <div class="d-flex flex-nowrap gap-2">
+
+                <a href="/ExamMonitorsTandSs/SendClaimApproved?claimId=${encodeURIComponent(item.claimId)}&subKey=${encodeURIComponent(item.subKey)}"
+                class="btn btn-sm text-white edit-btn px-3 py-1 d-flex align-items-center"
+                style="background-color:#153355;">
+                <i class="fas fa-eye"></i> View
+                </a>
+                <button class="btn btn-sm btn-danger delete-btn px-3 py-1 d-flex align-items-center"
+                data-id="${item.subKey}">
+                <i class="fas fa-trash-alt me-2"></i>
+                <span>Remove</span>
+                </button>
+                </div>`
+                ]);
+                });
+
+                table.draw();
+                $('#claimDataContainer').show();
+                $('#claimTable').show().css('visibility', 'visible');
+                },
+                error: function(xhr) {
+                console.error("Failed to load data:", xhr.responseText);
+
+                }
+                });
+                }
+
+                // Filter handlers
+                function applyFilters() {
+                currentFilters = {
+                regionFilter: $('#regionFilter').val(),
+                phaseFilter :  $('#phaseFilter').val(),
+                sessionFilter :  $('#sessionFilter').val(),
+                };
+                loadAndRenderTable();
+                }
+
+                $('#regionFilter,#phaseFilter,#sessionFilter').on('change', applyFilters);
+
+
+                $('#resetFiltersBtn').on('click', function() {
+                $('#regionFilter,#phaseFilter,#sessionFilter').val('').trigger('change');
+
+                currentFilters = {
+                regionFilter: '',
+
+                phaseFilter:'',
+                sessionFilter: ''
+                };
+                loadAndRenderTable();
+                });
+
+
+
+                // Delete button handler - using document for delegation
+                $(document).on('click', '.delete-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var subKey = $(this).data('id');
+                var $button = $(this);
+
+                Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#153355',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!',
+                allowOutsideClick: false
+                }).then((result) => {
+                if (result.isConfirmed) {
+                Swal.fire({
+                title: 'Deleting...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+                });
+
+                $.ajax({
+                url: '/ExamMonitorTandSs/DeleteTandS',
+                type: 'POST',
+                data: {
+                subkey: subkey,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                Swal.close();
+                if (response && response.success) {
+                Swal.fire({
+                icon: 'success',
+                title: 'Deleted!',
+                text: response.message || 'Transaction deleted successfully',
+                confirmButtonColor: '#153355'
+                }).then(() => {
+                $button.closest('tr').fadeOut(400, function() {
+                table.row(this).remove().draw(false);
+                });
+                });
+                } else {
+                showError(response?.message || 'Failed to delete transaction');
+                }
+                },
+                error: function(xhr) {
+                Swal.close();
+                showError(xhr.responseJSON?.message || xhr.statusText);
+                }
+                });
+                }
+                });
+                });
+
+                function showError(message) {
+                Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message,
+                confirmButtonColor: '#153355'
+                });
+                }
+
+
+                });
+
+            </script>
+
+    }
+
+}
+
+@if (User.IsInRole("PeerReviewer"))
+{
+
+    @section Scripts {
+            <script>
+                $(document).ready(function() {
+                console.log("Starting data load...");
+
+
+
+                // Initialize table variable only once
+                var table = initializeDataTable();
+                var currentFilters = {
+                regionFilter: '',
+                phaseFilter : '',
+                sessionFilter:''
+                };
+
+                // Load data initially
+                loadAndRenderTable();
+
+                function initializeDataTable() {
+                return $('#claimTable').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true,
+                responsive: true,
+                serverSide: false,
+                ajax: null
+                });
+                }
+
+                function loadAndRenderTable() {
+                console.log("Loading monitor data with filters:", currentFilters);
+                currentFilters.regionFilter = $('#regionFilter').val();
+
+                $.ajax({
+                url: '/ExamMonitorsTandSs/GetApprovedTandSs',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(currentFilters),
+                success: function(response) {
+                console.log("Data received:", response);
+                var data = response.data || response;
+
+                if (!Array.isArray(data)) {
+                console.error("Data is not an array:", data);
+
+                return;
+                }
+
+                table.clear().draw();
+
+                            if (data.length === 0) {
+                    table.draw(); // DataTables will auto show "No records found"
+                    return;
+                }
+
+
+                data.forEach(function(item) {
+                table.row.add([
+                item.firstName || '-',
+                item.lastName || '-',
+                item.nationalId || '-',
+                item.centre || '-',
+                item.status || '-',
+                item.date || '-',
+                item.regionalManager || '-',
+                item.initiator || '-',
+                item.reviewer || '-',
+
+
+
+                ` <div class="d-flex flex-nowrap gap-2">
+
+                <a href="/ExamMonitorsTandSs/SendClaimApproved?claimId=${encodeURIComponent(item.claimId)}&subKey=${encodeURIComponent(item.subKey)}"
+                class="btn btn-sm text-white edit-btn px-3 py-1 d-flex align-items-center"
+                style="background-color:#153355;">
+                <i class="fas fa-eye"></i> View
+                </a>
+                <button class="btn btn-sm btn-danger delete-btn px-3 py-1 d-flex align-items-center"
+                data-id="${item.subKey}">
+                <i class="fas fa-trash-alt me-2"></i>
+                <span>Remove</span>
+                </button>
+                </div>`
+                ]);
+                });
+
+                table.draw();
+                $('#claimDataContainer').show();
+                $('#claimTable').show().css('visibility', 'visible');
+                },
+                error: function(xhr) {
+                console.error("Failed to load data:", xhr.responseText);
+
+                }
+                });
+                }
+
+                // Filter handlers
+                function applyFilters() {
+                currentFilters = {
+                regionFilter: $('#regionFilter').val(),
+                phaseFilter :  $('#phaseFilter').val(),
+                sessionFilter :  $('#sessionFilter').val(),
+                };
+                loadAndRenderTable();
+                }
+
+                $('#regionFilter,#phaseFilter,#sessionFilter').on('change', applyFilters);
+
+
+                $('#resetFiltersBtn').on('click', function() {
+                $('#regionFilter,#phaseFilter,#sessionFilter').val('').trigger('change');
+
+                currentFilters = {
+                regionFilter: '',
+
+                phaseFilter:'',
+                sessionFilter: ''
+                };
+                loadAndRenderTable();
+                });
+
+
+
+                // Delete button handler - using document for delegation
+                $(document).on('click', '.delete-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var subKey = $(this).data('id');
+                var $button = $(this);
+
+                Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#153355',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!',
+                allowOutsideClick: false
+                }).then((result) => {
+                if (result.isConfirmed) {
+                Swal.fire({
+                title: 'Deleting...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+                });
+
+                $.ajax({
+                url: '/ExamMonitorTandSs/DeleteTandS',
+                type: 'POST',
+                data: {
+                subkey: subkey,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                Swal.close();
+                if (response && response.success) {
+                Swal.fire({
+                icon: 'success',
+                title: 'Deleted!',
+                text: response.message || 'Transaction deleted successfully',
+                confirmButtonColor: '#153355'
+                }).then(() => {
+                $button.closest('tr').fadeOut(400, function() {
+                table.row(this).remove().draw(false);
+                });
+                });
+                } else {
+                showError(response?.message || 'Failed to delete transaction');
+                }
+                },
+                error: function(xhr) {
+                Swal.close();
+                showError(xhr.responseJSON?.message || xhr.statusText);
+                }
+                });
+                }
+                });
+                });
+
+                function showError(message) {
+                Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message,
+                confirmButtonColor: '#153355'
+                });
+                }
+
+
+                });
+
+            </script>
+
+    }
+}
+
+
+
+
+
+

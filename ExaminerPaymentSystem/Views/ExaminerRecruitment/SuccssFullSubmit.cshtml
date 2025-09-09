@@ -1,0 +1,38 @@
+﻿
+@{
+    Layout = "_CustomLayout";
+    ViewData["Title"] = "Examiner Recruitment";
+}
+<style>
+    body {
+        background: linear-gradient(to bottom right, #6c757d, #ffffff);
+        font-family: Arial, sans-serif;
+    }
+
+    .hero {
+        text-align: center;
+        padding: 100px 20px;
+        color: #153355;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        margin: 50px auto;
+        max-width: 800px;
+    }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 30px;
+        }
+</style>
+
+<!-- Hero Section -->
+<div class="hero bg-light text-white">
+    <h1 class="text-black">Thank You!</h1>
+    <p class="text-black">Your form has been successfully submitted. We will review your information and get back to you.</p>
+    <a href="/Identity/Account/Login" class="btn btn-secondary btn-lg mt-3">Go Back to Home</a>
+</div>

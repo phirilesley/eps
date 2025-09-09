@@ -1,0 +1,184 @@
+﻿@model ExaminerPaymentSystem.Models.ExamMonitorRegisterViewModel
+@inject SignInManager<ApplicationUser> SignInManager
+@{
+    ViewData["Title"] = "Register";
+    var user = await SignInManager.UserManager.GetUserAsync(User);
+    var today = DateTime.Today;
+}
+
+<style>
+    .empty-comment {
+        border-color: #dc3545 !important;
+        background-color: #fff5f5 !important;
+    }
+
+    .future-date {
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+
+        .future-date input {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+</style>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white py-3" style="background-color:">
+            <h2 class="h5 mb-0">Register</h2>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success" role="alert">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            <form asp-action="Create" method="post" id="registerForm">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <input type="hidden" asp-for="SubKey" />
+                <input type="hidden" asp-for="NationalId" />
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label class="small font-weight-bold">Centre Number</label>
+                            <input asp-for="ClusterName" class="form-control form-control-sm" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label class="small font-weight-bold">Applicant Name</label>
+                            <input asp-for="ClusterManagersName" class="form-control form-control-sm" value="@user.UserName" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label class="small font-weight-bold">District</label>
+                            <input asp-for="District" class="form-control form-control-sm" readonly />
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="border-bottom pb-2 mb-3">Exam Dates and Comments</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th style="width: 160px;">Date</th>
+                                <th>Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.ExamDates.Count; i++)
+                            {
+                                var isFutureDate = Model.ExamDates[i].Date > today;
+                                <tr class="@(isFutureDate ? "future-date" : "")">
+                                    <td class="align-middle small">
+                                        @Model.ExamDates[i].Date.ToString("dd/MM/yyyy")
+                                        <input type="hidden" asp-for="@Model.ExamDates[i].Date" />
+                                    </td>
+                                    <td>
+                                        @if (isFutureDate)
+                                        {
+                                            <input asp-for="@Model.ExamDates[i].Comment" class="form-control form-control-sm" readonly />
+                                        }
+                                        else
+                                        {
+                                            <input asp-for="@Model.ExamDates[i].Comment" class="form-control form-control-sm" />
+                                            <span asp-validation-for="@Model.ExamDates[i].Comment" class="text-danger"></span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-primary px-4" id="submitButton">
+                        <i class="fas fa-check-circle mr-2"></i>Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <script>
+        $(document).ready(function () {
+            // Completely disable future date fields
+            $('.future-date input').prop('disabled', true);
+
+            // Handle form submission
+            $('#registerForm').submit(function(e) {
+                // Clear previous validations
+                $('.text-danger').text('');
+                $('.empty-comment').removeClass('empty-comment');
+
+                let isValid = true;
+                let firstError = null;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // Validate only dates <= today
+                $('input[name*="Comment"]').each(function() {
+                    const dateStr = $(this).closest('tr').find('td:first').text().trim();
+                    const dateParts = dateStr.split('/');
+                    const rowDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                    rowDate.setHours(0, 0, 0, 0);
+
+                    if (rowDate <= today && !$(this).val().trim()) {
+                        $(this).addClass('empty-comment');
+                        $(this).closest('td').find('.text-danger').text('Comment is required');
+                        isValid = false;
+
+                        if (!firstError) {
+                            firstError = $(this);
+                        }
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    if (firstError) {
+                        $('html, body').animate({
+                            scrollTop: firstError.offset().top - 100
+                        }, 500);
+                    }
+                    return false;
+                }
+
+                return true; // Allow submission if valid
+            });
+        });
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

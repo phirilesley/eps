@@ -1,0 +1,242 @@
+﻿@model Examiner
+
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+Repo
+@{
+    ViewBag.Title = "Change Subject";
+
+    IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+    IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+    var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+    int currentYear = DateTime.Now.Year;
+    int lastYear = currentYear - 1;
+
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+
+}
+
+
+<script>
+    $(document).ready(function () {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '@TempData["SuccessMessage"]',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+        </text>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '@TempData["ErrorMessage"]',
+                    showConfirmButton: true
+                });
+        </text>
+    }
+                });
+</script>
+
+
+<h1 class="mb-3 text-center" style="color:#123255;">Change Subject</h1>
+
+<form asp-action="ChangeSubject" class="needs-validation mb-5" novalidate>
+    <input asp-for="EMS_EXAMINER_CODE" type="hidden" />
+    <input asp-for="EMS_SUBKEY" type="hidden" />
+
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+           @*  <h4 class="mb-0">Personal Details</h4> *@
+        </div>
+        <div class="row mb-3">
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_NATIONAL_ID" id="emsNationalId" class="form-control" placeholder="Examiner National ID" readonly />
+                    <label asp-for="EMS_NATIONAL_ID">National ID</label>
+                    <span asp-validation-for="EMS_NATIONAL_ID" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_EXAMINER_NAME" class="form-control form-control-sm" placeholder="Examiner Name" readonly />
+                    <label asp-for="EMS_EXAMINER_NAME">Examiner Name</label>
+                    <span asp-validation-for="EMS_EXAMINER_NAME" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_LAST_NAME" class="form-control form-control-sm" placeholder="Examiner Last Name" readonly />
+                    <label asp-for="EMS_LAST_NAME">Examiner Last Name</label>
+                    <span asp-validation-for="EMS_LAST_NAME" class="text-danger"></span>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="row mb-3">
+
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_SUB_SUB_ID" class="form-control" id="addExamCode" required>
+                        <option value="">-- Select Session --</option>
+                        @{
+                          
+
+                            foreach (var examCod in examCodes)
+                            {
+                                if (int.TryParse(examCod.EXM_EXAM_YEAR, out int examYear))
+                                {
+                                    if (examCod.ACTIVATED_SESSION == "Activated")
+                                    {
+                                        <option value="@examCod.EXM_EXAM_CODE">@examCod.EXM_EXAM_LEVEL @examCod.EXM_EXAM_SESSION @examCod.EXM_EXAM_YEAR</option>
+                                    }
+                                }
+                            }
+                        }
+                    </select>
+                    <label asp-for="EMS_SUB_SUB_ID">Exam Session:</label>
+                    <span asp-validation-for="EMS_SUB_SUB_ID" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_SUB_SUB_ID" class="form-control" id="addSubject" required>
+                        <option value="">-- Select Subject --</option>
+                        <!-- Options dynamically populated -->
+                    </select>
+                    <label asp-for="EMS_SUB_SUB_ID">Subject Code:</label>
+                    <span asp-validation-for="EMS_SUB_SUB_ID" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_PAPER_CODE" class="form-control" id="addPaperCode" required>
+                        <option value="">-- Select Paper Code --</option>
+                        <!-- Options dynamically populated -->
+                    </select>
+                    <label asp-for="EMS_PAPER_CODE">BMS Code</label>
+                    <span asp-validation-for="EMS_PAPER_CODE" class="text-danger"></span>
+                </div>
+            </div>
+
+
+        </div>
+
+
+
+
+    </div>
+
+
+
+    <div class="row mb-3">
+        <div class="col-12 col-md-6 mb-3">
+            <button class="btn text-white w-100" type="submit" style="background-color: #153355;">
+                <i class="fas fa-save mr-2"></i>
+                Save
+            </button>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <a class="btn btn-danger w-100" href="@Url.Action("ExaminerList", "Examiner")">
+                <i class="fas fa-times mr-2"></i>
+                Cancel
+            </a>
+        </div>
+    </div>
+
+</form>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+    }
+
+
+}
+
+
+
+
+
+
+
+<script>
+    $(document).ready(function () {
+        var subjects = @Html.Raw(subjectArray);
+
+        // Function to populate subject dropdown based on selected exam code
+        $('#addExamCode').change(function () {
+            console.log("Exam code selection changed");
+            var selectedExamCode = $(this).val();
+            console.log("Selected exam code: " + selectedExamCode);
+            var subjectSelect = $('#addSubject');
+            subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+            // Filter subjects based on selected exam code and remove duplicates
+            var uniqueSubjects = {};
+            subjects.forEach(function (subject) {
+                var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                if (subSubIdPrefix === selectedExamCode) {
+                    uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                }
+            });
+
+            // Populate subject dropdown with unique subjects
+            Object.keys(uniqueSubjects).forEach(function (key) {
+                var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                console.log("Appended subject: " + key);
+            });
+        });
+
+        // Function to populate paper code dropdown based on selected subject
+        $('#addSubject').change(function () {
+            console.log("Subject selection changed");
+            var selectedSubjectId = $(this).val();
+            console.log("Selected subject ID: " + selectedSubjectId);
+            var paperCodeSelect = $('#addPaperCode');
+            paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+            if (selectedSubjectId) {
+                // Make an AJAX call to get the paper codes
+                $.ajax({
+                    url: '@Url.Action("GetPaperCodes", "Subjects")',
+                    type: 'GET',
+                    data: { subjectCode: selectedSubjectId },
+                    success: function (data) {
+                        data.forEach(function (paperCode) {
+                            paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+                            console.log("Appended paper code: " + paperCode.ppR_PAPER_CODE);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching paper codes: " + error);
+                    }
+                });
+            }
+        });
+    });
+</script>

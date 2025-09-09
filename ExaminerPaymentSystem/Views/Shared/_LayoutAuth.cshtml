@@ -1,0 +1,201 @@
+﻿
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+@inject Microsoft.Extensions.Options.IOptions<AppInfo> AppInfo
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] -    @AppInfo.Value.SystemName</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="~/lib/font-awesome/css/all.css" rel="stylesheet" />
+    <link href="~/css/home.css" rel="stylesheet" />
+
+
+    <link href="~/css/datatables.css" rel="stylesheet" />
+    <link href="~/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="~/css/buttons.dataTables.min.css" rel="stylesheet" />
+
+
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+
+    <link rel="stylesheet" href="~/ExaminerPaymentSystem.styles.css" asp-append-version="true" />
+
+
+    <script src="~/js/jquery-3.6.0.min.js"></script>
+
+    <script src="~/js/jquery.dataTables.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/dataTables.buttons.min.js"></script>
+    <script src="~/js/jszip.min.js"></script>
+    <script src="~/js/pdfmake.min.js"></script>
+    <script src="~/js/vfs_fonts.js"></script>
+    <script src="~/js/buttons.html5.min.js"></script>
+    <script src="~/js/buttons.print.min.js"></script>
+
+
+
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+
+    <script src="~/js/sweetalert2.all.js"></script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+   
+    <style>
+        .nav-item {
+            font-size: 15px;
+            padding: 5px 0;
+        }
+
+        /* Main content wrapper */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 60px; /* Space for footer */
+        }
+    
+        /* New CSS for proper footer placement */
+        .content-wrapper {
+            flex: 1;
+            position: relative; /* For watermark positioning */
+            padding-bottom: 60px; /* Footer height + some space */
+        }
+
+        .footer {
+            background: linear-gradient(135deg, #0d2440, #153355);
+            color: white;
+            padding: 1rem 0;
+            margin-top: auto;
+        }
+
+            .footer::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+            
+            }
+
+        .footer-logo {
+            transition: transform 0.3s ease;
+        }
+
+            .footer-logo:hover {
+                transform: rotate(15deg) scale(1.1);
+            }
+
+        .hover-underline {
+            position: relative;
+            padding-bottom: 2px;
+        }
+
+            .hover-underline::after {
+                content: "";
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0;
+                height: 1px;
+                background-color: white;
+                transition: width 0.3s ease;
+            }
+
+            .hover-underline:hover::after {
+                width: 100%;
+            }
+
+        .footer-links a {
+            transition: all 0.3s ease;
+        }
+
+            .footer-links a:hover {
+                color: #ffc107 !important;
+                transform: translateY(-2px);
+            }
+
+ 
+    </style>
+
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light border-bottom box-shadow mb-3" style="background-color:#153355; color:white;">
+            <div class="container-fluid">
+                <div class="d-flex align-items-center">
+                    @if (!SignInManager.IsSignedIn(User))
+                    {
+                        <img class="image-reround" src="~/Images/logo.jpeg" alt="Logo" style="height: 40px; width: 40px;">
+                        <a class="navbar-brand text-white fw-normal fs-5 ms-2" asp-area="" asp-controller="Home" asp-action="Index">
+                            @AppInfo.Value.SystemName
+                        </a>
+                    }
+                </div>
+                <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon" style="background-color:white;"></span>
+                </button>
+                <div class="collapse navbar-collapse d-sm-inline-flex flex-sm-row-reverse" id="navbarNav">
+                    <partial name="_LoginPartial" />
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <!-- Additional signed-in user content here -->
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+   
+
+
+
+
+
+    <div class="main-content">
+        <div class="watermark"></div>
+     
+            @RenderBody()
+       
+
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start">
+                        <img src="~/Images/logo.jpeg" alt="Logo" style="height: 20px; width: 20px; margin-right: 8px;">
+                        <span>&copy; @DateTime.Now.Year -    @AppInfo.Value.SystemName</span>
+                    </div>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <div class="footer-links">
+                        <a href="#" class="text-white mx-2 text-decoration-none">Privacy</a>
+                        <a href="#" class="text-white mx-2 text-decoration-none">Terms</a>
+                        <a href="#" class="text-white mx-2 text-decoration-none">Contact</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+
+
+
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

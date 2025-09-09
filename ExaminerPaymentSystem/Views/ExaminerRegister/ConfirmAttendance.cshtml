@@ -1,0 +1,111 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model ConfirmAttendanceViewModel
+
+
+@{
+    Layout = "~/Views/Shared/Confimation.cshtml";
+}
+
+<style>
+    .email-container {
+        max-width: 600px;
+        margin: 20px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .header {
+        background-color: #153355;
+        color: #ffffff;
+        padding: 20px;
+        text-align: center;
+    }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+    .content {
+        padding: 20px;
+        font-size: 16px;
+    }
+
+        .content p {
+            margin: 0 0 15px;
+        }
+
+    .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+        .buttons a {
+            text-decoration: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            color: #ffffff;
+        }
+
+        .buttons .yes {
+            background-color: #153355;
+        }
+
+        .buttons .no {
+            background-color: #e02d2d;
+        }
+
+    .footer {
+        background-color: #f4f4f7;
+        padding: 15px;
+        text-align: center;
+        font-size: 14px;
+        color: #666666;
+    }
+</style>
+
+
+
+<div class="email-container">
+    <!-- Header -->
+    <div class="header">
+        <h1>Confirmation of Attendance to the @Model.Month @Model.Year </h1>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <p>Dear <strong>@Model.FirstName @Model.LastName</strong>,</p>
+
+        <p>Subject: <strong>@Model.Subject / @Model.PaperCode</strong></p>
+
+        <p>We hope this message finds you well. </p>
+        <p>As we prepare we kindly request your confirmation of attendance.</p>
+
+        <p style="font-weight:bold;">To confirm click Yes and Reject No !!!!</p>
+
+        <!-- Action Buttons -->
+        <div class="buttons">
+            <a href="@Url.Action("ConfirmAttendancee", "ExaminerRegister", new { status = "Yes",subKey =Model.SubKey,examinerCode
+            = Model.ExaminerCode,idNumber = Model.IdNumber})" class="yes">Yes</a>
+            <a href="@Url.Action("ConfirmAttendancee", "ExaminerRegister", new { status = "No",subKey =Model.SubKey,examinerCode
+            = Model.ExaminerCode,idNumber = Model.IdNumber })" class="no">No</a>
+        </div>
+
+        <p>Your continued service is greatly appreciated.</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <p>Thank you for your dedication and support.</p>
+        <p>Best regards,<br><strong>ZIMSEC</strong></p>
+    </div>
+</div>
+
+

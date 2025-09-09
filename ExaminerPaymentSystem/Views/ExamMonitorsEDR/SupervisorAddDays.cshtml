@@ -1,0 +1,519 @@
+﻿@model SupervisorAddDaysViewModel
+@{
+    ViewData["Title"] = "Add Extra Days";
+
+    string regionCode = ViewBag.RegionCode ?? "";
+}
+<link href="/css/monitorlist.css" rel="stylesheet" />
+<style>
+    .badge.bg-pink {
+        background-color: #ff69b4;
+        color: white;
+    }
+
+    .btn-sm .fa-icon {
+        font-size: 0.9em;
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .display-6 {
+        font-size: 1.5rem;
+    }
+
+    :root {
+        --primary-color: #153355;
+        --secondary-color: #4a8c5f;
+        --accent-color: #e63946;
+        --light-bg: #f8f9fa;
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+        background-color: #f5f7f9;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .header-container {
+        position: relative;
+        padding-bottom: 10px;
+    }
+
+    .accent-line {
+        height: 4px;
+        width: 80px;
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        border-radius: 2px;
+        margin-top: 8px;
+    }
+
+    .text-gradient {
+        background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .region-badge {
+        font-size: 0.6em;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 20px;
+        vertical-align: middle;
+    }
+
+    .card {
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+        transition: transform 0.2s;
+        margin-bottom: 20px;
+    }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+    .filter-card {
+        background-color: white;
+    }
+
+    .action-card {
+        background: linear-gradient(135deg, #153355 0%, #1e4a6e 100%);
+        color: white;
+    }
+
+    .btn-primary-custom {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+        .btn-primary-custom:hover {
+            background-color: #0f2642;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+    .btn-custom {
+        background-color: #153355;
+        color: white;
+        border: 1px solid #153355;
+    }
+
+        .btn-custom:hover {
+            background-color: #0f2642;
+            border-color: #0f2642;
+            color: white;
+        }
+
+    .btn-outline-custom {
+        color: #153355;
+        border-color: #153355;
+        background-color: transparent;
+    }
+
+        .btn-outline-custom:hover {
+            color: white;
+            background-color: #153355;
+            border-color: #153355;
+        }
+
+    .filter-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+
+    .form-select {
+        border-radius: 6px;
+        padding: 10px;
+        border: 1px solid #ced4da;
+    }
+
+    .action-icon {
+        font-size: 2rem;
+        margin-bottom: 15px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .section-title {
+        position: relative;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 40px;
+            background-color: var(--secondary-color);
+            border-radius: 3px;
+        }
+
+    .code-container {
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+        padding: 20px;
+        border-radius: 8px;
+        font-family: 'Fira Code', monospace;
+        overflow-x: auto;
+        margin-top: 30px;
+    }
+
+    .code-comment {
+        color: #6a9955;
+    }
+
+    .code-keyword {
+        color: #569cd6;
+    }
+
+    .code-function {
+        color: #dcdcaa;
+    }
+
+    .code-string {
+        color: #ce9178;
+    }
+
+    .code-var {
+        color: #9cdcfe;
+    }
+
+    /* Make Select2 match Bootstrap form control height */
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px !important;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+    @if (TempData["SuccessMessage"] != null)
+    {
+                    <text>
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: '@TempData["SuccessMessage"]',
+                                showConfirmButton: false,
+                                timer: 2000
+                            });
+                    </text>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+                    <text>
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                    text: '@TempData["ErrorMessage"]',
+                                showConfirmButton: true
+                            });
+                    </text>
+    }
+            });
+</script>
+
+<div class="container-fluid px-4 mt-3">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2">
+        <div>
+            <div class="header-container mb-4">
+                <h5 class="display-6 fw-bold text-gradient mb-1">
+                    @ViewData["Title"]
+                    @if (User.IsInRole("RegionalManager"))
+                    {
+                        <span class="region-badge text-white">Region: @regionCode</span>
+                    }
+                </h5>
+                <div class="accent-line"></div>
+            </div>
+        </div>
+        
+    </div>
+
+
+    <div class="card border-0 shadow-sm mb-2 p-2">
+        <div class="card-body">
+<form asp-controller="ExamMonitorsEDR" asp-action="SupervisorSelectPhaseSession" method="post">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="form-group">
+                <label asp-for="Phase">Phase</label>
+                <select asp-for="Phase" class="form-select">
+                    <option value="">---Select Phases---</option>
+                    @if (ViewBag.Phases != null)
+                    {
+                        @foreach (var phase in ViewBag.Phases)
+                        {
+                            <option value="@phase.Value">@phase.Text</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="" disabled>No phases available</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <div class="form-group">
+                <label asp-for="Session">Session</label>
+                <select asp-for="Session" class="form-select">
+                    <option value="">---Select Sessions---</option>
+                    @if (ViewBag.Sessions != null)
+                    {
+                        @foreach (var session in ViewBag.Sessions)
+                        {
+                            <option value="@session.Value">@session.Text</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="" disabled>No sessions available</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-outline-custom form-control">Show Monitors</button>
+            </div>
+        </div>
+    </div>
+</form>
+</div>
+    </div>  
+
+
+@if (Model.AvailablePeople != null && Model.AvailablePeople.Any())
+{
+
+      <div class="card border-0 shadow-sm mb-2 p-2">
+       
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Select Monitor</h3>
+                <span class="badge bg-secondary" id="resultCount">@Model.AvailablePeople.Count monitors</span>
+            </div>
+
+            <!-- Search Input with clear button -->
+            <div class="input-group mb-3">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" id="peopleSearch" class="form-control" placeholder="Search by name or ID..." />
+                <button id="clearSearch" class="btn btn-outline-secondary" type="button">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Sort options -->
+            <div class="btn-group mb-3" role="group">
+                <button type="button" class="btn btn-outline-primary sort-btn active" data-sort="name">
+                    Sort by Name
+                </button>
+                <button type="button" class="btn btn-outline-primary sort-btn" data-sort="id">
+                    Sort by ID
+                </button>
+            </div>
+
+            <div class="list-group" id="peopleList">
+                @foreach (var person in Model.AvailablePeople.OrderBy(p => p.Name))
+                {
+                    <a href="@Url.Action("SupervisorSelectPerson", "ExamMonitorsEDR", new { personId = person.Id, subKey = person.SubKey, phase = Model.Phase, session = Model.Session })"
+                       class="list-group-item list-group-item-action people-item" data-name="@person.Name.ToLower()" data-id="@person.Id">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong class="person-name">@person.Name</strong>
+                                <br />
+                                <small class="text-muted">ID: <span class="person-id">@person.Id</span></small>
+                            </div>
+                            <i class="fas fa-chevron-right text-muted"></i>
+                        </div>
+                    </a>
+                }
+            </div>
+
+            <!-- No results message -->
+            <div id="noResults" class="alert alert-warning mt-3" style="display: none;">
+                <i class="fas fa-search me-2"></i>No monitors found matching your search.
+            </div>
+        </div>
+    </div>
+   
+        </div>
+}
+
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            let currentSort = 'name';
+            let ascending = true;
+
+            // Search functionality
+            $('#peopleSearch').on('keyup', function() {
+                performSearch();
+            });
+
+            // Clear search
+            $('#clearSearch').on('click', function() {
+                $('#peopleSearch').val('').focus();
+                performSearch();
+            });
+
+            // Sort functionality
+            $('.sort-btn').on('click', function() {
+                $('.sort-btn').removeClass('active');
+                $(this).addClass('active');
+
+                currentSort = $(this).data('sort');
+                performSearch();
+            });
+
+            function performSearch() {
+                var searchText = $('#peopleSearch').val().toLowerCase();
+                var visibleCount = 0;
+
+                // Search through each person item
+                $('.people-item').each(function() {
+                    var personName = $(this).data('name');
+                    var personId = $(this).data('id').toString();
+                    var isVisible = false;
+
+                    if (searchText === '' ||
+                        personName.includes(searchText) ||
+                        personId.includes(searchText)) {
+                        $(this).show();
+                        visibleCount++;
+                        isVisible = true;
+                    } else {
+                        $(this).hide();
+                    }
+
+                    // Highlight matching text
+                    if (isVisible && searchText !== '') {
+                        highlightText($(this).find('.person-name'), searchText);
+                        highlightText($(this).find('.person-id'), searchText);
+                    } else {
+                        $(this).find('.highlight').contents().unwrap();
+                    }
+                });
+
+                // Update result count
+                $('#resultCount').text(visibleCount + ' monitors');
+
+                // Show/hide no results message
+                if (visibleCount > 0 || searchText === '') {
+                    $('#noResults').hide();
+                } else {
+                    $('#noResults').show();
+                }
+
+                // Sort results
+                sortResults();
+            }
+
+            function highlightText(element, searchText) {
+                var text = element.text();
+                var regex = new RegExp('(' + searchText + ')', 'gi');
+                var newText = text.replace(regex, '<span class="highlight">$1</span>');
+                element.html(newText);
+            }
+
+            function sortResults() {
+                var $container = $('#peopleList');
+                var $items = $('.people-item:visible');
+
+                $items.sort(function(a, b) {
+                    var aValue, bValue;
+
+                    if (currentSort === 'name') {
+                        aValue = $(a).data('name');
+                        bValue = $(b).data('name');
+                    } else {
+                        aValue = $(a).data('id');
+                        bValue = $(b).data('id');
+                    }
+
+                    if (ascending) {
+                        return aValue > bValue ? 1 : -1;
+                    } else {
+                        return aValue < bValue ? 1 : -1;
+                    }
+                });
+
+                $container.append($items);
+            }
+
+            // Focus on search input when page loads with results
+            @if (Model.AvailablePeople != null && Model.AvailablePeople.Any())
+            {
+                    <text>
+                    $('#peopleSearch').focus();
+                    </text>
+            }
+        });
+    </script>
+
+    <style>
+        .people-item {
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+            .people-item:hover {
+                border-left-color: #153355;
+                background-color: #f8f9fa;
+            }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        #peopleSearch {
+            border-radius: 6px;
+        }
+
+        .sort-btn.active {
+            background-color: #153355;
+            color: white;
+        }
+
+        #clearSearch:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+}

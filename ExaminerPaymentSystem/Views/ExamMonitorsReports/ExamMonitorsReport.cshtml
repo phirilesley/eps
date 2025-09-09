@@ -1,0 +1,583 @@
+﻿@model MonitorsReportViewModel
+@inject SignInManager<ApplicationUser> SignInManager
+
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+
+<style>
+    :root {
+        --primary: #153355;
+        --primary-light: #e8f1ff;
+        --secondary: #6f42c1;
+        --success: #1cc88a;
+        --info: #36b9cc;
+        --warning: #f6c23e;
+        --danger: #e74a3b;
+        --light: #f8f9fc;
+        --dark: #5a5c69;
+    }
+
+    body {
+        background-color: #f8f9fc;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+        background-color: white;
+        border-bottom: 1px solid #eaecf4;
+        padding: 1rem 1.5rem;
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .nav-tabs .nav-link {
+        color: var(--gray-700);
+        font-weight: 500;
+        padding: 0.75rem 1.25rem;
+        border: none;
+        border-bottom: 3px solid transparent;
+    }
+
+        .nav-tabs .nav-link.active {
+            color: var(--primary);
+            font-weight: 600;
+            border-bottom: 3px solid var(--primary);
+            background: transparent;
+        }
+
+    .filters {
+        background-color: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 20px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+    }
+
+    .export-btn {
+        background: var(--primary);
+        border: none;
+        padding: 0.5rem 1.25rem;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s;
+    }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            color: white;
+        }
+
+    .page-title {
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+
+    .thin-stats-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .thin-stat-box {
+        flex: 1;
+        min-width: 200px;
+        background: white;
+        border-radius: 8px;
+        padding: 12px 15px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .thin-stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+    .stat-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        font-size: 16px;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .primary-icon {
+        background-color: rgba(78, 115, 223, 0.15);
+        color: var(--primary);
+    }
+
+    .success-icon {
+        background-color: rgba(28, 200, 138, 0.15);
+        color: var(--success);
+    }
+
+    .danger-icon {
+        background-color: rgba(231, 74, 59, 0.15);
+        color: var(--danger);
+    }
+
+    .warning-icon {
+        background-color: rgba(246, 194, 62, 0.15);
+        color: var(--warning);
+    }
+
+    .info-icon {
+        background-color: rgba(54, 185, 204, 0.15);
+        color: var(--info);
+    }
+
+    .badge-status {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 50rem;
+    }
+
+    .badge-new {
+        background-color: var(--info);
+        color: white;
+    }
+
+    .badge-accepted {
+        background-color: var(--success);
+        color: white;
+    }
+
+    .badge-rejected {
+        background-color: var(--danger);
+        color: white;
+    }
+
+    .badge-selected {
+        background-color: var(--warning);
+        color: white;
+    }
+
+    .badge-deployed {
+        background-color: var(--primary);
+        color: white;
+    }
+
+    .table th {
+        border-top: none;
+        font-weight: 600;
+        color: var(--dark);
+        background-color: var(--light);
+    }
+
+    .action-buttons .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .badge.bg-pink {
+        background-color: #ff69b4;
+        color: white;
+    }
+</style>
+
+<div class="container">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="page-title">Monitors Management Report</h1>
+            <p class="page-subtitle">Comprehensive overview of all monitors and their status</p>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters">
+        <div class="row">
+            @if (User.IsInRole("Accounts") || User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("PeerReviewer"))
+            {
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="regionFilter" class="form-label mb-1">Region</label>
+                        <select id="regionFilter" class="form-select">
+                            <option value="">All Regions</option>
+                            <option value="01">01 - Harare</option>
+                            <option value="02">02 - Manicaland</option>
+                            <option value="03">03 - Mashonaland East</option>
+                            <option value="04">04 - Matabeleland North</option>
+                            <option value="05">05 - Midlands</option>
+                            <option value="06">06 - Masvingo</option>
+                            <option value="07">07 - Mashonaland Central</option>
+                            <option value="08">08 - Mashonaland West</option>
+                            <option value="09">09 - Matabeleland South</option>
+                            <option value="10">10 - Bulawayo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="districtFilter" class="form-label mb-1">District</label>
+                        <select id="districtFilter" class="form-select">
+                            <option value="">All Districts</option>
+                        </select>
+                    </div>
+                </div>
+            }
+            else if (User.IsInRole("RegionalManager"))
+            {
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="districtFilter" class="form-label mb-1">District</label>
+                        <select id="districtFilter" class="form-select">
+                            <option value="All">All Districts</option>
+                            @if (ViewBag.Districts != null)
+                            {
+                                @foreach (var district in ViewBag.Districts)
+                                {
+                                    <option value="@district.Value">@district.Text</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            }
+
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="statusFilter" class="form-label mb-1">Status Filter</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="Pending">New Applications</option>
+                        <option value="Accepted">Accepted</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Selected">Selected</option>
+                        <option value="Deployed">Deployed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end">
+                <button class="btn w-100 text-white" style="background-color:#153355;" onclick="applyFilters()">
+                    <i class="fas fa-filter me-2"></i>Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="thin-stats-container">
+        <div class="thin-stat-box">
+            <div class="stat-icon primary-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">@Model.TotalMonitors</h3>
+                <p class="stat-label">Total Monitors</p>
+            </div>
+        </div>
+
+        <div class="thin-stat-box">
+            <div class="stat-icon info-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">@Model.TotalNewApplications</h3>
+                <p class="stat-label">Applications</p>
+            </div>
+        </div>
+
+        <div class="thin-stat-box">
+            <div class="stat-icon success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">@Model.TotalAccepted</h3>
+                <p class="stat-label">Shortlisted</p>
+            </div>
+        </div>
+
+        <div class="thin-stat-box">
+            <div class="stat-icon danger-icon">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">@Model.TotalRejected</h3>
+                <p class="stat-label">Rejected</p>
+            </div>
+        </div>
+
+        <div class="thin-stat-box">
+            <div class="stat-icon warning-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">@Model.TotalSelected</h3>
+                <p class="stat-label">Selected</p>
+            </div>
+        </div>
+
+        <div class="thin-stat-box">
+            <div class="stat-icon primary-icon">
+                <i class="fas fa-rocket"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-value">@Model.TotalDeployed</h3>
+                <p class="stat-label">Deployed</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" id="monitorsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="new-tab" data-bs-toggle="tab" data-bs-target="#new" type="button" role="tab">
+                <i class="fas fa-clock me-2"></i>All Monitors (@Model.TotalNewApplications)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="accepted-tab" data-bs-toggle="tab" data-bs-target="#accepted" type="button" role="tab">
+                <i class="fas fa-check-circle me-2"></i>Shortlisted (@Model.TotalAccepted)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">
+                <i class="fas fa-times-circle me-2"></i>Rejected (@Model.TotalRejected)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="selected-tab" data-bs-toggle="tab" data-bs-target="#selected" type="button" role="tab">
+                <i class="fas fa-star me-2"></i>Selected (@Model.TotalSelected)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="deployed-tab" data-bs-toggle="tab" data-bs-target="#deployed" type="button" role="tab">
+                <i class="fas fa-rocket me-2"></i>Deployed (@Model.TotalDeployed)
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="monitorsTabContent">
+        <!-- New Applications Tab -->
+        <div class="tab-pane fade show active" id="new" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-clock me-2"></i>All Applications</h5>
+                    <button class="export-btn" onclick="exportToExcel('new')">
+                        <i class="fas fa-file-export me-2"></i>Export
+                    </button>
+                </div>
+                <div class="card-body">
+                    @await Html.PartialAsync("_MonitorsTable", Model.NewApplications)
+                </div>
+            </div>
+        </div>
+
+        <!-- Accepted Monitors Tab -->
+        <div class="tab-pane fade" id="accepted" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-check-circle me-2"></i>Accepted Monitors</h5>
+                    <button class="export-btn" onclick="exportToExcel('accepted')">
+                        <i class="fas fa-file-export me-2"></i>Export
+                    </button>
+                </div>
+                <div class="card-body">
+                    @await Html.PartialAsync("_acceptedMonitors", Model.AcceptedMonitors)
+                </div>
+            </div>
+        </div>
+
+        <!-- Rejected Monitors Tab -->
+        <div class="tab-pane fade" id="rejected" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-times-circle me-2"></i>Rejected Monitors</h5>
+                    <button class="export-btn" onclick="exportToExcel('rejected')">
+                        <i class="fas fa-file-export me-2"></i>Export
+                    </button>
+                </div>
+                <div class="card-body">
+                    @await Html.PartialAsync("_rejectedMonitors", Model.RejectedMonitors)
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Monitors Tab -->
+        <div class="tab-pane fade" id="selected" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-star me-2"></i>Selected Monitors</h5>
+                    <button class="export-btn" onclick="exportToExcel('selected')">
+                        <i class="fas fa-file-export me-2"></i>Export
+                    </button>
+                </div>
+                <div class="card-body">
+                    @await Html.PartialAsync("_selectedMonitors", Model.SelectedMonitors)
+                </div>
+            </div>
+        </div>
+
+        <!-- Deployed Monitors Tab -->
+        <div class="tab-pane fade" id="deployed" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="m-0"><i class="fas fa-rocket me-2"></i>Deployed Monitors</h5>
+                    <button class="export-btn" onclick="exportToExcel('deployed')">
+                        <i class="fas fa-file-export me-2"></i>Export
+                    </button>
+                </div>
+                <div class="card-body">
+                    @await Html.PartialAsync("_deployedMonitors", Model.DeployedMonitors)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Libraries -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        // Initialize DataTables
+        $('.monitors-table').DataTable({
+            responsive: true,
+            pageLength: 10,
+            order: [[0, 'desc']],
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search monitors..."
+            }
+        });
+
+        // Update districts when region changes
+        $('#regionFilter').change(function() {
+            var region = $(this).val();
+            updateDistricts(region);
+        });
+
+        // Set initial values from model
+        $('#regionFilter').val('@Model.RegionFilter');
+        $('#districtFilter').val('@Model.DistrictFilter');
+        $('#statusFilter').val('@Model.StatusFilter');
+
+        // Update districts if region is already selected
+        if ('@Model.RegionFilter' && '@Model.RegionFilter' !== 'All') {
+            updateDistricts('@Model.RegionFilter');
+        }
+    });
+
+    function updateDistricts(region) {
+        $.post('@Url.Action("GetDistrictsByRegion", "ExamMonitorsReports")', { region: region }, function(data) {
+            var districtSelect = $('#districtFilter');
+            districtSelect.empty();
+            districtSelect.append('<option value="All">All Districts</option>');
+
+            $.each(data, function(index, item) {
+                districtSelect.append($('<option>', {
+                    value: item.value,
+                    text: item.text
+                }));
+            });
+        });
+    }
+
+    function applyFilters() {
+        var region = $('#regionFilter').val();
+        var district = $('#districtFilter').val();
+        var status = $('#statusFilter').val();
+
+        window.location.href = '@Url.Action("ExamMonitorsReport", "ExamMonitorsReports")' +
+            '?regionFilter=' + region +
+            '&districtFilter=' + district +
+            '&statusFilter=' + status;
+    }
+
+    function exportToExcel(tabName) {
+        // Implement export functionality
+        alert('Exporting ' + tabName + ' data to Excel...');
+        // You would typically make an AJAX call to an export endpoint here
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        $("#regionFilter").change(function () {
+            var regionCode = $(this).val();
+            var districtDropdown = $("#districtFilter");
+
+            districtDropdown.empty();
+            districtDropdown.append('<option value="">All Districts</option>');
+
+            if (regionCode) {
+                $.getJSON('/ExamMonitorsReports/GetDistrictsByRegion', { regionCode: regionCode }, function (data) {
+                    $.each(data, function (i, district) {
+                        districtDropdown.append('<option value="' + district.value + '">' + district.text + '</option>');
+                    });
+                });
+            }
+        });
+    });
+</script>
+
+
+            <script>
+                    function exportToExcel(tabName) {
+        var region = $('#regionFilter').val();
+        var district = $('#districtFilter').val();
+        var status = $('#statusFilter').val();
+
+        var url = '@Url.Action("ExportToExcel", "ExamMonitorsReports")'
+            + '?tabName=' + tabName
+            + '&regionFilter=' + region
+            + '&districtFilter=' + district
+            + '&statusFilter=' + status;
+
+        window.location.href = url;
+    }
+</script>

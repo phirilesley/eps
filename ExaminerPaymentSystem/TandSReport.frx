@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Report ScriptLanguage="CSharp" ReportInfo.Created="04/17/2024 11:49:58" ReportInfo.Modified="04/17/2024 16:29:48" ReportInfo.CreatorVersion="2024.2.0.0">
+  <Dictionary/>
+  <ReportPage Name="Page1" Watermark.Font="Arial, 60pt">
+    <ReportTitleBand Name="ReportTitle1" Width="718.2" Height="85.05">
+      <TextObject Name="Text1" Left="132.3" Top="18.9" Width="444.15" Height="28.35" Text="ZIMBABWE SCHOOL EXAMINATION COUNCIL" HorzAlign="Justify" Font="Arial, 14pt, style=Bold"/>
+      <TextObject Name="Text2" Left="160.65" Top="47.25" Width="368.55" Height="18.9" Text="TRAVELLING AND SUBSISTENCE CLAIM FORM(CONTRACT STAFF)" HorzAlign="Justify" Font="Arial, 8pt, style=Bold"/>
+    </ReportTitleBand>
+    <PageHeaderBand Name="PageHeader1" Top="89.05" Width="718.2" Height="132.3"/>
+    <DataBand Name="Data1" Top="225.35" Width="718.2" Height="75.6"/>
+    <PageFooterBand Name="PageFooter1" Top="304.95" Width="718.2" Height="160.65"/>
+  </ReportPage>
+</Report>

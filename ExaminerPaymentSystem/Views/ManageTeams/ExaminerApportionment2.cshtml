@@ -1,0 +1,597 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model ExaminerApportionmentViewModel
+
+@{
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+}
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-file-import" style="color: #2a5a8a;"></i> <!-- Changed icon -->
+        <h4 class="fw-bold mb-0" style="color: #153355;">
+            Organization Card :
+            <span style="color: #2a5a8a;">@subjectCode / @paperCode</span>
+        </h4>
+    </div>
+    <hr style="border-top: 1px solid black;
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+
+<div class="card shadow-sm p-4 " style="background-color: #ffffff;">
+
+
+    <form id="apportionScriptsForm" method="post" asp-action="SaveExaminerApportionment">
+        <input type="hidden" name="examCode" value="@examCode" />
+        <input type="hidden" name="subjectCode" value="@subjectCode" />
+        <input type="hidden" name="paperCode" value="@paperCode" />
+        <input type="hidden" name="regionCode" value="@regionCode" />
+        <input type="hidden" name="activity" value="@activity" />
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text text-white" style="background-color: #153355;">Total Entries</span>
+                    <input type="number" class="form-control text-white" style="background-color: #153355;" name="TotalEntries" id="TotalEntries" readonly value="@Model.TotalEntries" />
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text text-white" style="background-color: #153355;">Allowed Examiner</span>
+                    <input type="number" class="form-control text-white" style="background-color: #153355;" name="allowedExaminers" readonly value="@Model.AllowedExaminers" />
+                </div>
+            </div>
+
+
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text text-white" style="background-color: #153355;">Scripts Allocated to Examiner</span>
+                    <input type="number" class="form-control text-white" style="background-color: #153355;" " name="scriptsToExaminers" readonly value="@Model.ScriptsToExaminers" />
+                </div>
+            </div>
+
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category</th>
+                        <th>Examiners</th>
+                        <th>Category</th>
+                        <th>Scripts</th>
+                        <th>Category</th>
+                        <th>Share</th>
+                        <th>Category</th>
+                        <th>Scripts Covered</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- PMS Row -->
+                    <tr>
+                        <td>No of PMS</td>
+                        <td><input type="number" class="form-control" name="TotalPMS" id="TotalPMS" value="@Model.TotalPMS" oninput="calculateTotals2()" /></td>
+                        <td>Script per PMS</td>
+                        <td><input type="number" class="form-control" name="SharePMS" id="SharePMS" value="@Model.SharePMS" /></td>
+                        <td>Share per PMS</td>
+                        <td><input type="number" class="form-control" name="FinalSharePMS" id="FinalSharePMS" value="@Model.FinalSharePMS" oninput="calculateTotals2()" /></td>
+                        <td>Total Scripts PMS</td>
+                        <td><input type="number" class="form-control"  name="TotalScriptsPMS" id="TotalScriptsPMS" value="@Model.TotalScriptsPMS" readonly /></td>
+                    </tr>
+
+                    <!-- RPMS Row -->
+                    <tr>
+                        <td>No of RPMS</td>
+                        <td><input type="number" class="form-control" name="TotalRPMS" id="TotalRPMS" value="@Model.TotalRPMS" oninput="calculateTotals2()" /></td>
+                        <td>Scripts per RPMS</td>
+                        <td><input type="number" class="form-control" name="ShareRPMS" id="ShareRPMS" value="@Model.ShareRPMS" /></td>
+                        <td>Share per RPMS</td>
+                        <td><input type="number" class="form-control" name="FinalShareRPMS" id="FinalShareRPMS" value="@Model.FinalShareRPMS" oninput="calculateTotals2()" /></td>
+                        <td>Total Scripts RPMS</td>
+                        <td><input type="number" class="form-control" name="TotalScriptsRPMS" id="TotalScriptsRPMS" value="@Model.TotalScriptsRPMS" readonly /></td>
+                    </tr>
+
+                    <!-- DPMS Row -->
+                    <tr>
+                        <td>No of DPMS</td>
+                        <td><input type="number" class="form-control" name="TotalDPMS" id="TotalDPMS" value="@Model.TotalDPMS" oninput="calculateTotals2()" /></td>
+                        <td>Scripts per DPMS</td>
+                        <td><input type="number" class="form-control" name="ShareDPMS" id="ShareDPMS" value="@Model.ShareDPMS" /></td>
+                        <td>Share per DPMS</td>
+                        <td><input type="number" class="form-control" name="FinalShareDPMS" id="FinalShareDPMS" value="@Model.FinalShareDPMS" oninput="calculateTotals2()" /></td>
+                        <td>Total Scripts DPMS</td>
+                        <td><input type="number" class="form-control"  name="TotalScriptsDPMS" id="TotalScriptsDPMS" value="@Model.TotalScriptsDPMS" readonly /></td>
+                    </tr>
+
+                    <!-- BMS Row -->
+                    <tr>
+                        <td>No of BMS</td>
+                        <td><input type="number" class="form-control" name="TotalBMS" id="TotalBMS" value="@Model.TotalBMS" oninput="calculateTotals2()" /></td>
+                        <td>Scripts per BMS</td>
+                        <td><input type="number" class="form-control" name="ShareBMS" id="ShareBMS" value="@Model.ShareBMS" /></td>
+                        <td>Share per BMS</td>
+                        <td><input type="number" class="form-control" name="FinalShareBMS" id="FinalShareBMS" value="@Model.FinalShareBMS" oninput="calculateTotals2()" /></td>
+                        <td>Total Scripts BMS</td>
+                        <td><input type="number" class="form-control" name="TotalScriptsBMS" id="TotalScriptsBMS" value="@Model.TotalScriptsBMS" readonly /></td>
+                    </tr>
+
+                    <!-- Examiners Row -->
+                    <tr>
+                        <td>No of Examiners</td>
+                        <td><input type="number" class="form-control" name="TotalE" id="TotalE" value="@Model.TotalE" oninput="calculateTotals2()" /></td>
+                        <td>Scripts per Examiners</td>
+                        <td><input type="number" class="form-control" name="ShareE" id="ShareE" value="@Model.ShareE" /></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+
+                    <!-- Totals Row -->
+                    <tr class="fw-bold">
+                        <td>Total Examiners</td>
+                        <td><input type="number" id="totalMaxScripts" name="TotalMaxScripts" class="form-control"  readonly /></td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>Scripts Covered</td>
+                        <td>
+                            <input type="number" id="totalScripts" name="TotalScripts" class="form-control text-white" style="background-color: #153355;" readonly />
+                            <div id="validationMessage" class="text-danger small mt-1"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center mt-3">
+            <button id="btnCalculate" type="button" class="btn px-4 text-white" style="background-color: #153355;">
+                <i class="bi bi-calculator-fill me-2"></i>
+                Calculate Scripts
+            </button>
+            <button id="btnSubmit22" type="submit" class="btn px-4 text-white" style="background-color: #153355;">
+                <i class="bi bi-save-fill me-2"></i>
+                Submit
+            </button>
+            <a href="@Url.Action("SelectTeam")" class="btn btn-outline-danger px-4">
+                <i class="bi bi-x-circle-fill me-2"></i>
+                Cancel
+            </a>
+
+            <button id="btnDownloadCard" type="button" class="btn px-4 text-white" style="background-color: #153355;">
+                <i class="bi bi-file-earmark-pdf-fill me-2"></i>
+                Download Org Card
+            </button>
+        </div>
+
+    </form>
+
+
+
+</div>
+
+
+
+<script>
+    // Main calculation function
+    function calculateTotals2() {
+        // Calculate individual row totals
+        calculateRowTotal('TotalPMS', 'FinalSharePMS', 'TotalScriptsPMS');
+        calculateRowTotal('TotalRPMS', 'FinalShareRPMS', 'TotalScriptsRPMS');
+        calculateRowTotal('TotalDPMS', 'FinalShareDPMS', 'TotalScriptsDPMS');
+        calculateRowTotal('TotalBMS', 'FinalShareBMS', 'TotalScriptsBMS');
+
+        // Calculate grand totals
+        calculateGrandTotals();
+
+        // Validate the totals after calculation
+        validateScriptsRange();
+    }
+
+    function calculateRowTotal(countId, shareId, resultId) {
+        const count = parseFloat(document.getElementById(countId).value) || 0;
+        const share = parseFloat(document.getElementById(shareId).value) || 0;
+        const total = count * share;
+        document.getElementById(resultId).value = total;
+        return total;
+    }
+
+    function calculateGrandTotals() {
+        // Sum all examiner counts
+        const totalExaminers =
+            (parseFloat(document.getElementById('TotalPMS').value) || 0) +
+            (parseFloat(document.getElementById('TotalRPMS').value) || 0) +
+            (parseFloat(document.getElementById('TotalDPMS').value) || 0) +
+            (parseFloat(document.getElementById('TotalBMS').value) || 0) +
+            (parseFloat(document.getElementById('TotalE').value) || 0);
+
+        // Sum all script totals
+        const totalScripts =
+            (parseFloat(document.getElementById('TotalScriptsPMS').value) || 0) +
+            (parseFloat(document.getElementById('TotalScriptsRPMS').value) || 0) +
+            (parseFloat(document.getElementById('TotalScriptsDPMS').value) || 0) +
+            (parseFloat(document.getElementById('TotalScriptsBMS').value) || 0);
+
+        // Update the grand total fields
+        document.getElementById('totalMaxScripts').value = totalExaminers;
+        document.getElementById('totalScripts').value = totalScripts;
+    }
+
+    // Validation function
+    function validateScriptsRange() {
+        const totalEntriesInput = document.getElementById('TotalEntries');
+        const totalScriptsInput = document.getElementById('totalScripts');
+        const validationMessage = document.getElementById('validationMessage');
+
+        if (!totalEntriesInput || !totalScriptsInput) return true; // Skip if elements not found
+
+        const totalEntries = parseFloat(totalEntriesInput.value) || 0;
+        const totalScripts = parseFloat(totalScriptsInput.value) || 0;
+
+        // Calculate acceptable range (±10%)
+        const lowerBound = totalEntries * 0.9;
+        const upperBound = totalEntries * 1.1;
+
+        // Check if within range or exactly equal
+        if (totalScripts === totalEntries ||
+            (totalScripts >= lowerBound && totalScripts <= upperBound)) {
+            totalScriptsInput.style.borderColor = '#28a745'; // Green for valid
+            totalScriptsInput.style.borderWidth = '2px';
+            if (validationMessage) validationMessage.textContent = '';
+            return true;
+        } else {
+            totalScriptsInput.style.borderColor = '#dc3545'; // Red for invalid
+            totalScriptsInput.style.borderWidth = '2px';
+            if (validationMessage) {
+                validationMessage.textContent =
+                    `Scripts Covered should be within ${Math.round(lowerBound)} to ${Math.round(upperBound)} (±10% of Total Entries)`;
+            }
+            return false;
+        }
+    }
+
+    // Form submission handler
+    document.getElementById('btnSubmit222')?.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // Recalculate and validate before submission
+        calculateTotals2();
+        const isValid = validateScriptsRange();
+        const totalEntries = parseFloat(document.getElementById('TotalEntries')?.value) || 0;
+        const totalScripts = parseFloat(document.getElementById('totalScripts')?.value) || 0;
+
+        if (isValid) {
+            document.forms[0].submit();
+        } else {
+            Swal.fire({
+                title: 'Validation Warning',
+                html: `Scripts Covered (${totalScripts}) is not within ±10% of Total Entries (${totalEntries}).<br>Are you sure you want to proceed?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#153355',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, submit anyway',
+                cancelButtonText: 'No, go back'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.forms[0].submit();
+                }
+            });
+        }
+    });
+
+    // Set up event listeners for all input fields that affect calculations
+    function setupEventListeners() {
+        const inputs = [
+            'TotalPMS', 'FinalSharePMS',
+            'TotalRPMS', 'FinalShareRPMS',
+            'TotalDPMS', 'FinalShareDPMS',
+            'TotalBMS', 'FinalShareBMS',
+            'TotalE'
+        ];
+
+        inputs.forEach(id => {
+            document.getElementById(id)?.addEventListener('input', calculateTotals2);
+        });
+    }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function () {
+        setupEventListeners();
+        calculateTotals2(); // This will also trigger validation
+    });
+</script>
+
+<script>
+    function calculateTotals() {
+
+        let totalMaxScripts = 0;
+        let totalShareScripts = 0;
+        let totalFinalShareScripts = 0;
+        let totalScripts = 0;
+
+
+        totalMaxScripts += parseInt($('input[name="TotalPMS"]').val()) || 0;
+        totalMaxScripts += parseInt($('input[name="TotalRPMS"]').val()) || 0;
+        totalMaxScripts += parseInt($('input[name="TotalDPMS"]').val()) || 0;
+        totalMaxScripts += parseInt($('input[name="TotalBMS"]').val()) || 0;
+        totalMaxScripts += parseInt($('input[name="TotalE"]').val()) || 0;
+
+        totalShareScripts += parseInt($('input[name="SharePMS"]').val()) || 0;
+        totalShareScripts += parseInt($('input[name="ShareRPMS"]').val()) || 0;
+        totalShareScripts += parseInt($('input[name="ShareDPMS"]').val()) || 0;
+        totalShareScripts += parseInt($('input[name="SharelBMS"]').val()) || 0;
+        totalShareScripts += parseInt($('input[name="ShareE"]').val()) || 0;
+
+        totalFinalShareScripts += parseInt($('input[name="FinalSharePMS"]').val()) || 0;
+        totalFinalShareScripts += parseInt($('input[name="FinalShareRPMS"]').val()) || 0;
+        totalFinalShareScripts += parseInt($('input[name="FinalShareDPMS"]').val()) || 0;
+        totalFinalShareScripts += parseInt($('input[name="FinalShareBMS"]').val()) || 0;
+        totalFinalShareScripts += parseInt($('input[name="FinalShareE"]').val()) || 0;
+
+        totalScripts += parseInt($('input[name="TotalScriptsPMS"]').val()) || 0;
+        totalScripts += parseInt($('input[name="TotalScriptsRPMS"]').val()) || 0;
+        totalScripts += parseInt($('input[name="TotalScriptsDPMS"]').val()) || 0;
+        totalScripts += parseInt($('input[name="TotalScriptsBMS"]').val()) || 0;
+        totalScripts += parseInt($('input[name="TotalScriptsE"]').val()) || 0;
+
+
+        $('#totalMaxScripts').val(totalMaxScripts);
+        $('#totalShareScripts').val(totalShareScripts);
+        $('#totalFinalShareScripts').val(totalFinalShareScripts);
+        $('#totalScripts').val(totalScripts);
+
+    }
+
+    $(document).ready(function () {
+        calculateTotals(); // Calculate on page load
+        $('input[name^="Total"]').on('input', calculateTotals); // Recalculate when values change
+    });
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        // Calculate button click handler
+        $('#btnCalculate').click(function (e) {
+            e.preventDefault();
+            calculateScripts();
+        });
+
+        // Submit button click handler
+        $('#btnSubmit22').click(function (e) {
+            e.preventDefault();
+            submitForm();
+        });
+    });
+
+    function calculateScripts() {
+        // Clear any existing alerts
+        $('.alert').remove();
+
+        var formData = {
+            TotalEntries: $('input[name="TotalEntries"]').val(),
+            TotalPMS: $('input[name="TotalPMS"]').val(),
+            TotalRPMS: $('input[name="TotalRPMS"]').val(),
+            TotalDPMS: $('input[name="TotalDPMS"]').val(),
+            TotalBMS: $('input[name="TotalBMS"]').val(),
+            TotalE: $('input[name="TotalE"]').val(),
+
+            SharePMS: $('input[name="SharePMS"]').val(),
+            ShareRPMS: $('input[name="ShareRPMS"]').val(),
+            ShareDPMS: $('input[name="ShareDPMS"]').val(),
+            ShareBMS: $('input[name="ShareBMS"]').val(),
+            ShareE: $('input[name="ShareE"]').val(),
+
+            FinalSharePMS: $('input[name="FinalSharePMS"]').val(),
+            FinalShareRPMS: $('input[name="FinalShareRPMS"]').val(),
+            FinalShareDPMS: $('input[name="FinalShareDPMS"]').val(),
+            FinalShareBMS: $('input[name="FinalShareBMS"]').val(),
+          
+
+        };
+
+        // Show loading state (optional)
+        $('#btnCalculate').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Calculating...');
+
+        $.ajax({
+            url: '@Url.Action("CalculateFomulars2")',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function (response) {
+                // Reset button state
+                $('#btnCalculate').prop('disabled', false).html('<i class="bi bi-calculator-fill me-2"></i> Calculate Scripts');
+
+                if (response.success) {
+                    // Update readonly fields
+                    $('input[name="SharePMS"]').val(response.sharePMS);
+                    $('input[name="ShareRPMS"]').val(response.shareRPMS);
+                    $('input[name="ShareDPMS"]').val(response.shareDPMS);
+                    $('input[name="ShareBMS"]').val(response.shareBMS);
+                    $('input[name="ShareE"]').val(response.shareE);
+
+                    $('input[name="FinalSharePMS"]').val(response.finalSharePMS);
+                    $('input[name="FinalShareRPMS"]').val(response.finalShareRPMS);
+                    $('input[name="FinalShareDPMS"]').val(response.finalShareDPMS);
+                    $('input[name="FinalShareBMS"]').val(response.finalShareBMS);
+                    $('input[name="FinalShareE"]').val(response.finalShareE);
+
+                    $('input[name="TotalScriptsPMS"]').val(response.totalScriptsPMS);
+                    $('input[name="TotalScriptsRPMS"]').val(response.totalScriptsRPMS);
+                    $('input[name="TotalScriptsDPMS"]').val(response.totalScriptsDPMS);
+                    $('input[name="TotalScriptsBMS"]').val(response.totalScriptsBMS);
+                    $('input[name="TotalScriptsE"]').val(response.totalScriptsE);
+
+                    $('input[name="scriptsToExaminers"]').val(response.scriptsToExaminers);
+
+                    $('input[name="TotalShareScripts"]').first().val(response.totalShare);
+                    $('input[name="TotalFinalShareScripts"]').last().val(response.finalTotalShare);
+                    $('input[name="TotalScripts"]').last().val(response.totalScripts);
+
+                    // Show success alert
+                    $('.card').before(
+                        '<div class="alert alert-success mt-3 alert-dismissible fade show">' +
+                        '   <i class="fas fa-check-circle me-2"></i>' + 'Successfully Calculated' +
+                        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                        '</div>'
+                    );
+                } else {
+                    // Show error alert
+                    $('.card').before(
+                        '<div class="alert alert-danger mt-3 alert-dismissible fade show">' +
+                        '   <i class="fas fa-exclamation-circle me-2"></i>' + 'Error' +
+                        '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                        '</div>'
+                    );
+                }
+            },
+            error: function (xhr) {
+                // Reset button state
+                $('#btnCalculate').prop('disabled', false).html('<i class="bi bi-calculator-fill me-2"></i> Calculate Scripts');
+
+                // Show error alert
+                $('.card').before(
+                    '<div class="alert alert-danger mt-3 alert-dismissible fade show">' +
+                    '   <i class="fas fa-exclamation-circle me-2"></i> Error calculating scripts: ' +
+                    (xhr.responseJSON?.message || xhr.statusText || 'Unknown error') +
+                    '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' +
+                    '</div>'
+                );
+                console.error('Error calculating scripts:', xhr.responseText);
+            }
+        });
+    }
+
+    function submitForm() {
+        // First validate the range before showing confirmation
+        const totalEntries = parseFloat($('input[name="TotalEntries"]').val()) || 0;
+        const totalScripts = parseFloat($('input[name="TotalScripts"]').val()) || 0;
+
+        // Calculate acceptable range (±10%)
+        const lowerBound = totalEntries * 0.9;
+        const upperBound = totalEntries * 1.1;
+
+        // Check if outside range
+        if (totalScripts !== 0 && (totalScripts < lowerBound || totalScripts > upperBound)) {
+            Swal.fire({
+                title: 'Validation Failed',
+                html: `Scripts Covered (${totalScripts}) is not within ±10% of Total Entries (${totalEntries}).<br>
+                      Acceptable range: ${Math.round(lowerBound)} to ${Math.round(upperBound)}<br><br>
+                      Please adjust your values before submitting.`,
+                icon: 'error',
+                confirmButtonColor: '#153355',
+                confirmButtonText: 'OK'
+            });
+            return; // Stop the submission
+        }
+
+        // If validation passes, show confirmation dialog
+        Swal.fire({
+            title: 'Confirm Submission',
+            text: 'Are you sure you want to save these changes?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, save it!',
+            cancelButtonText: 'No, cancel',
+            confirmButtonColor: '#153355',
+            cancelButtonColor: '#d33'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // User confirmed, proceed with submission
+                var form = $('#apportionScriptsForm');
+
+                Swal.fire({
+                    title: 'Processing',
+                    html: 'Please wait while we save your data...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: form.serialize(),
+                    success: function (response) {
+                        Swal.close();
+
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: response.message,
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#153355'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    const url = '@Url.Action("ExaminerApportionment2")' +
+                                        '?examCode=@ViewBag.ExamCode' +
+                                        '&subjectCode=@ViewBag.SubjectCode' +
+                                        '&paperCode=@ViewBag.PaperCode' +
+                                        '&regionCode=@ViewBag.RegionCode' +
+                                        '&activity=@ViewBag.Activity';
+                                    window.location.href = url;
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: response.message,
+                                icon: 'error',
+                                confirmButtonText: 'OK',
+                                confirmButtonColor: '#153355'
+                            });
+                        }
+                    },
+                    error: function (xhr) {
+                        Swal.close();
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An error occurred while saving data: ' + (xhr.responseJSON?.message || xhr.statusText),
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#153355'
+                        });
+                    }
+                });
+            }
+        });
+    }
+</script>
+
+<script>
+    $('#btnDownloadCard').click(function (e) {
+        e.preventDefault();
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Generating...');
+
+        // Create hidden iframe for download
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        // Submit form directly to iframe
+        var form = $('#apportionScriptsForm')[0];
+        form.target = iframe.name = 'downloadFrame';
+        form.action = '@Url.Action("DownloadOrganizationCard", "ManageTeams")';
+        form.method = 'POST';
+        form.submit();
+
+        // Clean up after delay
+        setTimeout(function () {
+            $btn.prop('disabled', false).html('Download Organization Card');
+            document.body.removeChild(iframe);
+        }, 3000);
+    });
+</script>

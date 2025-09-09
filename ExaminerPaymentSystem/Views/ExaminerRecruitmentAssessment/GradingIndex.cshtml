@@ -1,0 +1,378 @@
+﻿@model ExaminerRecruimentDataTableViewModel
+@{
+    var errorMessage = TempData["ErrorMessage"] as string;
+    ViewData["Title"] = "Trainee Examiner Assesment";
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <script type="text/javascript">
+        $(function () {
+            Swal.fire({
+                title: 'Error',
+                text: '@Html.Raw(errorMessage)',
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            });
+        });
+    </script>
+}
+
+<div class="shadow p-4 my-3 rounded">
+    <h2 class="mb-3 shadow-sm p-2 rounded">Trainee Examiner Assessment </h2>
+
+
+    @* <!-- Filtering Section -->
+    <div class="row teaching-experience-row mb-4 d-flex align-items-center gx-2">
+        <div class="col-auto">
+            <label class="form-label">Level</label><br />
+            <select class="form-select form-select-sm levelSelected" id="sessionLevelFilter" name="Level" required>
+                <option value="">Select Level Taught</option>
+                <option value="A">A-Level</option>
+                <option value="O">O-Level</option>
+                <option value="G7">G-7</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label">Subject</label>
+            <select class="form-select form-select-sm subject" name="Subject" id="subjectFilter">
+                <option value="">Select Subject</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label">Paper Code</label>
+            <select class="form-select form-select-sm" id="paperCodeFilter">
+                <option value="">Select Paper Code</option>
+                <option value="01">1</option>
+                <option value="02">2</option>
+                <option value="03">3</option>
+                <option value="04">4</option>
+                <option value="05">5</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label">Region</label>
+            <select class="form-select form-select-sm" id="regionCodeFilter">
+                <option value="">Select Region</option>
+                <option value="01">01-Harare</option>
+                <option value="02">02-Manicaland</option>
+                <option value="03">03-Mashonaland East</option>
+                <option value="04">04-Matabeleland North</option>
+                <option value="05">05-Midlands</option>
+                <option value="06">06-Masvingo</option>
+                <option value="07">07-Mashonaland Central</option>
+                <option value="08">08-Mashonaland West</option>
+                <option value="09">09-Matabeleland South</option>
+                <option value="10">10-Bulawayo</option>
+            </select>
+        </div>
+
+        <div class="col-auto mt-4">
+            <button id="filterButton" class="btn btn-primary btn-sm">Apply</button>
+            <button id="clearFilters" class="btn btn-secondary btn-sm">Clear</button>
+        </div>
+    </div>
+ *@
+
+    <div class="row">
+
+        <div class="col-12 col-md-2">
+            <div class="btn btn-outline-danger" onclick="filterData('Total')"><i class="bi bi-file-earmark-ppt"></i> Total: <span id="total">0</span></div>
+        </div>
+        <div class="col-12 col-md-2">
+            <div class="btn btn-outline-secondary" onclick="filterData('TotalA')"><i class="bi bi-file-earmark-ppt"></i> GradeA: <span id="totalA">0</span></div>
+        </div>
+
+        <div class="col-12 col-md-2">
+            <div class="btn btn-outline-primary" onclick="filterData('TotalB')"><i class="bi bi-file-earmark-ppt"></i> GradeB: <span id="totalB">0</span></div>
+        </div>
+
+        <div class="col-12 col-md-2">
+            <div class="btn btn-outline-warning" onclick="filterData('TotalC')"><i class="bi bi-file-earmark-ppt"></i> GradeC: <span id="totalC">0</span></div>
+        </div>
+        <div class="col-12 col-md-2">
+            <div class="btn btn-outline-info" onclick="filterData('TotalD')"><i class="bi bi-file-earmark-ppt"></i> GradeD: <span id="totalD">0</span></div>
+        </div>
+
+        <div class="col-12 col-md-2">
+            <div class="btn btn-outline-danger" onclick="filterData('Pending')"><i class="bi bi-file-earmark-ppt"></i> Pending: <span id="totalPending">0</span></div>
+        </div>
+    </div>
+</div>
+
+<table id="examinerAssesmentTable" class="table table-responsive table-striped table-bordered" style="width:100%">
+    <thead>
+        <tr>
+            <th>Trainee Code</th>
+            <th>Name</th>
+            <th>Last Name</th>
+            <th>ID</th>
+            <th>Subject</th>
+            <th>Paper Code</th>
+            <th>Email</th>
+            <th>Gender</th>
+            <th>Grade</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- DataTable rows will be dynamically generated -->
+    </tbody>
+</table>
+
+
+@section Scripts {
+    <script>
+        var urlSuffix = '@(ViewBag.UrlSuffix ?? "")';
+        var table = $('#examinerAssesmentTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            ajax: {
+                url: "/ExaminerRecruitmentAssessment/GetExaminerDataForAssesment" + urlSuffix,
+                type: "POST",
+                "contentType": "application/x-www-form-urlencoded",
+                "dataType": "json",
+                "dataSrc": function (json) {
+                    // Update total counts for different grades
+                    $('#totalA').text(json.totalGradeA);
+                    $('#totalB').text(json.totalGradeB);
+                    $('#totalC').text(json.totalGradeC);
+                    $('#totalD').text(json.totalGradeD);
+                    $('#totalPending').text(json.totalPending);
+                    $('#total').text(json.recordsTotal);
+
+                    return json.data;
+                },
+                data: function (d) {
+                    // Include ViewBag parameters in the request
+                    d.subject = '@ViewBag.Subject';
+                    d.paperCode = '@ViewBag.PaperCode';
+                    d.experience = '@ViewBag.Experience';
+
+                    // DataTable parameters
+                    d.searchValue = d.search.value;
+                    d.sortColumn = d.columns[d.order[0].column].data;
+                    d.sortDirection = d.order[0].dir;
+                    d.skip = d.start;
+                    d.take = d.length;
+
+                    // Include filter dropdown values
+                    d.sessionLevel = $('#sessionLevelFilter').val();
+                    d.subject = $('#subjectFilter').val() || '@ViewBag.Subject';
+                    d.paperCode = $('#paperCodeFilter').val() || '@ViewBag.PaperCode';
+                    d.regionCode = $('#regionCodeFilter').val();
+                }
+            },
+            "columns": [
+                { "data": "examinerCode" },
+                { "data": "examinerName" },
+                { "data": "lastName" },
+                { "data": "cemId" },
+                { "data": "subject" },
+                { "data": "paperCode" },
+                { "data": "emailAddress" },
+                { "data": "gender" },
+                {
+                    "data": "grade",
+                    "render": function (data, type, row) {
+                        // Determine if grade is pending
+                        var isPending = data === 'Pending' || data === '';
+                        var currentGrade = isPending ? '' : data;
+
+                        return `
+                                    <select class="form-select grade-dropdown" data-examiner-id="${row.id}"
+                                            style="width: 100px;" ${isPending ? 'data-is-pending="true"' : ''}>
+                                        <option value="">Choose Grade</option>
+                                        <option value="A" ${currentGrade === 'A' ? 'selected' : ''}>A</option>
+                                        <option value="B" ${currentGrade === 'B' ? 'selected' : ''}>B</option>
+                                        <option value="C" ${currentGrade === 'C' ? 'selected' : ''}>C</option>
+                                        <option value="D" ${currentGrade === 'D' ? 'selected' : ''}>D</option>
+                                    </select>
+                                    ${isPending ? '<span class="badge bg-warning text-dark pending-badge">Pending</span>' : ''}
+                                `;
+                    }
+                }
+            ],
+            "drawCallback": function (settings) {
+                // Attach change event to grade dropdowns after table is drawn
+                $('.grade-dropdown').change(function () {
+                    var $dropdown = $(this);
+                    var examinerId = $dropdown.data('examiner-id'); // Get examinerId from data attribute
+                    var newGrade = $dropdown.val(); // Get selected grade
+                    var isPending = $dropdown.data('is-pending'); // Get pending status
+
+                    // Get the DataTable row data for this dropdown
+                    var row = table.row($dropdown.closest('tr')).data();
+                    var examinerRecruitmentRegisterId = row.examinerRecruitmentRegisterId; // Access examinerRecruitmentRegisterId from row data
+
+                    if (!newGrade) {
+                        toastr.warning('Please select a valid grade');
+                        return;
+                    }
+
+                    // Show loading indicator
+                    $dropdown.prop('disabled', true);
+                    $dropdown.addClass('loading');
+
+                    // Prepare data for the API call
+                    var model = {
+                        ExaminerRecruitmentId: examinerId,
+                        Grade: newGrade,
+                        ExaminerRecruitmentRegisterId: examinerRecruitmentRegisterId
+                    };
+
+                    // Call API to update grade
+                    $.ajax({
+                        url: '/ExaminerRecruitmentAssessment/SaveExaminerTraineeGrade',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(model),
+                        success: function (response) {
+                            $dropdown.prop('disabled', false);
+                            $dropdown.removeClass('loading');
+
+                            if (response.success) {
+                                Swal.fire({
+                                    title: 'Success',
+                                    text: response.message || 'Grade updated successfully.',
+                                    icon: 'success',
+                                    timer: 1000,
+                                    timerProgressBar: true,
+                                    showConfirmButton: false
+                                });
+
+                                table.ajax.reload(function (json) {
+                                    $('#totalA').text(json.totalGradeA);
+                                    $('#totalB').text(json.totalGradeB);
+                                    $('#totalC').text(json.totalGradeC);
+                                    $('#totalD').text(json.totalGradeD);
+                                    $('#totalPending').text(json.totalPending);
+                                    $('#total').text(json.recordsTotal);
+                                }, false); // false keeps paging
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: response.message || 'Failed to update grade.',
+                                    icon: 'error',
+                                    timer: 2500,
+                                    timerProgressBar: true,
+                                    showConfirmButton: false
+                                });
+
+                                table.ajax.reload(null, false);
+                            }
+                        },
+                        error: function (xhr) {
+                            $dropdown.prop('disabled', false);
+                            $dropdown.removeClass('loading');
+
+                            Swal.fire({
+                                title: 'Error',
+                                text: xhr.responseJSON?.message || 'Server error occurred.',
+                                icon: 'error',
+                                timer: 2500,
+                                timerProgressBar: true,
+                                showConfirmButton: false
+                            });
+
+                            table.ajax.reload(null, false);
+                        }
+                    });
+                });
+            }
+        });
+
+
+
+
+
+
+        // Reload table when filter button is clicked
+        $('#filterButton').click(function () {
+            table.ajax.reload();
+        });
+
+        // Reload table when any filter field changes
+        $('#sessionLevelFilter, #subjectFilter, #paperCodeFilter, #regionCodeFilter').change(function () {
+            table.ajax.reload();
+        });
+
+        // // Fetch subjects dynamically based on selected level
+        // $(document).on('change', '.levelSelected', function () {
+        //     const $row = $(this).closest('.teaching-experience-row');
+        //     const selectedValue = $(this).val();
+        //     let prefix = '';
+
+        //     switch (selectedValue) {
+        //         case 'A': prefix = '6'; break;
+        //         case 'O': prefix = '4'; break;
+        //         case 'G7': prefix = '7'; break;
+        //         default: prefix = '';
+        //     }
+
+        //     const $subjectDropdown = $row.find('.subject');
+        //     if (prefix) {
+        //         $subjectDropdown.html('<option>Loading...</option>'); // Loading indicator
+        //         $.ajax({
+        //             url: '/ExaminerRecruitment/GetSubjects',
+        //             type: 'GET',
+        //             data: { prefix: prefix },
+        //             success: function (data) {
+        //                 $subjectDropdown.empty().append('<option value="">Select Subject</option>');
+        //                 $.each(data, function (index, subject) {
+        //                     $subjectDropdown.append(
+        //                         $('<option>', {
+        //                             value: subject.suB_SUBJECT_CODE,
+        //                             text: subject.suB_SUBJECT_DESC,
+        //                         })
+        //                     );
+        //                 });
+        //             },
+        //             error: function () {
+        //                 $subjectDropdown.html('<option value="">Select Subject</option>');
+        //                 alert('Error fetching subjects. Please try again.');
+        //             }
+        //         });
+        //     } else {
+        //         $subjectDropdown.empty().append('<option value="">Select Subject</option>');
+        //     }
+        // });
+
+
+        function filterData(status) {
+            $('#examinerAssesmentTable').DataTable().ajax.url(`/ExaminerRecruitmentAssessment/GetExaminerDataForAssesment?status=${encodeURIComponent(status)}`).load();
+        }
+
+
+
+        // document.addEventListener("DOMContentLoaded", function () {
+        //     const filters = ["sessionLevelFilter", "subjectFilter", "paperCodeFilter", "regionCodeFilter"];
+
+        //     // Load saved filter values from localStorage
+        //     filters.forEach(filter => {
+        //         const savedValue = localStorage.getItem(filter);
+        //         if (savedValue) {
+        //             document.getElementById(filter).value = savedValue;
+        //         }
+        //     });
+
+        //     // Save filter values on change
+        //     filters.forEach(filter => {
+        //         document.getElementById(filter).addEventListener("change", function () {
+        //             localStorage.setItem(filter, this.value);
+        //         });
+        //     });
+
+        //     // Clear filters button
+        //     document.getElementById("clearFilters").addEventListener("click", function () {
+        //         filters.forEach(filter => {
+        //             document.getElementById(filter).value = "";
+        //             localStorage.removeItem(filter);
+        //         });
+        //     });
+        // });
+
+    </script>
+}

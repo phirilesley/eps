@@ -1,0 +1,304 @@
+﻿@model Examiner
+
+
+
+@{
+    ViewBag.Title = "Replace Examiner";
+
+   
+}
+
+
+<script>
+    $(document).ready(function () {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '@TempData["SuccessMessage"]',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+        </text>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '@TempData["Error"]',
+                    showConfirmButton: true
+                });
+        </text>
+    }
+                });
+</script>
+
+
+
+<h1 class="mb-3 text-center" style="color:#123255;">Replace  Examiner</h1>
+
+<form asp-action="AddOrReplaceExaminer" class="needs-validation mb-5" novalidate>
+    <input asp-for="EMS_EXAMINER_CODE" type="hidden" />
+    <input asp-for="EMS_SUB_SUB_ID" type="hidden" />
+    <input asp-for="EMS_PAPER_CODE" type="hidden" />
+
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+           @*  <h4 class="mb-0">Personal Details</h4> *@
+        </div>
+        <div class="row mb-3">
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_NATIONAL_ID" id="emsNationalId" class="form-control" placeholder="Examiner National ID" required />
+                    <label asp-for="EMS_NATIONAL_ID">National ID</label>
+                    <span asp-validation-for="EMS_NATIONAL_ID" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_EXAMINER_NUMBER" class="form-control form-control-sm" placeholder="Examiner Number" required />
+                    <label asp-for="EMS_EXAMINER_NUMBER">Examiner Number</label>
+                    <span asp-validation-for="EMS_EXAMINER_NUMBER" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_EXM_SUPERORD" class="form-control form-control-sm" placeholder="Examiner BMS" required />
+                    <label asp-for="EMS_EXM_SUPERORD">Examiner BMS Code (Supervisor)</label>
+                    <span asp-validation-for="EMS_EXM_SUPERORD" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_EXAMINER_NAME" class="form-control form-control-sm" placeholder="Examiner Name" required />
+                    <label asp-for="EMS_EXAMINER_NAME">Examiner Name</label>
+                    <span asp-validation-for="EMS_EXAMINER_NAME" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_LAST_NAME" class="form-control form-control-sm" placeholder="Examiner Last Name" required />
+                    <label asp-for="EMS_LAST_NAME">Examiner Last Name</label>
+                    <span asp-validation-for="EMS_LAST_NAME" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_SEX" class="form-select" aria-label="EMS_SEX" required>
+                        <option value="">Select Gender</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                    <label asp-for="EMS_SEX">Gender</label>
+                    <span asp-validation-for="EMS_SEX" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_ECT_EXAMINER_CAT_CODE" class="form-select" required>
+                        <option value="">Select Examiner Category</option>
+                        <option value="PMS">PMS</option>
+                        <option value="DPMS">DPMS</option>
+                        <option value="RPMS">RPMS</option>
+                        <option value="BMS">BMS</option>
+                        <option value="E">E</option>
+                        <option value="A">AID</option>
+                    </select>
+                    <label asp-for="EMS_ECT_EXAMINER_CAT_CODE">Examiner Category</label>
+                    <span asp-validation-for="EMS_ECT_EXAMINER_CAT_CODE" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_REGION_CODE" class="form-select" aria-label="EMS_REGION_CODE" required>
+                        <option value="" disabled selected>---Select Region---</option>
+                        <option value="01">Harare</option>
+                        <option value="02">Manicaland</option>
+                        <option value="03">Mashonaland East</option>
+                        <option value="04">Matabeleland North</option>
+                        <option value="05">Midlands</option>
+                        <option value="06">Masvingo</option>
+                        <option value="07">Mashonaland Central</option>
+                        <option value="08">Mashonaland West</option>
+                        <option value="09">Matabeleland South</option>
+                        <option value="10">Bulawayo</option>
+                    </select>
+                    <label asp-for="EMS_REGION_CODE">Region</label>
+                    <span asp-validation-for="EMS_REGION_CODE" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_MARKING_REG_CODE" class="form-select" aria-label="EMS_MARKING_REG_CODE" required>
+                        <option value="" disabled selected>---Select Marking Region---</option>
+                        <option value="01">Harare</option>
+                        <option value="02">Manicaland</option>
+                        <option value="03">Mashonaland East</option>
+                        <option value="04">Matabeleland North</option>
+                        <option value="05">Midlands</option>
+                        <option value="06">Masvingo</option>
+                        <option value="07">Mashonaland Central</option>
+                        <option value="08">Mashonaland West</option>
+                        <option value="09">Matabeleland South</option>
+                        <option value="10">Bulawayo</option>
+                    </select>
+                    <label asp-for="EMS_MARKING_REG_CODE">Marking Region</label>
+                    <span asp-validation-for="EMS_MARKING_REG_CODE" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_LEVEL_OF_EXAM_MARKED" class="form-select" required>
+                        <option value="">---Select Level of Exam---</option>
+                        <option value="O">O Level</option>
+                        <option value="A">A Level</option>
+                    </select>
+                    <label asp-for="EMS_LEVEL_OF_EXAM_MARKED">Level of Exam</label>
+                    <span asp-validation-for="EMS_LEVEL_OF_EXAM_MARKED" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+
+                    <select class="form-select form-select-sm" name="activity" required>
+                        <option value="">--Select Activity---</option>
+                        <option value="BEM">BELT MARKING</option>
+                        <option value="CAP">CAPTURING</option>
+                        <option value="GRA">GRADING</option>
+                        <option value="REM">REMARKING</option>
+                        <option value="TRA">TRAINING</option>
+                        <option value="COO">COORDINATION</option>
+                        <option value="MOD">MODERATION</option>
+                        <option value="ITW">ITEM WRITING</option>
+                    </select>
+                    <label>Activity</label>
+                    <span class="text-danger d-none">Please select the purpose of invitation.</span>
+                </div>
+            </div>
+        </div>
+
+    
+
+    </div>
+
+
+
+    <div class="row mb-3">
+        <div class="col-12 col-md-6 mb-3">
+            <button class="btn text-white w-100" type="submit" style="background-color: #153355;">
+                <i class="fas fa-save mr-2"></i>
+                Replace
+            </button>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <a class="btn btn-danger w-100" href="@Url.Action("ExaminerList", "Examiner")">
+                <i class="fas fa-times mr-2"></i>
+                Cancel
+            </a>
+        </div>
+    </div>
+
+</form>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+    }
+
+
+}
+
+
+
+<script>
+
+
+    // Function to display Swal success message
+    function showSuccessMessage(message) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: message,
+        }).then((result) => {
+            if (result.value) {
+                location.reload();  // Reload the page after showing the message
+            }
+        });
+    }
+
+    // Function to handle form submission and display success message
+    $("#submitBtn").click(function (e) {
+        e.preventDefault();  // Prevent default form submission
+
+  
+        // Submit the form via AJAX
+        $.ajax({
+            url: '@Url.Action("AddExaminer", "Examiner")',
+            type: 'POST',
+            data: $("form").serialize(),
+            success: function (result) {
+                if (result.success) {
+                    showSuccessMessage('Examiner added successfully.'); // Show success message
+                    window.location.href = '@Url.Action("ExaminerList", "Examiner")';
+                } else {
+                    // Show error message using SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: result.message,
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                // Show general error message using SweetAlert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while adding the examiner. Please try again.',
+                });
+            }
+        });
+
+    });
+</script>
+
+
+
+<script>
+    $(document).ready(function () {
+        $.ajax({
+            url: '@Url.Action("GetLatestExaminerCode", "Examiner")',
+            type: 'GET',
+            success: function (data) {
+                $('#examinerCode').val(data);
+            },
+            error: function () {
+                console.error("Failed to fetch the latest examiner code.");
+            }
+        });
+    });
+</script>

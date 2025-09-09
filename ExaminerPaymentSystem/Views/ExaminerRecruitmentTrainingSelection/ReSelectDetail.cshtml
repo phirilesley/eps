@@ -1,0 +1,387 @@
+﻿@using ExaminerPaymentSystem.Models.ExaminerRecruitment
+
+@model ExaminerRecruitment
+
+@{
+    ViewData["Title"] = "Examiner Details";
+
+
+}
+
+<div class="container mt-4 mb-5">
+
+    <div class="row">
+   
+        <div class="col-6 col-md-6">
+            <h2 class="text-center mb-4 text-primary">Examiner Details</h2>
+        </div>
+
+          <div class="col-6 col-md-6">
+            <a class="btn btn-primary text-center" asp-controller="ExaminerRecruitmentTrainingSelection" asp-action="DeselectedExaminer"><i class="bi bi-skip-backward-circle-fill"></i> Previous</a>
+        </div>
+    </div>
+
+           @if (!string.IsNullOrEmpty(TempData["ExaminerSelectionError"] as string) || ViewBag.ErrorMessage != null)
+        {
+            string message = !string.IsNullOrEmpty(TempData["ExaminerSelectionError"] as string) 
+                ? TempData["ExaminerSelectionError"].ToString() 
+                : ViewBag.ErrorMessage;
+            <div class="text-start">
+                <div class="alert alert-danger" id="errorAlert">
+                    @message
+                </div>
+            </div>
+        }
+
+
+  <div class="shadow rounded p-3">
+
+    <div class="row p-1  mb-1">
+        <div class="col-12 col-md-6">
+         <div class="border rounded p-4 mb-3 shadow-sm position-relative" style="border-width: 1px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h5 class="mb-0">Personal Information</h5>
+         </div>
+     
+                <table class="table bg-light">
+                    <tr>
+                        <th class="text-dark">Examiner Name</th>
+                        <td>@Model.ExaminerName</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">Surname</th>
+                        <td>@Model.LastName</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">National ID</th>
+                        <td>@Model.CemId</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">Gender</th>
+                        <td>@Model.Sex</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">Date of Birth</th>
+                        <td>@Model.DateOfBirth?.ToShortDateString()</td>
+                    </tr>
+
+                    <tr>
+                        <th class="text-dark">Phone (Home)</th>
+                        <td>@Model.PhoneHome</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">Email Address</th>
+                        <td>@Model.EmailAddress</td>
+                    </tr>
+                </table>
+
+            </div>          
+     </div>
+
+
+
+        <div class="col-12 col-md-6">
+            <div class="border rounded p-4 mb-3 shadow-sm position-relative" style="border-width: 2px;">
+                <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+                    <h5 class="mb-0">Subject Applied</h5>
+                </div>
+
+                <table class="table  bg-light">
+                    <tr>
+                        <th class="text-dark">Subject</th>
+                        <td>@Model.Subject</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">Paper Code</th>
+                        <td>@Model.PaperCode</td>
+                    </tr>
+                </table>
+            </div>
+
+
+            <div class="border rounded p-4 mb-3 shadow-sm position-relative" style="border-width: 2px;">
+                <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+                    <h5 class="mb-0">Teaching Experience</h5>
+                </div>
+
+                <table class="table table-bordered text-dark bg-light">
+
+                    <tr>
+                        <th>Subject</th>
+                        <th>Years</th>
+                    </tr>
+                    @foreach (var experience in Model.TeachingExperiences)
+                    {
+                        <tr>
+
+                            <td>@experience.Subject</td>
+                            <td>@experience.ExperienceYears</td>
+                        </tr>
+                    }
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+
+         <div class="row">
+         <div class="col-12 col-md-9">
+              <div class="border rounded p-4 mb-3 shadow-sm position-relative" style="border-width: 2px;">
+                <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+                    <h5 class="mb-0">Professional Qualifications</h5>
+                </div>
+
+                <table class="table table-bordered text-dark bg-light">
+
+                    <tr>
+                        <th>Programme name</th>
+                        <th>Institution name</th>
+                        <th>Start Year</th>
+                        <th>End Year</th>
+                    </tr>
+                    @foreach (var professionalQualificatin in Model.ProfessionalQualifications)
+                    {
+                        <tr>
+                            <td>@professionalQualificatin.ProgrammeName</td>
+                            <td>@professionalQualificatin.InstitutionName</td>
+                            <td>@professionalQualificatin.StartYear</td>
+                            <td>@professionalQualificatin.EndYear</td>
+                        </tr>
+                    }
+                </table>
+
+            </div>
+     </div>
+  
+        <div class="col-12 col-md-3">
+            <div class="border rounded p-4 mb-3 shadow-sm position-relative" style="border-width: 2px;">
+                <div class="position-absolute mb-3 bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+                    <h5 class="mb-0">Academic Qualification</h5>
+                </div>
+                <table class="table bg-light">
+                    <tr>
+                        <th class="pt-5 pb-3">@Model.AcademicQualification Level</th>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+     </div>
+
+
+    <div class="row p-1">
+
+        <div class="col-12 col-md-6">
+            <div class="border rounded p-4 mb-3 shadow-sm position-relative" style="border-width: 1px;">
+                <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+                    <h5 class="mb-0">Home Address</h5>
+                </div>
+
+                <table class="table  bg-light">
+                    <tr>
+                        <th class="text-dark">Home Address</th>
+                        <td>@Model.Address</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">Town/City</th>
+                        <td>@Model.Address3</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">Box/House Number</th>
+                        <td>@Model.Address2</td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+
+
+
+        <div class="col-12 col-md-6">
+            <div class="border rounded p-4 mb-3 shadow-sm position-relative" style="border-width: 2px;">
+                <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+                    <h5 class="mb-0">Work Address</h5>
+                </div>
+
+                <table class="table bg-light">
+                    <tr>
+                        <th class="text-dark">Work Institution</th>
+                        <td>@Model.WorkAddress1</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">Work Address</th>
+                        <td>@Model.WorkAddress2</td>
+                    </tr>
+                    <tr>
+                        <th class="text-dark">Work Town/City</th>
+                        <td>@Model.WorkAddress3</td>
+                    </tr>
+                </table>
+            </div>
+          </div>
+
+    </div>
+
+
+
+       <div class="row p-1">
+
+        <div class="col-12 col-md-12">
+            <div class="border rounded p-4 mb-3 shadow-sm position-relative" style="border-width: 2px;">
+                <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+                    <h5 class="mb-0">Attachments</h5>
+                </div>
+
+              <table class="table bg-light">
+                <tr>
+                    <th class="text-dark">Institution's Head Comments</th>
+                    <td>
+                        @if (Model.ExaminerRecruitmentAttachements != null && !string.IsNullOrEmpty(Model.ExaminerRecruitmentAttachements.InstitutionHeadDoc))
+                        {
+                            <a href="@Url.Action("PreviewFile", "ExaminerRecruitment", new { fileName = Model.ExaminerRecruitmentAttachements?.InstitutionHeadDoc.TrimStart('/') })" target="_blank" class="btn btn-primary"><i class="bi bi-download"></i> Preview Attachment</a>
+
+                        }
+                        else
+                        {
+                            <span>Not uploaded</span>
+                        }
+
+                    </td>
+                </tr>
+                <tr>
+                    <th class="text-dark">Academic Qualifications</th>
+                    <td>
+                        @if (Model.ExaminerRecruitmentAttachements != null && !string.IsNullOrEmpty(Model.ExaminerRecruitmentAttachements.AcademicQualifications))
+                        {
+                            <a href="@Url.Action("PreviewFile", "ExaminerRecruitment", new { fileName = Model.ExaminerRecruitmentAttachements?.AcademicQualifications.TrimStart('/') })" target="_blank" class="btn btn-primary"><i class="bi bi-download"></i> Preview Attachment</a>
+
+                        }
+                        else
+                        {
+                            <span>Not uploaded</span>
+                        }
+
+                    </td>
+                </tr>
+
+                  <tr>
+                    <th class="text-dark">National Id</th>
+                    <td>
+                        @if (Model.ExaminerRecruitmentAttachements != null && !string.IsNullOrEmpty(Model.ExaminerRecruitmentAttachements.NationalIdDocs))
+                        {
+                            <a href="@Url.Action("PreviewFile", "ExaminerRecruitment", new { fileName = Model.ExaminerRecruitmentAttachements?.NationalIdDocs.TrimStart('/') })" target="_blank" class="btn btn-primary"><i class="bi bi-download"></i> Preview Attachment</a>
+
+                        }
+                        else
+                        {
+                            <span>Not uploaded</span>
+                        }
+
+                    </td>
+                </tr>
+            </table>
+
+            <form asp-action="Update" asp-controller="ExaminerRecruitmentTrainingSelection" method="post">
+                @Html.AntiForgeryToken()
+     
+
+                <!-- Hidden Fields -->
+                <input type="hidden" name="ExaminerRecruitmentId" value="@Model.Id" />
+                <input type="hidden" name="Status" value="true" />
+                <input type="hidden" name="Date" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")" />
+
+                <!-- Submit Button -->
+                <div class="row">
+
+                  <div class="col-12 col-md-3 mb-3">
+                    <div class="btn-group">
+                        <button type="button" id="unselectButton" class="btn btn-primary btn-md add-row">
+                            <i class="bi bi-check2-circle"></i> Reselect For Training
+                        </button>
+                    </div>
+                </div>
+                     
+                
+                <div class="col-12 col-md-2 mb-3">
+                <a class="btn btn-secondary text-center" asp-controller="ExaminerRecruitmentTrainingSelection" asp-action="DeselectedExaminer"><i class="bi bi-skip-backward-circle-fill"></i> Previous</a>
+                </div>
+
+                  <div class="col-12 col-md-7 mb-3 d-flex align-items-start justify-content-end">
+                    <div class="btn-group">
+             
+                    </div>
+                </div>
+
+
+            </div>
+             </form>
+
+            </div>
+        </div
+      </div>
+
+       <form asp-action="Update" asp-controller="ExaminerRecruitmentTrainingSelection" method="post">
+        @Html.AntiForgeryToken()
+     
+
+        <!-- Hidden Fields -->
+        <input type="hidden" name="ExaminerRecruitmentId" value="@Model.Id" />
+        <input type="hidden" name="Status" value="false" />
+        <input type="hidden" name="Date" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")" />
+
+        <!-- Submit Button -->
+        <div class="row">
+
+          <div class="col-12 col-md-6 mb-3 d-flex align-items-start justify-content-start">
+            <div class="btn-group">
+             @*    <button type="button" id="unselectButton" class="btn btn-primary btn-md add-row">
+                    <i class="bi bi-check2-circle"></i> Unselect For Training
+                </button> *@
+            </div>
+        </div>
+
+          <div class="col-12 col-md-6 mb-3 d-flex align-items-start justify-content-end">
+            <div class="btn-group">
+             
+            </div>
+        </div>
+
+
+    </div>
+    </form>
+
+
+   </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+          setTimeout(function() {
+            document.getElementById('errorAlert').style.display = 'none';
+        }, 3500); // 3000 milliseconds = 3 seconds
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const unselectButton = document.getElementById("unselectButton");
+
+        unselectButton.addEventListener("click", function () {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You are about to reselect this examiner for training.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, proceed"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    unselectButton.closest("form").submit();
+                }
+            });
+        });
+    });
+</script>
+
+}

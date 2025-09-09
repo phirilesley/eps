@@ -1,0 +1,384 @@
+﻿
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ExaminerPaymentSystem</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="~/lib/font-awesome/css/all.css" rel="stylesheet" />
+
+    <link href="~/css/home.css" rel="stylesheet" />
+
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon" />
+
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+
+    <link rel="stylesheet" href="~/ExaminerPaymentSystem.styles.css" asp-append-version="true" />
+
+
+
+    <script src="~/js/jquery-3.6.0.min.js"></script> <!-- Load jQuery first -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/jquery.dataTables.min.js"></script> <!-- DataTables core -->
+    <script src="~/js/dataTables.buttons.min.js"></script> <!-- DataTables buttons -->
+    <script src="~/js/datatables.js"></script> <!-- Your custom DataTables script -->
+    @*     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script> *@
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="~/js/datatables.min.js"></script>
+    <script src="~/js/sweetalert2.all.js"></script>
+    <script src="~/js/pdfmake.min.js"></script> <!-- pdfMake for exporting PDFs -->
+    <script src="~/js/vfs_fonts.js"></script> <!-- vfs_fonts required for pdfMake -->
+
+    <script src="~/js/buttons.print.min.js"></script> <!-- Print button -->
+</head>
+<body>
+    @{
+        IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+        IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+
+        // IEnumerable<PaperMarkingRate> paperCodes = await papercodesRepo.GetPaperCodeById();
+
+
+        var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+        int currentYear = DateTime.Now.Year;
+        int lastYear = currentYear - 1;
+    }
+    <style>
+        .nav-item {
+            font-size: 15px; /* Adjust the font size as needed */
+            padding: 5px 0; /* Adjust the padding as needed */
+        }
+    </style>
+    <header>
+
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light  border-bottom box-shadow mb-3" style="background-color:#153355;color:white;">
+            <div class="container-fluid">
+                <div class="div-image-reround mr-3">
+                    @*  <img class="image-reround" src="~/Images/logo.jpeg" alt="Logo"> *@
+                </div>@if (SignInManager.IsSignedIn(User))
+                {
+                    <img class="image-reround" src="~/Images/logo.jpeg" alt="Logo">
+                    <a class="navbar-brand text-white fw-bold fs-3" style="margin-left: 10px;"
+                       asp-area="" asp-controller="Home" asp-action="Index">Examiner Payment System</a>
+                }
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <partial name="_LoginPartial" />
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+
+                    }
+
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+
+
+
+    <div class="watermark">
+    </div>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+
+    </div>
+
+    @*   <footer class="border-top footer text-muted text-white" style="background-color: #153355;">
+    <div class="container text-white">
+    &copy; 2024 - Examiner Payment System
+    </div>
+    </footer> *@
+   
+
+    @*    <script>
+    $(document).ready(function () {
+    var subjects = @Html.Raw(subjectArray);
+
+    // Function to populate subject dropdown based on selected exam code
+    $('#ExamCode2').change(function () {
+    console.log("Exam code selection changed");
+    var selectedExamCode = $(this).val();
+    console.log("Selected exam code: " + selectedExamCode);
+    var subjectSelect = $('#Subject2');
+    subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+    // Filter subjects based on selected exam code and remove duplicates
+    var uniqueSubjects = {};
+    subjects.forEach(function (subject) {
+    var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+    if (subSubIdPrefix === selectedExamCode) {
+    uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+    }
+    });
+
+    // Populate subject dropdown with unique subjects
+    Object.keys(uniqueSubjects).forEach(function (key) {
+    var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+    subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+    console.log("Appended subject: " + key);
+    });
+    });
+    });
+    </script> *@
+
+    <script>
+        $(document).ready(function () {
+            var subjects = @Html.Raw(subjectArray);
+
+
+            $('#ExamCode2').change(function () {
+                console.log("Exam code selection changed");
+                var selectedExamCode = $(this).val();
+                console.log("Selected exam code: " + selectedExamCode);
+                var subjectSelect = $('#Subject2');
+                subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+
+                var uniqueSubjects = {};
+                subjects.forEach(function (subject) {
+                    var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                    if (subSubIdPrefix === selectedExamCode) {
+                        uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                    }
+                });
+
+
+                Object.keys(uniqueSubjects).forEach(function (key) {
+                    var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                    subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                    console.log("Appended subject: " + key);
+                });
+            });
+
+
+            $('#Subject2').change(function () {
+                console.log("Subject selection changed");
+                var selectedSubjectId = $(this).val();
+                console.log("Selected subject ID: " + selectedSubjectId);
+                var paperCodeSelect = $('#PaperCode2');
+                paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+                if (selectedSubjectId) {
+
+                    $.ajax({
+                        url: '@Url.Action("GetPaperCodes", "Subjects")',
+                        type: 'GET',
+                        data: { subjectCode: selectedSubjectId },
+                        success: function (data) {
+                            data.forEach(function (paperCode) {
+                                console.log(paperCode);
+                                paperCodeSelect.append($('<option></option>').attr('value', paperCode.PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+                                console.log("Appended paper code: " + paperCode.ppR_PAPER_CODE);
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching paper codes: " + error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+
+
+    <script>
+        $(document).ready(function () {
+            var subjects = @Html.Raw(subjectArray);
+
+            // Function to populate subject dropdown based on selected exam code
+            $('#ExamCode').change(function () {
+                console.log("Exam code selection changed");
+                var selectedExamCode = $(this).val();
+                console.log("Selected exam code: " + selectedExamCode);
+                var subjectSelect = $('#Subject');
+                subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+                // Filter subjects based on selected exam code and remove duplicates
+                var uniqueSubjects = {};
+                subjects.forEach(function (subject) {
+                    var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                    if (subSubIdPrefix === selectedExamCode) {
+                        uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                    }
+                });
+
+                // Populate subject dropdown with unique subjects
+                Object.keys(uniqueSubjects).forEach(function (key) {
+                    var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                    subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                    console.log("Appended subject: " + key);
+                });
+            });
+
+            // Function to populate paper code dropdown based on selected subject
+            $('#Subject').change(function () {
+                console.log("Subject selection changed");
+                var selectedSubjectId = $(this).val();
+                console.log("Selected subject ID: " + selectedSubjectId);
+                var paperCodeSelect = $('#PaperCode');
+                paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+                if (selectedSubjectId) {
+                    // Make an AJAX call to get the paper codes
+                    $.ajax({
+                        url: '@Url.Action("GetPaperCodes", "Subjects")',
+                        type: 'GET',
+                        data: { subjectCode: selectedSubjectId },
+                        success: function (data) {
+                            data.forEach(function (paperCode) {
+                                paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+                                console.log("Appended paper code: " + paperCode.ppR_PAPER_CODE);
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching paper codes: " + error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            var subjects = @Html.Raw(subjectArray);
+
+            // Function to populate subject dropdown based on selected exam code
+            $('#ExamCode3').change(function () {
+                console.log("Exam code selection changed");
+                var selectedExamCode = $(this).val();
+                console.log("Selected exam code: " + selectedExamCode);
+                var subjectSelect = $('#Subject3');
+                subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+                // Filter subjects based on selected exam code and remove duplicates
+                var uniqueSubjects = {};
+                subjects.forEach(function (subject) {
+                    var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                    if (subSubIdPrefix === selectedExamCode) {
+                        uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                    }
+                });
+
+                // Populate subject dropdown with unique subjects
+                Object.keys(uniqueSubjects).forEach(function (key) {
+                    var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                    subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                    console.log("Appended subject: " + key);
+                });
+            });
+
+            // Function to populate paper code dropdown based on selected subject
+            $('#Subject3').change(function () {
+                console.log("Subject selection changed");
+                var selectedSubjectId = $(this).val();
+                console.log("Selected subject ID: " + selectedSubjectId);
+                var paperCodeSelect = $('#PaperCode3');
+                paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+                if (selectedSubjectId) {
+                    // Make an AJAX call to get the paper codes
+                    $.ajax({
+                        url: '@Url.Action("GetPaperCodes", "Subjects")',
+                        type: 'GET',
+                        data: { subjectCode: selectedSubjectId },
+                        success: function (data) {
+                            data.forEach(function (paperCode) {
+                                paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+                                console.log("Appended paper code: " + paperCode.ppR_PAPER_CODE);
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching paper codes: " + error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+
+    <script>
+        $(document).ready(function () {
+            var subjects = @Html.Raw(subjectArray);
+
+            // Function to populate subject dropdown based on selected exam code
+            $('#ExamCode4').change(function () {
+                console.log("Exam code selection changed");
+                var selectedExamCode = $(this).val();
+                console.log("Selected exam code: " + selectedExamCode);
+                var subjectSelect = $('#Subject4');
+                subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+                // Filter subjects based on selected exam code and remove duplicates
+                var uniqueSubjects = {};
+                subjects.forEach(function (subject) {
+                    var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                    if (subSubIdPrefix === selectedExamCode) {
+                        uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                    }
+                });
+
+                // Populate subject dropdown with unique subjects
+                Object.keys(uniqueSubjects).forEach(function (key) {
+                    var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                    subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                    console.log("Appended subject: " + key);
+                });
+            });
+
+            // Function to populate paper code dropdown based on selected subject
+            $('#Subject4').change(function () {
+                console.log("Subject selection changed");
+                var selectedSubjectId = $(this).val();
+                console.log("Selected subject ID: " + selectedSubjectId);
+                var paperCodeSelect = $('#PaperCode4');
+                paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+                if (selectedSubjectId) {
+                    // Make an AJAX call to get the paper codes
+                    $.ajax({
+                        url: '@Url.Action("GetPaperCodes", "Subjects")',
+                        type: 'GET',
+                        data: { subjectCode: selectedSubjectId },
+                        success: function (data) {
+                            data.forEach(function (paperCode) {
+                                paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+                                console.log("Appended paper code: " + paperCode.ppR_PAPER_CODE);
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching paper codes: " + error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+
+
+
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

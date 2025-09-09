@@ -1,0 +1,55 @@
+﻿@model Venue
+@{
+    ViewBag.Title = "Add Venue";
+}
+
+<div class="container">
+    <h2>Add Venue</h2>
+    <form id="userForm" asp-action="AddVenue" method="post">
+        <div class="form-group">
+            <label for="Name">Name</label>
+            <input type="text" class="form-control" id="Name" name="Name" required>
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="Name">Region</label>
+            <input type="text" class="form-control" id="Name" name="Region" required>
+            <span asp-validation-for="Region" class="text-danger"></span>
+        </div>
+        
+       
+        <div>
+            <button type="submit" class="btn mt-3" style="background-color: #153355;">
+                <i class="fas fa-check-circle"></i> Submit
+            </button>
+            <a href="/Venue/Index" class="btn btn-danger mt-3">
+                <i class="fas fa-times-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+
+
+@if (@ViewBag.HasError != null)
+{
+    <script>
+        Swal.fire({
+            title: "Validation failed",
+            text: "@ViewBag.HasError",
+            icon: "error"
+        });
+    </script>
+}
+
+@if (@ViewBag.HasSuccess != null)
+{
+    <script>
+        Swal.fire({
+            title: "Succeded",
+            text: "@ViewBag.HasSuccess",
+            icon: "success"
+        });
+    </script>
+}

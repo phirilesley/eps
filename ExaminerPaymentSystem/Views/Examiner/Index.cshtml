@@ -1,0 +1,672 @@
+﻿@model Examiner
+
+
+
+@{
+    ViewBag.Title = "Examiner Record";
+    bool isSuccess = ViewBag.IsSuccess != null && (bool)ViewBag.IsSuccess;
+    string message = ViewBag.Message != null ? ViewBag.Message.ToString() : "";
+
+    var EMS_SUB_SUB_ID_Substring = ViewBag.EMS_SUB_SUB_ID_Substring != null ? ViewBag.EMS_SUB_SUB_ID_Substring.ToString() : "";
+
+}
+
+
+
+
+
+  
+
+<h1 class="mb-3 text-center" style="color:#123255;">Examiner Record</h1>
+
+<div class="percentage-details mb-4">
+    <p class="text-center text-md-start">Your profile is <strong>@string.Format("{0:0.##}", ViewBag.PercentageFilled)%</strong> complete!</p>
+    <div class="progress-bar">
+        <div class="progressa" style="width: @(ViewBag.PercentageFilled)%;"></div>
+    </div>
+</div>
+
+<form asp-action="UpdateExaminer" class="needs-validation mb-5" novalidate>
+
+
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:red;">
+            <h4 class="mb-0">FOR OFFICE USE</h4>
+        </div>
+        <div class="row mb-3">
+            <!-- Hidden Input for Examiner Code -->
+            <input asp-for="EMS_EXAMINER_CODE" type="hidden"  />
+            <input asp-for="EMS_EXAMINER_NUMBER" type="hidden" />
+            <input asp-for="EMS_ECT_EXAMINER_CAT_CODE" type="hidden"  />
+            <input asp-for="EMS_SUB_SUB_ID" type="hidden"  />
+            <input asp-for="EMS_PAPER_CODE" type="hidden"  />
+            <input asp-for="EMS_SUBKEY" type="hidden" />
+            <input asp-for="EMS_LEVEL_OF_EXAM_MARKED" type="hidden" />
+            <input asp-for="EMS_NATIONAL_ID" type="hidden" />
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_EXAMINER_CODE" class="form-control"  disabled/>
+                    <label asp-for="EMS_EXAMINER_CODE">Examiner Code</label>
+                  
+                </div>
+            </div>
+
+            <!-- Examiner Name -->
+            <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_EXAMINER_NUMBER" class="form-control form-control-sm" disabled />
+                    <label asp-for="EMS_EXAMINER_NUMBER">Examiner Number</label>
+                 
+                </div>
+            </div>
+
+            <!-- Last Name -->
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_ECT_EXAMINER_CAT_CODE" class="form-control form-control-sm"  disabled />
+                    <label asp-for="EMS_ECT_EXAMINER_CAT_CODE">Examiner Category</label>
+               
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+           
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_SUB_SUB_ID" class="form-control"  disabled/>
+                    <label asp-for="EMS_SUB_SUB_ID">Subject</label>
+
+                </div>
+            </div>
+
+            <!-- Examiner Name -->
+            <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_PAPER_CODE" class="form-control form-control-sm" disabled />
+                    <label asp-for="EMS_PAPER_CODE">Paper</label>
+
+                </div>
+            </div>
+
+            <!-- Last Name -->
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_LEVEL_OF_EXAM_MARKED" class="form-control form-control-sm"  disabled />
+                    <label asp-for="EMS_LEVEL_OF_EXAM_MARKED">Level  Marked</label>
+
+                </div>
+            </div>
+        </div>
+
+      
+    </div>
+
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Personal Details</h4>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+
+                    <input asp-for="EMS_NATIONAL_ID" id="emsNationalId" class="form-control" disabled />
+                    <label asp-for="EMS_NATIONAL_ID">National ID</label>
+                    <span asp-validation-for="EMS_NATIONAL_ID" class="text-danger"></span>
+
+                </div>
+            </div>
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                  
+                    <input asp-for="EMS_EXAMINER_NAME" class="form-control form-control-sm" placeholder="Examiner Name" required />
+                <label asp-for="EMS_EXAMINER_NAME">Examiner Name</label>
+                <span asp-validation-for="EMS_EXAMINER_NAME" class="text-danger"></span>
+                 
+            </div>
+            </div>
+
+
+            <div class="col-12 col-md-3 mb-3">
+                 <div class="form-floating">
+              
+                    <input asp-for="EMS_LAST_NAME" class="form-control form-control-sm" placeholder="Examiner Last Name" required />
+                <label asp-for="EMS_LAST_NAME">Examiner Last Name</label>
+                <span asp-validation-for="EMS_LAST_NAME" class="text-danger"></span>
+                 
+            </div>
+            </div>
+
+       
+
+            <div class="col-12 col-md-3 mb-3">
+                <div class="form-floating">
+                   
+                    <select asp-for="EMS_SEX" class="form-select" aria-label="EMS_SEX" required>
+                    <option value="">Select Gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+              
+                </select>
+                <label asp-for="EMS_SEX"></label>
+                <span asp-validation-for="EMS_SEX" class="text-danger"></span>
+             
+                </div>
+            </div>
+
+        </div>
+
+           <div class="row mb-3">
+
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <!-- Input field with datalist -->
+                    <input asp-for="EMS_QUALIFICATION"
+                           class="form-control form-control-sm"
+                           list="qualificationList"
+                           placeholder="Select or type..."
+                           required />
+
+                    <label asp-for="EMS_QUALIFICATION">Qualification</label>
+                    <span asp-validation-for="EMS_QUALIFICATION" class="text-danger"></span>
+
+                    <!-- Predefined options in datalist -->
+                    <datalist id="qualificationList">
+                        <option>PhD</option>
+                        <option>Master's Degree</option>
+                        <option>Bachelor's Degree</option>
+                        <option>Diploma</option>
+                        <option>High School</option>
+                        <!-- Add more options as needed -->
+                    </datalist>
+                </div>
+            </div>
+
+
+            <div class="col-12 col-md-4 mb-3">
+                 <div class="form-floating">
+                    <input asp-for="EMS_EXPERIENCE" class="form-control form-control-sm number-only" placeholder="Teaching Expirience" required />
+                <label asp-for="EMS_EXPERIENCE">Teaching Experience(Years)</label>
+                <span asp-validation-for="EMS_EXPERIENCE" class="text-danger"></span>
+            </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_MARKING_EXPERIENCE" type="number" class="form-control number-only" placeholder="Marking Expirience" required />
+                    <label asp-for="EMS_MARKING_EXPERIENCE">Marking Expirience(Years)</label>
+                    <span asp-validation-for="EMS_MARKING_EXPERIENCE" class="text-danger"></span>
+                </div>
+            </div>
+
+        
+
+        </div>
+
+            <div class="row mb-3">
+
+                    <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_REGION_CODE" class="form-select" aria-label="EMS_REGION_CODE" required>
+                   <option value="" disabled selected>---Select  Region ---</option>
+        <option value="01">Harare</option>
+        <option value="02">Manicaland</option>
+        <option value="03">Mashonaland East</option>
+        <option value="04">Matabeleland North</option>
+        <option value="05">Midlands</option>
+        <option value="06">Masvingo</option>
+        <option value="07">Mashonaland Central</option>
+        <option value="08">Mashonaland West</option>
+        <option value="09">Matabeleland South</option>
+        <option value="10">Bulawayo</option>
+              
+                </select>
+                <label asp-for="EMS_REGION_CODE"> Region</label>
+                <span asp-validation-for="EMS_REGION_CODE" class="text-danger"></span>
+                </div>
+            </div>
+
+                <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_MARKING_REG_CODE" class="form-select" aria-label="EMS_MARKING_REG_CODE" required>
+                   <option value="" disabled selected>---Select Marking Region ---</option>
+        <option value="01">Harare</option>
+        <option value="02">Manicaland</option>
+        <option value="03">Mashonaland East</option>
+        <option value="04">Matabeleland North</option>
+        <option value="05">Midlands</option>
+        <option value="06">Masvingo</option>
+        <option value="07">Mashonaland Central</option>
+        <option value="08">Mashonaland West</option>
+        <option value="09">Matabeleland South</option>
+        <option value="10">Bulawayo</option>
+              
+                </select>
+                <label asp-for="EMS_MARKING_REG_CODE">Marking Region </label>
+                <span asp-validation-for="EMS_MARKING_REG_CODE" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_TAX_ID_NUMBER" class="form-control" placeholder="Tax ID Number"  />
+                    <label asp-for="EMS_TAX_ID_NUMBER">Tax ID Number(Optional)</label>
+                    <span asp-validation-for="EMS_TAX_ID_NUMBER" class="text-danger"></span>
+                </div>
+            </div>
+
+            </div>
+
+    </div>
+
+
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Contact Details</h4>
+        </div>
+
+
+        <div class="row mb-3">
+            <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_WORK_ADD1" class="form-control" placeholder="Work Address" required />
+                    <label asp-for="EMS_WORK_ADD1">Work Address</label>
+                    <span asp-validation-for="EMS_WORK_ADD1" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_WORK_ADD2" class="form-control" placeholder="Enter Disctrict" required />
+                    <label asp-for="EMS_WORK_ADD2">District</label>
+                    <span asp-validation-for="EMS_WORK_ADD2" class="text-danger"></span>
+                </div>
+            </div>
+
+             <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_WORK_ADD3" class="form-control" placeholder="Enter Town or City" required />
+                    <label asp-for="EMS_WORK_ADD3">Town/City</label>
+                    <span asp-validation-for="EMS_WORK_ADD3" class="text-danger"></span>
+                </div>
+            </div>
+
+        </div>
+
+          <div class="row mb-3">
+            <div class="col-12 col-md-6  mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_PHONE_HOME" class="form-control number-only" placeholder="Enter Home Phone" required />
+                    <label asp-for="EMS_PHONE_HOME">Phone Home</label>
+                    <span asp-validation-for="EMS_PHONE_HOME" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6  mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_PHONE_BUS" class="form-control number-only" placeholder="Enter Business phone" required />
+                    <label asp-for="EMS_PHONE_BUS">Phone Business </label>
+                    <span asp-validation-for="EMS_PHONE_BUS" class="text-danger"></span>
+                </div>
+            </div>
+
+        </div>
+
+
+    </div>
+
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Banking Details</h4>
+        </div>
+
+
+        <div class="row mb-3">
+            <div class="col-12 col-md-4  mb-3">
+               <div class="form-floating">
+                    <select id="bankSelect" class="form-select" name="EMS_BANK_CODE_FCA" aria-label="EMS_BANK_CODE_FCA" required>
+        <option value="" disabled selected>---Select Nostro Bank---</option>
+    </select>
+    <label asp-for="EMS_BANK_CODE_FCA">Bank Name</label>
+    <span asp-validation-for="EMS_BANK_CODE_FCA" class="text-danger"></span>
+</div>
+
+            </div>
+
+            <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <select id="branchSelect" class="form-select" name="EMS_BRANCH_CODE_FCA" aria-label="EMS_BRANCH_CODE_FCA" required>
+                        <option value="" disabled selected>---Select Branch---</option>
+                    </select>
+                    <label asp-for="EMS_BRANCH_CODE_FCA">Branch Name</label>
+                    <span asp-validation-for="EMS_BRANCH_CODE_FCA" class="text-danger"></span>
+                </div>
+
+            </div>
+
+            <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_ACCOUNT_NO_FCA" class="form-control number-only" placeholder="Enter Nostro Account Number" required/>
+                    <label asp-for="EMS_ACCOUNT_NO_FCA">Account Number(NOSTRO)</label>
+                    <span asp-validation-for="EMS_ACCOUNT_NO_FCA" class="text-danger"></span>
+                </div>
+            </div>
+
+            </div>
+
+                 <div class="row mb-3">
+            <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <select id="bankSelect1" class="form-select" name="EMS_BANK_CODE_ZWL" aria-label="EMS_BANK_CODE_ZWL" required>
+                        <option value="" disabled selected>---Select ZWL Bank---</option>
+                        <!-- Other options go here -->
+                    </select>
+                    <label asp-for="EMS_BANK_CODE_ZWL">Bank Name</label>
+                    <span asp-validation-for="EMS_BANK_CODE_ZWL" class="text-danger"></span>
+                </div>
+            </div>
+
+            
+
+            <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <select id="branchSelect1" class="form-select" name="EMS_BRANCH_CODE_ZWL" aria-label="EMS_BRANCH_CODE_ZWL" required>
+                        <option value="" disabled selected>---Select Branch---</option>
+                    </select>
+                    <label asp-for="EMS_BRANCH_CODE_ZWL">Branch Name</label>
+                    <span asp-validation-for="EMS_BRANCH_CODE_ZWL" class="text-danger"></span>
+                </div>
+
+            </div>
+
+            <div class="col-12 col-md-4  mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_ACCOUNT_NO_ZWL" class="form-control number-only" placeholder="Enter ZWL Account Number"  required/>
+                    <label asp-for="EMS_ACCOUNT_NO_ZWL">Account Number(ZWL)</label>
+                    <span asp-validation-for="EMS_ACCOUNT_NO_ZWL" class="text-danger"></span>
+                </div>
+            </div>
+
+            </div>
+
+    
+
+       
+
+
+    </div>
+
+    <!-- Add fields for other properties similarly -->
+    <div class="d-grid mb-5 mt-3">
+        <button class="btn btn-outline-custom btn-lg text-white mb-5" style="background-color:#123255;"  type="submit">Save Data</button>
+    </div>
+
+</form>
+
+
+   <script>
+                // Add event listener to elements with the 'number-only' class
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.querySelectorAll('.number-only').forEach(function (input) {
+                        input.addEventListener('input', function () {
+                            // Remove any non-numeric characters
+                            this.value = this.value.replace(/[^0-9]/g, '');
+                        });
+                    });
+                });
+            </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputField = document.getElementById('emsNationalId');
+
+        inputField.addEventListener('input', function () {
+            // Convert lowercase letters to uppercase and remove non-alphanumeric characters
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    });
+</script>
+
+@* <script>
+    function activateForm() {
+        // Enable all readonly inputs
+        var inputs = document.querySelectorAll('input[readonly]');
+        inputs.forEach(function (input) {
+            input.removeAttribute('readonly');
+        });
+
+        // Display submit and cancel buttons
+        document.getElementById('submitBtn').style.display = 'block';
+        document.getElementById('cancelBtn').style.display = 'block';
+
+        // Change color of the edit button
+        var editButton = document.getElementById('editIconContainer');
+        editButton.style.backgroundColor = '#008000'; // New color when activated
+    }
+
+    // Optional: Reload page to revert changes
+    function reloadPage() {
+        location.reload();
+    }
+</script> *@
+
+
+<script>
+    $(document).ready(function () {
+        var selectedBankCode = '@Model.EMS_BANK_CODE_FCA';
+        var selectedBranchCode = '@Model.EMS_BRANCH_CODE_FCA';
+
+        // Fetch banks on page load
+        $.ajax({
+            url: '@Url.Action("GetBanks", "Bank")',
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                var banks = response.data;
+                console.log("Received banks:", banks);
+
+                $.each(banks, function (index, bank) {
+                    console.log("Bank code:", bank.B_BANK_CODE);
+                    console.log("Bank name:", bank.B_BANK_NAME);
+
+                    // Append option to select element
+                    $('#bankSelect').append('<option value="' + bank.b_BANK_CODE + '">' + bank.b_BANK_NAME + '</option>');
+                });
+
+                // Set the selected bank if it's already there
+                if (selectedBankCode) {
+                    $('#bankSelect').val(selectedBankCode).trigger('change');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching banks:", error);
+            }
+        });
+
+        // Fetch branches based on selected bank
+        $('#bankSelect').change(function () {
+            var bankCode = $(this).val();
+            $('#branchSelect').empty().append('<option value="">Select Branch</option>');
+
+            if (bankCode) {
+                $.ajax({
+                    url: '@Url.Action("GetBranches", "Bank")',
+                    type: 'GET',
+                    data: { bankCode: bankCode },
+                    dataType: 'json',
+                    success: function (response) {
+                        var branches = response.data;
+                        console.log("Received branches for bank code " + bankCode + ":", branches);
+
+                        $.each(branches, function (index, branch) {
+                            console.log("Branch code:", branch.BB_BRANCH_CODE);
+                            console.log("Branch name:", branch.BB_BRANCH_NAME);
+
+                            // Append option to select element
+                            $('#branchSelect').append('<option value="' + branch.bB_BRANCH_CODE + '">' + branch.bB_BRANCH_NAME + '</option>');
+                        });
+
+                        // Set the selected branch if it's already there
+                        if (selectedBranchCode) {
+                            $('#branchSelect').val(selectedBranchCode);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching branches:", error);
+                    }
+                });
+            }
+        });
+
+        // Trigger change to load branches if bank is already selected
+        if (selectedBankCode) {
+            $('#bankSelect').trigger('change');
+        }
+    });
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        var selectedBankCode = '@Model.EMS_BANK_CODE_ZWL';
+        var selectedBranchCode = '@Model.EMS_BRANCH_CODE_ZWL';
+
+        // Fetch banks on page load
+        $.ajax({
+            url: '@Url.Action("GetBanks", "Bank")',
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                var banks = response.data;
+                console.log("Received banks:", banks);
+
+                $.each(banks, function (index, bank) {
+                    console.log("Bank code:", bank.B_BANK_CODE);
+                    console.log("Bank name:", bank.B_BANK_NAME);
+
+                    // Append option to select element
+                    $('#bankSelect1').append('<option value="' + bank.b_BANK_CODE + '">' + bank.b_BANK_NAME + '</option>');
+                });
+
+                // Set the selected bank if it's already there
+                if (selectedBankCode) {
+                    $('#bankSelect1').val(selectedBankCode).trigger('change');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching banks:", error);
+            }
+        });
+
+        // Fetch branches based on selected bank
+        $('#bankSelect1').change(function () {
+            var bankCode = $(this).val();
+            $('#branchSelect1').empty().append('<option value="">Select Branch</option>');
+
+            if (bankCode) {
+                $.ajax({
+                    url: '@Url.Action("GetBranches", "Bank")',
+                    type: 'GET',
+                    data: { bankCode: bankCode },
+                    dataType: 'json',
+                    success: function (response) {
+                        var branches = response.data;
+                        console.log("Received branches for bank code " + bankCode + ":", branches);
+
+                        $.each(branches, function (index, branch) {
+                            console.log("Branch code:", branch.BB_BRANCH_CODE);
+                            console.log("Branch name:", branch.BB_BRANCH_NAME);
+
+                            // Append option to select element
+                            $('#branchSelect1').append('<option value="' + branch.bB_BRANCH_CODE + '">' + branch.bB_BRANCH_NAME + '</option>');
+                        });
+
+                        // Set the selected branch if it's already there
+                        if (selectedBranchCode) {
+                            $('#branchSelect1').val(selectedBranchCode);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching branches:", error);
+                    }
+                });
+            }
+        });
+
+        // Trigger change to load branches if bank is already selected
+        if (selectedBankCode) {
+            $('#bankSelect1').trigger('change');
+        }
+    });
+</script>
+
+
+
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: '@TempData["SuccessMessage"]',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+            </text>
+        }
+        else if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: '@TempData["ErrorMessage"]',
+                        showConfirmButton: true
+                    });
+            </text>
+        }
+
+  
+                                });
+    </script>
+
+  
+
+
+    @if (TempData["SMessage"] != null)
+    {
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded', function () {
+                Swal.fire({
+                    title: 'Profile Incomplete',
+                    text: 'Your profile is not yet complete. Please update your profile.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '@Url.Action("Index", "Examiner")';
+                    }
+                });
+            });
+        </script>
+    }
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+    }
+
+
+}

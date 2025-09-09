@@ -1,0 +1,669 @@
+﻿@using ExaminerPaymentSystem.Data
+@using Microsoft.AspNetCore.Identity
+@using ExaminerPaymentSystem.Interfaces
+@inject SignInManager<ApplicationUser> SignInManager
+
+
+@{
+    ViewBag.Title = "Examiner Scripts Marked";
+
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string bms = ViewBag.BMS ?? "";
+    string Name = ViewBag.Name ?? "";
+
+}
+
+<style>
+
+
+
+    .btn-light {
+        background: #153355;
+        border: none;
+        color: white;
+        transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+        .btn-light:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.05);
+        }
+
+    #teamInfo {
+        font-size: 1.1rem;
+    }
+
+    #saveButton:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+</style>
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-file-signature" style="color: #2a5a8a;"></i>
+        <h5 class="fw-bold mb-0" style="color: #153355;">
+           Script Marked
+            
+        </h5>
+    </div>
+    <hr style="border-top: 1px solid black;
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+
+
+       @if (User.IsInRole("PMS") || User.IsInRole("DPMS") || User.IsInRole("RPMS"))
+                            {
+
+                                
+    <div class="card mt-4 mb-1 p-2 shadow">
+        <div class="card-header">
+    <form action="/ExaminerScriptsMarked/Index" method="get" id="searchForm">
+        <div class="row">
+            <!-- Hidden Exam Session Input -->
+            <input type="hidden" id="dddlExamSession" name="examCode" value="@examCode" />
+
+            <!-- Subject Input -->
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="dddlSubject">Subject:</label>
+                    <input id="dddlSubject" name="SubjectCode" value="@subjectCode" class="form-control" required  readonly/>
+                </div>
+            </div>
+
+            <!-- Paper Code Input -->
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="dddlPaperCode">Paper Code:</label>
+                    <input id="dddlPaperCode" name="paperCode" value="@paperCode" class="form-control" required readonly />
+                </div>
+            </div>
+
+            <!-- BMS Code Input -->
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label for="searchBmsCode">BMS Code:</label>
+                    <input type="text" id="searchBmsCode" name="searchBmsCode" value="@bms" class="form-control" required />
+                    <input type="hidden" id="holdMySubjectCode" name="holdMySubjectCodeValue" value=" " />
+                </div>
+            </div>
+
+            <!-- Search Button -->
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label>&nbsp;</label> <!-- Empty label for alignment -->
+                    <button type="button" class="btn text-white w-100" style="background-color: #153355;" id="searchButton">
+                        <i class="fas fa-search mr-2"></i>
+                        Search Team
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    </div>
+    </div>
+}
+
+
+
+<div class="card mt-3 shadow-sm border-0" style="overflow: hidden;">
+
+    <!-- Card Header -->
+    <div class="card-header bg-gradient-primary text-black py-3">
+        <div class="row align-items-center">
+            <!-- Left Side: Team Info -->
+            <div class="col-md-6">
+                <h5 class="mb-0 fw-bold" id="teamInfo">
+                    <i class="fas fa-users me-2"></i>
+                    Team: Loading...
+                    <span class="ms-3">
+                        <i class="fas fa-user-tie me-2"></i>
+                        Supervisor: Loading...
+                    </span>
+                </h5>
+            </div>
+
+            <!-- Right Side: Save Button -->
+            <div class="col-md-6 text-end">
+                <a id="saveButton" class="btn text-white align-items-center" style="background-color: #153355;padding: 4px 12px; font-size: 0.875rem;">
+                    <i class="fas fa-save me-2"></i>
+                    <span class="fw-semibold">Save Data</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Body (if needed) -->
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="srcTable" class="table table-bordered table-striped">
+
+                        <thead class="table-light">
+                            <tr>
+                                <th>Examiner Number</th>
+                                <th>Last Name</th>
+                                <th>First Name</th>
+                                <th>ID Number</th>
+                                <th>Category</th>
+                                <th>BMS</th>
+                                <th>Apportioned</th>
+                                <th>Marked</th>
+                        <th>Perfomance</th>
+                                <th>Capturing</th>
+                        <th>IsPresent</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+
+       
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+   
+@if (User.IsInRole("BMS"))
+{
+
+   
+
+<script>
+    $(document).ready(function () {
+        var table = $('#srcTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "lengthMenu": [
+                [10, 25, 50, 100, 250, 500, 1000],
+                [10, 25, 50, 100, 250, 500, 1000]
+            ],
+            "pageLength": 20,
+            "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                '<t>' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            "buttons": [
+                {
+                    extend: 'excelHtml5',
+                    className: 'btn btn-sm btn-success',
+                    text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'btn btn-sm btn-info',
+                    text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV',
+                    exportOptions: { columns: ':visible' }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: 'btn btn-sm btn-danger',
+                    text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF',
+                    exportOptions: { columns: ':visible' }
+                }
+            ],
+            "ajax": {
+                url: "/ExaminerScriptsMarked/GetData",
+                type: "POST",
+                data: function (d) {
+                    d.examCode = $('#dddlExamSession').val();
+                    d.subjectCode = $('#dddlSubject').val();
+                    d.paperCode = $('#dddlPaperCode').val();
+                    d.bmsCode = $('#searchBmsCode').val();
+                },
+
+                          dataSrc: function (json) {
+                        // Update the teamInfo section with bms and name from the JSON response
+                        $('#teamInfo').text(`Team: ${json.bms} BMS: ${json.name}`);
+
+                    @*    if (json.disableSave) {
+            $('#saveButton').prop('disabled', true).addClass('disabled');
+        } else {
+            $('#saveButton').prop('disabled', false).removeClass('disabled');
+        } *@
+
+                        return json.data; // Return the data array for DataTables
+                    }
+            },
+            "columns": [
+                { "data": "examinerNumber", "name": "ExaminerNumber", "autoWidth": true },
+                { "data": "lastName", "name": "LastName", "autoWidth": true },
+                { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                { "data": "idNumber", "name": "IdNumber", "autoWidth": true },
+                { "data": "category", "name": "Category", "autoWidth": true },
+                { "data": "bms", "name": "BMS", "autoWidth": true },
+                { "data": "scriptApportioned", "name": "ScriptApportioned", "autoWidth": true },
+                       {
+          "data": "scriptMarked",
+          "name": "ScriptsMarked",
+          "autoWidth": true,
+             "render": function (data, type, row) {
+            const isLocked = row.status === "Approved" || row.isPresent === false;
+            const disabledAttr = isLocked ? 'disabled' : '';
+
+            return `
+                <div class="btn-group" role="group">
+                    <input type="text" name="scriptsMarked" class="form-control" value="${data != null ? data : ''}" ${disabledAttr} />
+                    <input type="hidden" name="subKey" value="${row.subKey}" />
+                    <input type="hidden" name="examinerCode" value="${row.examinerCode}" />
+                </div>
+            `;
+        }
+        },
+       {
+                    "data": "perfomance",
+                    "name": "Perfomance",
+                    "autoWidth": true,
+                    "render": function (data, type, row) {
+                        return `
+                               <select name="perfomance" class="form-control">
+                                <option value="">--Select--</option>
+                                <option value="A" ${data === 'A' ? 'selected' : ''}>A</option>
+                                <option value="B" ${data === 'B' ? 'selected' : ''}>B</option>
+                                <option value="C" ${data === 'C' ? 'selected' : ''}>C</option>
+                                  <option value="D" ${data === 'D' ? 'selected' : ''}>D</option>
+                            </select>
+                        `;
+                    }
+                },
+                {
+                    "data": "role",
+                    "name": "Role",
+                    "autoWidth": true,
+                    "render": function (data, type, row) {
+                        return `
+                        <select name="role" class="form-control">
+                                <option value="">--Select--</option>
+                                <option value="C" ${data === 'C' ? 'selected' : ''}>C</option>
+                                <option value="V" ${data === 'V' ? 'selected' : ''}>V</option>
+                            </select>
+                        `;
+                    }
+                },
+                       {
+            "data": "IsPresent",
+            "name": "IsPresent",
+            "autoWidth": true,
+            "render": function (data, type, row) {
+                const isLocked = row.status === "Approved" || row.isPresent === false;
+                const disabledAttr = isLocked ? "disabled" : "";
+                return `
+                    <div class="btn-group" role="group">
+                        <input type="checkbox" class="form-check-input"
+                            ${row.isPresent === true ? "checked" : ""}
+                            ${disabledAttr}
+                            onchange="updatePresence('${row.idNumber}', this.checked, '${row.subKey}')" />
+                    </div>
+                `;
+            }
+        }
+
+            ]
+        });
+
+        $('#searchButton').click(function () {
+            table.ajax.reload();
+        });
+
+        function saveData(showAlert) {
+            var tableData = [];
+            $('#srcTable tbody tr').each(function () {
+                var row = $(this);
+                var rowData = {
+                    examinerNumber: row.find('td').eq(0).text(),
+                    lastName: row.find('td').eq(1).text(),
+                    firstName: row.find('td').eq(2).text(),
+                    idNumber: row.find('td').eq(3).text(),
+                    category: row.find('td').eq(4).text(),
+                    bms: row.find('td').eq(5).text(),
+                    scriptMarked: row.find('input[name="scriptsMarked"]').val(),
+                    subKey: row.find('input[name="subKey"]').val(),
+                    examinerCode: row.find('input[name="examinerCode"]').val(),
+                    perfomance: row.find('select[name="perfomance"]').val(),
+                    role: row.find('select[name="role"]').val() ,
+                    isPresent: row.find('input[type="checkbox"]').prop("checked")
+                };
+                tableData.push(rowData);
+            });
+
+            $.ajax({
+                url: '/ExaminerScriptsMarked/SaveData',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(tableData),
+                success: function (response) {
+                    if (showAlert) {
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Saved!',
+                                text: 'Data has been saved successfully.',
+                                icon: 'success',
+                                confirmButtonText: 'OK'
+                            }).then(function () {
+                                location.reload();
+                            });
+                        } else {
+                         Swal.fire({
+        icon: 'warning',
+        title: 'Critical Error!',
+        html: `
+            <div style="color:#dc3545; font-weight: 600;">${response.message}</div>
+    
+        `,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#dc3545'
+    });
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    if (showAlert) {
+                        Swal.fire('Error!', 'An error occurred: ' + error, 'error');
+                    }
+                }
+            });
+        }
+
+        $('#saveButton').click(function () {
+            saveData(true);
+        });
+
+        table.on('page.dt', function () {
+            saveData(false);
+        });
+    });
+
+
+            function updatePresence(idNumber, isChecked, subKey) {
+            $.ajax({
+                url: '/ExaminerScriptsMarked/UpdatePresence',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ idNumber: idNumber, isPresent: isChecked, subKey: subKey }),
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: 'Updated!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire('Error!', 'Error updating presence: ' + response.message, 'error');
+                    }
+                },
+                error: function (xhr) {
+                    let errorMessage = xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : 'An unknown error occurred.';
+
+                    Swal.fire('Error!', errorMessage, 'error');
+                }
+            });
+        }
+
+
+</script>
+
+}
+
+@if (User.IsInRole("PMS") || User.IsInRole("RPMS") || User.IsInRole("DPMS"))
+{
+
+
+    <script>
+        $(document).ready(function () {
+        var table = $('#srcTable').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "lengthMenu": [
+        [10, 25, 50, 100, 250, 500, 1000],
+        [10, 25, 50, 100, 250, 500, 1000]
+        ],
+        "pageLength": 20,
+        "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+        '<t>' +
+        '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+        "buttons": [
+        {
+        extend: 'excelHtml5',
+        className: 'btn btn-sm btn-success',
+        text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel',
+        exportOptions: { columns: ':visible' }
+        },
+        {
+        extend: 'csvHtml5',
+        className: 'btn btn-sm btn-info',
+        text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV',
+        exportOptions: { columns: ':visible' }
+        },
+        {
+        extend: 'pdfHtml5',
+        className: 'btn btn-sm btn-danger',
+        text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF',
+        exportOptions: { columns: ':visible' }
+        }
+        ],
+        "ajax": {
+        url: "/ExaminerScriptsMarked/GetData",
+        type: "POST",
+        data: function (d) {
+        d.examCode = $('#dddlExamSession').val();
+        d.subjectCode = $('#dddlSubject').val();
+        d.paperCode = $('#dddlPaperCode').val();
+        d.bmsCode = $('#searchBmsCode').val();
+        },
+
+        dataSrc: function (json) {
+        // Update the teamInfo section with bms and name from the JSON response
+        $('#teamInfo').text(`Team: ${json.bms} BMS: ${json.name}`);
+        return json.data; // Return the data array for DataTables
+        }
+        },
+        "columns": [
+        { "data": "examinerNumber", "name": "ExaminerNumber", "autoWidth": true },
+        { "data": "lastName", "name": "LastName", "autoWidth": true },
+        { "data": "firstName", "name": "FirstName", "autoWidth": true },
+        { "data": "idNumber", "name": "IdNumber", "autoWidth": true },
+        { "data": "category", "name": "Category", "autoWidth": true },
+        { "data": "bms", "name": "BMS", "autoWidth": true },
+        { "data": "scriptApportioned", "name": "ScriptApportioned", "autoWidth": true },
+        {
+        "data": "scriptMarked",
+        "name": "ScriptsMarked",
+        "autoWidth": true,
+        "render": function (data, type, row) {
+        return `
+        <div class="btn-group" role="group">
+        <input type="text" name="scriptsMarked" class="form-control" value="${data != null ? data : ''}" />
+        <input type="hidden" name="subKey" value="${row.subKey}" />
+        <input type="hidden" name="examinerCode" value="${row.examinerCode}" />
+        </div>
+        `;
+        }
+        },
+        {
+        "data": "perfomance",
+        "name": "Perfomance",
+        "autoWidth": true,
+        "render": function (data, type, row) {
+        return `
+        <select name="perfomance" class="form-control">
+        <option value="">--Select--</option>
+        <option value="A" ${data === 'A' ? 'selected' : ''}>A</option>
+        <option value="B" ${data === 'B' ? 'selected' : ''}>B</option>
+        <option value="C" ${data === 'C' ? 'selected' : ''}>C</option>
+        <option value="D" ${data === 'D' ? 'selected' : ''}>D</option>
+        </select>
+        `;
+        }
+        },
+        {
+        "data": "role",
+        "name": "Role",
+        "autoWidth": true,
+        "render": function (data, type, row) {
+        return `
+        <select name="role" class="form-control">
+        <option value="">--Select--</option>
+        <option value="C" ${data === 'C' ? 'selected' : ''}>C</option>
+        <option value="V" ${data === 'V' ? 'selected' : ''}>V</option>
+        </select>
+        `;
+        }
+        },
+        {
+        "data": "IsPresent",
+        "name": "IsPresent",
+        "autoWidth": true,
+        "render": function (data, type, row) {
+        return `
+        <div class="btn-group" role="group">
+        <input type="checkbox" class="form-check-input" ${row.isPresent === true ? "checked" : ""}
+         onchange="updatePresence('${row.idNumber}', this.checked, '${row.subKey}')" />
+        </div>
+        `;
+        }
+        }
+        ]
+        });
+
+        $('#searchButton').click(function () {
+        table.ajax.reload();
+        });
+
+        function saveData(showAlert) {
+        var tableData = [];
+        $('#srcTable tbody tr').each(function () {
+        var row = $(this);
+        var rowData = {
+        examinerNumber: row.find('td').eq(0).text(),
+        lastName: row.find('td').eq(1).text(),
+        firstName: row.find('td').eq(2).text(),
+        idNumber: row.find('td').eq(3).text(),
+        category: row.find('td').eq(4).text(),
+        bms: row.find('td').eq(5).text(),
+        scriptMarked: row.find('input[name="scriptsMarked"]').val(),
+        subKey: row.find('input[name="subKey"]').val(),
+        examinerCode: row.find('input[name="examinerCode"]').val(),
+        perfomance: row.find('select[name="perfomance"]').val(),
+        role: row.find('select[name="role"]').val() ,
+        isPresent: row.find('input[type="checkbox"]').prop("checked")
+        };
+        tableData.push(rowData);
+        });
+
+        $.ajax({
+        url: '/ExaminerScriptsMarked/SaveData',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(tableData),
+        success: function (response) {
+        if (showAlert) {
+        if (response.success) {
+        Swal.fire({
+        title: 'Saved!',
+        text: 'Data has been saved successfully.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+        }).then(function () {
+        location.reload();
+        });
+        } else 
+        {
+
+
+          Swal.fire({
+            icon: 'warning',
+            title: 'Critical Error!',
+            html: `
+                <div style="color:#dc3545; font-weight: 600;">${response.message}</div>
+
+            `,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#dc3545'
+        });
+
+        }
+        }
+        },
+        error: function (xhr, status, error) {
+        if (showAlert) {
+        Swal.fire('Error!', 'An error occurred: ' + error, 'error');
+        }
+        }
+        });
+        }
+
+        $('#saveButton').click(function () {
+        saveData(true);
+        });
+
+        table.on('page.dt', function () {
+        saveData(false);
+        });
+        });
+
+
+        function updatePresence(idNumber, isChecked,subKey) {
+        $.ajax({
+        url: '/ExaminerScriptsMarked/UpdatePresence',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ idNumber: idNumber, isPresent: isChecked,subKey: subKey }),
+        success: function (response) {
+        if (response.success) {
+        Swal.fire({
+        title: 'Updated!',
+        text: response.message,
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+        });
+        } else {
+     
+             Swal.fire({
+            icon: 'warning',
+            title: 'Critical Error!',
+            html: `
+                <div style="color:#dc3545; font-weight: 600;">${response.message}</div>
+
+            `,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#dc3545'
+        });
+
+        }
+        },
+        error: function (xhr) {
+        let errorMessage = xhr.responseJSON && xhr.responseJSON.message
+        ? xhr.responseJSON.message
+        : 'An unknown error occurred.';
+
+        Swal.fire('Error!', errorMessage, 'error');
+        }
+        });
+        }
+
+    </script>
+
+}

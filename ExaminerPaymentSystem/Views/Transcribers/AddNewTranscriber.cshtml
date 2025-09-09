@@ -1,0 +1,391 @@
+﻿@model ExaminerPaymentSystem.Models.Major.Examiner
+@inject SignInManager<ApplicationUser> SignInManager
+
+
+@{
+    ViewBag.Title = "Add New Examiner";
+
+    string examCode = ViewBag.ExamCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+
+    // IEnumerable<PaperMarkingRate> paperCodes = await papercodesRepo.GetPaperCodeById();
+
+
+}
+
+
+
+<style>
+
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+    }
+
+    .error-message {
+        color: red;
+        display: none;
+    }
+
+</style>
+
+<script>
+    $(document).ready(function () {
+
+
+    @if (TempData["Error"] != null)
+    {
+            <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                            text: '@TempData["Error"]',
+                        showConfirmButton: true
+                    });
+            </text>
+    }
+            });
+</script>
+
+
+
+<h1 class="mb-3 text-center" style="color:#123255;">Add New Special Requirement Aide </h1>
+
+<form asp-action="AddNewTranscriber" class="needs-validation mb-5" novalidate>
+   
+
+  
+    <input asp-for="EMS_EXAMINER_CODE" type="hidden" />
+
+    <input asp-for="EMS_SUB_SUB_ID" type="hidden" />
+    <input asp-for="EMS_PAPER_CODE" type="hidden" />
+    <input name="examCode" value="@examCode" type="hidden" />
+    <input name="activity" value="@activity" type="hidden" />
+
+    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3"
+             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h4 class="mb-0">Personal Details</h4>
+        </div>
+        <div class="row mb-3">
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_NATIONAL_ID" id="emsNationalId" class="form-control" placeholder="Examiner National ID" required />
+                    <label asp-for="EMS_NATIONAL_ID">National ID</label>
+                    <span asp-validation-for="EMS_NATIONAL_ID" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_ECT_EXAMINER_CAT_CODE" class="form-select" required>
+                        <option value="">Select Examiner Category</option>
+                        <option value="BT">Braille Transcriber</option>
+                        <option value="PBT">Principal Braille Transcriber</option>
+                        <option value="A">Aide</option>
+                        <option value="S">Signer</option>
+                        <option value="I">Interpreter</option>
+                    </select>
+                    <label asp-for="EMS_ECT_EXAMINER_CAT_CODE">Examiner Category</label>
+                    <span asp-validation-for="EMS_ECT_EXAMINER_CAT_CODE" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_LEVEL_OF_EXAM_MARKED" class="form-select" required>
+                        <option value="">---Select Level of Exam---</option>
+                        <option value="O">O Level</option>
+                        <option value="A">A Level</option>
+                    </select>
+                    <label asp-for="EMS_LEVEL_OF_EXAM_MARKED">Level of Exam</label>
+                    <span asp-validation-for="EMS_LEVEL_OF_EXAM_MARKED" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="row mb-3">
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_EXAMINER_NAME" class="form-control form-control-sm" placeholder="Examiner Name" required />
+                    <label asp-for="EMS_EXAMINER_NAME">Examiner Name</label>
+                    <span asp-validation-for="EMS_EXAMINER_NAME" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="EMS_LAST_NAME" class="form-control form-control-sm" placeholder="Examiner Last Name" required />
+                    <label asp-for="EMS_LAST_NAME">Examiner Last Name</label>
+                    <span asp-validation-for="EMS_LAST_NAME" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_SEX" class="form-select" aria-label="EMS_SEX" required>
+                        <option value="">Select Gender</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                    <label asp-for="EMS_SEX">Gender</label>
+                    <span asp-validation-for="EMS_SEX" class="text-danger"></span>
+                </div>
+            </div>
+
+        
+
+        </div>
+
+        <div class="row mb-3">
+
+
+            <div class="col-12 col-md-6 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_REGION_CODE" class="form-select" aria-label="EMS_REGION_CODE" required>
+                        <option value="" disabled selected>---Select Region---</option>
+                        <option value="01">Harare</option>
+                        <option value="02">Manicaland</option>
+                        <option value="03">Mashonaland East</option>
+                        <option value="04">Matabeleland North</option>
+                        <option value="05">Midlands</option>
+                        <option value="06">Masvingo</option>
+                        <option value="07">Mashonaland Central</option>
+                        <option value="08">Mashonaland West</option>
+                        <option value="09">Matabeleland South</option>
+                        <option value="10">Bulawayo</option>
+                    </select>
+                    <label asp-for="EMS_REGION_CODE">Region</label>
+                    <span asp-validation-for="EMS_REGION_CODE" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6 mb-3">
+                <div class="form-floating">
+                    <select asp-for="EMS_MARKING_REG_CODE" class="form-select" aria-label="EMS_MARKING_REG_CODE" required>
+                        <option value="" disabled selected>---Select Marking Region---</option>
+                        <option value="01">Harare</option>
+                        <option value="02">Manicaland</option>
+                        <option value="03">Mashonaland East</option>
+                        <option value="04">Matabeleland North</option>
+                        <option value="05">Midlands</option>
+                        <option value="06">Masvingo</option>
+                        <option value="07">Mashonaland Central</option>
+                        <option value="08">Mashonaland West</option>
+                        <option value="09">Matabeleland South</option>
+                        <option value="10">Bulawayo</option>
+                    </select>
+                    <label asp-for="EMS_MARKING_REG_CODE">Marking Region</label>
+                    <span asp-validation-for="EMS_MARKING_REG_CODE" class="text-danger"></span>
+                </div>
+            </div>
+
+
+
+
+
+        </div>
+
+        <div class="row mb-3">
+
+            <div class="col-12 col-md-4 mb-3" id="supervisorContainer" style="display:none;">
+                <div class="form-floating">
+                    <input type="text" name="supervisor" class="form-control" id="supervisorInput"
+                           placeholder="Enter supervisor ID number">
+                    <label for="supervisorInput">Supervisor ID Number</label>
+                    <span class="text-danger field-validation-valid" data-valmsg-for="supervisor" data-valmsg-replace="true"></span>
+
+                </div>
+            </div>
+          @*   <!-- Supervisor dropdown (initially hidden) -->
+            <div class="col-12 mb-3" id="supervisorContainer" style="display:none;">
+                <div class="form-floating">
+                    <select name="supervisor" class="form-select" id="supervisorSelect" required>
+                        <option value="">Select Supervisor</option>
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                    <label>Supervisor</label>
+                    <span class="text-danger field-validation-valid" data-valmsg-for="supervisor" data-valmsg-replace="true"></span>
+                </div>
+            </div> *@
+
+        </div>
+
+    
+
+       
+
+
+    </div>
+
+
+    <div class="row mb-3">
+        <div class="col-12 col-md-6 mb-3">
+            <button class="btn text-white w-100" type="submit" style="background-color: #153355;">
+                <i class="fas fa-save mr-2"></i>
+                Save
+            </button>
+        </div>
+        <div class="col-12 col-md-6 mb-3">
+            <a class="btn btn-danger w-100" href="@Url.Action("TranscribersList", "Transcribers")">
+                <i class="fas fa-times mr-2"></i>
+                Cancel
+            </a>
+        </div>
+    </div>
+
+</form>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+
+    }
+
+
+}
+
+<script>
+        $(document).ready(function() {
+        // Show/hide supervisor input based on category selection
+        $('#EMS_ECT_EXAMINER_CAT_CODE').change(function() {
+            if ($(this).val() === 'A') {
+                $('#supervisorContainer').show();
+                $('#supervisorInput').prop('required', true);
+            } else {
+                $('#supervisorContainer').hide();
+                $('#supervisorInput').prop('required', false);
+                $('#supervisorInput').val('');
+            }
+        });
+
+        // Optional: Add input validation
+        $('#supervisorInput').on('blur', function() {
+            validateSupervisorId($(this).val());
+        });
+    });
+</script>
+
+@* <script>
+    $(document).ready(function() {
+        // Initialize select2 with AJAX search
+        $('#supervisorSelect').select2({
+            placeholder: "Search by ID, first name or last name...",
+            allowClear: true,
+            ajax: {
+                url: '/Transcribers/GetSupervisors',
+                dataType: 'json',
+                delay: 250,
+                data: function(params) {
+                    return {
+                        searchTerm: params.term
+                    };
+                },
+                processResults: function(data) {
+                    return {
+                        results: data.map(item => ({
+                            id: item.id,
+                            text: item.text
+                        }))
+                    };
+                },
+                cache: true
+            },
+            templateResult: function(data) {
+                if (!data.id) return data.text;
+                return $('<span>').text(data.text);
+            }
+        });
+
+        // Show/hide supervisor dropdown based on category selection
+        $('#EMS_ECT_EXAMINER_CAT_CODE').change(function() {
+            if ($(this).val() === 'A') {
+                $('#supervisorContainer').show();
+                $('#supervisorSelect').prop('required', true);
+            } else {
+                $('#supervisorContainer').hide();
+                $('#supervisorSelect').prop('required', false);
+                $('#supervisorSelect').val(null).trigger('change');
+            }
+        });
+    });
+</script> *@
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputField = document.getElementById('emsNationalId');
+
+        inputField.addEventListener('input', function () {
+            // Convert lowercase letters to uppercase and remove non-alphanumeric characters
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    });
+</script>
+
+
+@* <script>
+    // Function to display Swal success message
+    function showSuccessMessage(message) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: message,
+        }).then((result) => {
+            if (result.value) {
+                location.reload();  // Reload the page after showing the message
+            }
+        });
+    }
+
+    // Function to handle form submission and display success message
+    $("#submitBtn").click(function (e) {
+        e.preventDefault();  // Prevent default form submission
+
+
+
+        // Submit the form via AJAX
+        $.ajax({
+            url: '@Url.Action("AddNewTransciber", "Transcribers")',
+            type: 'POST',
+            data: $("form").serialize(),
+            success: function (result) {
+                if (result.success) {
+                    showSuccessMessage('Examiner added successfully.'); // Show success message
+                    window.location.href = '@Url.Action("TranscribersList", "Transcribers")';
+                } else {
+                    // Show error message using SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: result.message,
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                // Show general error message using SweetAlert
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while adding the examiner. Please try again.',
+                });
+            }
+        });
+
+    });
+</script>
+ *@
+
+
+
+
+
+
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+
+
+

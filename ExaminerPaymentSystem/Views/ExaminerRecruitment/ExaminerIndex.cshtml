@@ -1,0 +1,346 @@
+﻿@model IEnumerable<ExaminerRecruimentDataTableViewModel>
+
+@{
+    ViewData["Title"] = "Examiner Recruitment List";
+}
+
+<div class="container mt-4">
+
+    <div class="shadow p-4 my-3 rounded">
+    <h2 class="text-center mb-4">Trainee Examiner Recruitment Details</h2>
+
+    <!-- Filtering Section -->
+    <div class="row teaching-experience-row mb-4 d-flex align-items-center gx-2">
+        <div class="col-auto">
+            <label class="form-label">Level</label><br />
+            <select class="form-select form-select-sm levelSelected" id="sessionLevelFilter" name="Level" required>
+                <option value="">Select Level Taught</option>
+                <option value="A">A-Level</option>
+                <option value="O">O-Level</option>
+                <option value="G7">G-7</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label">Subject</label>
+            <select class="form-select form-select-sm subject" name="Subject" id="subjectFilter">
+                <option value="">Select Subject</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label">Paper Code</label>
+            <select class="form-select form-select-sm" id="paperCodeFilter">
+                <option value="">Select Paper Code</option>
+                <option value="01">1</option>
+                <option value="02">2</option>
+                <option value="03">3</option>
+                <option value="04">4</option>
+                <option value="05">5</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <label class="form-label">Region</label>
+            <select class="form-select form-select-sm" id="regionCodeFilter">
+                <option value="">Select Region</option>
+                <option value="01">01-Harare</option>
+                <option value="02">02-Manicaland</option>
+                <option value="03">03-Mashonaland East</option>
+                <option value="04">04-Matabeleland North</option>
+                <option value="05">05-Midlands</option>
+                <option value="06">06-Masvingo</option>
+                <option value="07">07-Mashonaland Central</option>
+                <option value="08">08-Mashonaland West</option>
+                <option value="09">09-Matabeleland South</option>
+                <option value="10">10-Bulawayo</option>
+            </select>
+        </div>
+
+        <div class="col-auto mt-4">
+            <button id="filterButton" class="btn btn-primary btn-sm">Apply</button>
+            <button id="clearFilters" class="btn btn-secondary btn-sm">Clear</button>
+        </div>
+    </div>
+
+
+
+    <div class="row">
+        <div class="col-12 col-md-3">
+            <a asp-controller="ExaminerRecruitmentTrainingSelection" asp-action="SelectedExaminer" class="btn btn-outline-primary mb-2"><i class="bi bi-house-heart-fill"></i>Selected Trainee Examiners</a>
+        </div>
+        <div class="col-12 col-md-4">
+            <a asp-controller="ExaminerRecruitmentTrainingSelection" asp-action="DeselectedExaminer" class="btn btn-outline-primary"><i class="bi bi-houses-fill"></i> Deselected Trainee Examiners</a>
+        </div>
+        <div class="col-12 col-md-5">
+            @* <a asp-controller="ExaminerRecruitmentTrainingSelection" asp-action="DeselectedExaminer" class="btn btn-outline-primary"><i class="bi bi-houses-fill"></i> Deselected Examiners</a> *@
+        </div>
+    </div>
+    </div>
+
+
+
+    <div class="table-responsive">
+        <table id="examinerTable" class="table table-bordered table-striped table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Surname</th>
+                    <th>ID</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Gender</th>
+                    <th>Trainee Code</th>
+                    <th>Subject</th>
+                    <th>Paper Code</th>
+                    <th>Head`Comment</th>
+                    <th>Qualifications</th>
+                    <th>National Id</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var table = $('#examinerTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '@Url.Action("LoadExaminerRecruitments", "ExaminerRecruitment")',
+                    type: 'POST',
+                    data: function (d) {
+                        d.sessionLevel = $('#sessionLevelFilter').val();
+                        d.subject = $('#subjectFilter').val();
+                        d.paperCode = $('#paperCodeFilter').val();
+                        d.regionCode = $('#regionCodeFilter').val();
+                    }
+                },
+                columns: [
+                    { data: 'examinerName' },
+                    { data: 'lastName' },
+                    { data: 'cemId' },
+                    { data: 'phoneHome' },
+                    { data: 'emailAddress' },
+                    { data: 'gender' },
+                    { data: 'examinerCode' },
+                    { data: 'subject' },
+                    { data: 'paperCode' },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row) {
+                            let file = row.attachHeadComment;
+                            if (file) {
+                                let fileUrl = `/${file.replace(/^\/+/, '')}`;
+                                let fileExtension = file.split('.').pop().toLowerCase();
+
+                                if (['png', 'jpeg', 'jpg'].includes(fileExtension)) {
+                                    // Show image preview as a clickable thumbnail
+                                    return `<a href="${fileUrl}" target="_blank">
+                        <img src="${fileUrl}" alt="Preview" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" />
+                    </a>`;
+                                }
+                                else if (fileExtension === 'pdf') {
+                                    // Show the first page of the PDF as a clickable thumbnail preview
+                                    let pdfPreviewUrl = `${fileUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1`;
+                                    return `<a href="${fileUrl}" target="_blank" style="display: inline-block;">
+                        <iframe src="${pdfPreviewUrl}" style="width: 50px; height: 50px; pointer-events: none;"></iframe>
+                    </a>`;
+                                }
+                                else {
+                                    return 'Unsupported file';
+                                }
+                            }
+
+                            return 'Not uploaded';
+                        }
+                    },
+
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row) {
+                            let file = row.academicQualifications;
+                            if (file) {
+                                let fileUrl = `/${file.replace(/^\/+/, '')}`;
+                                let fileExtension = file.split('.').pop().toLowerCase();
+
+                                if (['png', 'jpeg', 'jpg'].includes(fileExtension)) {
+                                    // Show image preview as a clickable thumbnail
+                                    return `<a href="${fileUrl}" target="_blank">
+                                <img src="${fileUrl}" alt="Preview" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" />
+                            </a>`;
+                                }
+                                else if (fileExtension === 'pdf') {
+                                    // Show the first page of the PDF as a clickable thumbnail preview
+                                    let pdfPreviewUrl = `${fileUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1`;
+                                    return `<a href="${fileUrl}" target="_blank" style="display: inline-block;">
+                                <iframe src="${pdfPreviewUrl}" style="width: 50px; height: 50px; pointer-events: none;"></iframe>
+                            </a>`;
+                                }
+                                else {
+                                    return 'Unsupported file';
+                                }
+                            }
+
+                            return 'Not uploaded';
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row) {
+                            let file = row.nationalIdDocs;
+                            if (file) {
+                                let fileUrl = `/${file.replace(/^\/+/, '')}`;
+                                let fileExtension = file.split('.').pop().toLowerCase();
+
+                                if (['png', 'jpeg', 'jpg'].includes(fileExtension)) {
+                                    // Show image preview as a clickable thumbnail
+                                    return `<a href="${fileUrl}" target="_blank">
+                                        <img src="${fileUrl}" alt="Preview" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" />
+                                    </a>`;
+                                }
+                                else if (fileExtension === 'pdf') {
+                                    // Show the first page of the PDF as a clickable thumbnail preview
+                                    let pdfPreviewUrl = `${fileUrl}#toolbar=0&navpanes=0&scrollbar=0&page=1`;
+                                    return `<a href="${fileUrl}" target="_blank" style="display: inline-block;">
+                                        <iframe src="${pdfPreviewUrl}" style="width: 50px; height: 50px; pointer-events: none;"></iframe>
+                                    </a>`;
+                                }
+                                else {
+                                    return 'Unsupported file';
+                                }
+                            }
+
+                            return 'Not uploaded';
+                        }
+                    },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row) {
+                            return `<a href="/ExaminerRecruitment/Detail/${row.id}" class="btn btn-primary btn-sm"><i class="bi bi-eye"></i></a>`;
+                        }
+                    }
+                ],
+                order: [[0, 'asc']],
+                lengthMenu: [10, 25, 50],
+                language: {
+                    emptyTable: "No data available"
+                }
+            });
+
+            // Apply filter on button click
+            $('#filterButton').click(function () {
+                table.ajax.reload();
+            });
+            // Reload table when any filter field changes
+            $('#sessionLevelFilter, #subjectFilter, #paperCodeFilter, #regionCodeFilter').change(function () {
+                table.ajax.reload();
+            })
+        });
+
+
+
+        $(document).ready(function () {
+            $(document).on('change', '.levelSelected', function () {
+                const $row = $(this).closest('.teaching-experience-row') || $(this).parent(); // Fallback
+                const selectedValue = $(this).val();
+                let prefix = '';
+
+                switch (selectedValue) {
+                    case 'A':
+                        prefix = '6';
+                        break;
+                    case 'O':
+                        prefix = '4';
+                        break;
+                    case 'G7':
+                        prefix = '7';
+                        break;
+                    default:
+                        prefix = '';
+                }
+
+                const $subjectDropdown = $row.find('.subject');
+                if (prefix) {
+                    $.ajax({
+                        url: '/ExaminerRecruitment/GetSubjects',
+                        type: 'GET',
+                        data: { prefix: prefix },
+                        success: function (data) {
+                            $subjectDropdown.empty().append('<option value="">Select Subject</option>');
+                            $.each(data, function (index, subject) {
+                                $subjectDropdown.append(
+                                    $('<option>', {
+                                        value: subject.suB_SUBJECT_CODE,
+                                        text: subject.suB_SUBJECT_DESC,
+                                    })
+                                );
+                            });
+                        },
+                        error: function () {
+                            alert('Error fetching subjects. Please try again.');
+                        },
+                    });
+                } else {
+                    $subjectDropdown.empty().append('<option value="">Select Subject</option>');
+                }
+            });
+        });
+
+
+
+
+            document.addEventListener("DOMContentLoaded", function () {
+                const filters = ["sessionLevelFilter", "subjectFilter", "paperCodeFilter", "regionCodeFilter"];
+
+                // Load saved filter values from localStorage
+                filters.forEach(filter => {
+                    const savedValue = localStorage.getItem(filter);
+                    if (savedValue) {
+                        document.getElementById(filter).value = savedValue;
+                    }
+                });
+
+                // Save filter values on change
+                filters.forEach(filter => {
+                    document.getElementById(filter).addEventListener("change", function () {
+                        localStorage.setItem(filter, this.value);
+                    });
+                });
+
+                // Clear filters button
+                document.getElementById("clearFilters").addEventListener("click", function () {
+                    filters.forEach(filter => {
+                        document.getElementById(filter).value = "";
+                        localStorage.removeItem(filter);
+                    });
+                });
+            });
+
+
+
+        var successMessage = '@TempData["SuccessMessage"]';
+        if (successMessage) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: successMessage,
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+        }
+
+    </script>
+}

@@ -1,0 +1,60 @@
+﻿@using ExaminerPaymentSystem.Controllers.ExamMonitors
+@model List<MonitorDto>
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>National ID</th>
+                <th>Name</th>
+                <th>Gender</th>
+                <th>Status</th>
+                <th>Region</th>
+                <th>District</th>
+                <th>Centre</th>
+                <th>Phone</th>
+                <th>Accept Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var monitor in Model)
+            {
+                <tr>
+                    <td>@monitor.NationalId</td>
+                    <td>@monitor.FirstName @monitor.LastName</td>
+                    <td>
+                        <span class="badge @(monitor.Sex == "M" ? "bg-primary" : "bg-pink")">
+                            @(monitor.Sex == "M" ? "Male" : "Female")
+                        </span>
+                    </td>
+                    <td>
+                        @monitor.Status
+                    </td>
+                    <td>@monitor.Region</td>
+                    <td>@monitor.District</td>
+                    <td>@monitor.Centre</td>
+                    <td>@monitor.Phone</td>
+                    <td>
+                     @if (monitor.AcceptStatus?.ToLower() == "accepted")
+                        {
+                            <span class="badge badge-accepted">Accepted</span>
+                        }
+                   
+                    </td>
+
+
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+        <h4 class="text-muted">No monitors found</h4>
+        <p class="text-muted">Try adjusting your filters to see results</p>
+    </div>
+}
+

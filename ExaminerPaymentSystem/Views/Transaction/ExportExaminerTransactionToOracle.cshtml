@@ -1,0 +1,222 @@
+﻿@model bool?
+
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+@inject IActivityRepository activityRepo
+@inject IVenueRepository venueRepo
+
+@{
+    ViewBag.Title = "Register Reporting";
+
+    IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+    IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+    IEnumerable<Venue> venues = await venueRepo.VenuesGetAll();
+    var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+    IEnumerable<Activity> activities = await activityRepo.GetAllActivitiesAsync();
+
+}
+
+
+<form id="searchForm" asp-controller="Transaction" asp-action="ExportExaminerTransactionToOracle" method="post" class="needs-validation mb-5" novalidate>
+    <div class="border rounded p-4 mb-4 shadow-sm position-relative" style="border-width: 2px; background-color: #f8f9fa;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color: #123255;">
+            <!-- Optional heading -->
+        </div>
+        <div>
+            <!-- Exam Session Filter -->
+            <div class="col-md-3">
+                <label for="mkExamCode" class="form-label">Exam Session</label>
+                <select class="form-select" id="filterExamCode" required name="examCode">
+                    <option value="">-- Select Session --</option>
+                    @foreach (var examCod in examCodes)
+                    {
+                        if (int.TryParse(examCod.EXM_EXAM_YEAR, out int examYear))
+                        {
+                            if (examCod.ACTIVATED_SESSION == "Activated")
+                            {
+                                <option value="@examCod.EXM_EXAM_CODE">@examCod.EXM_EXAM_LEVEL @examCod.EXM_EXAM_SESSION @examCod.EXM_EXAM_YEAR</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Subject Code Filter -->
+            <div class="col-md-3">
+                <label for="mkSubject" class="form-label">Subject Code</label>
+                <select class="form-select" id="filterSubject" required name="subjectCode">
+                    <option value="">-- Select Subject --</option>
+                </select>
+            </div>
+
+            <!-- Paper Code Filter -->
+            <div class="col-md-3">
+                <label for="mkPaperCode" class="form-label">Paper Code</label>
+                <select class="form-select" id="filterPaperCode" required name="paperCode">
+                    <option value="">-- Select Paper Code --</option>
+                </select>
+            </div>
+
+            <!-- Region Code Filter -->
+            <div class="col-md-3">
+                <div class="form-group" id="filterRegionCodeContainer" style="display: none;">
+                    <label for="mkRegionCode" class="form-label">Region Code</label>
+                    <select id="filterRegionCode" name="regionCode" class="form-select" name="regionCode">
+                        <option value="">-- Select Region Code --</option>
+                        <option value="01">01 - Harare</option>
+                        <option value="02">02 - Manicaland</option>
+                        <option value="03">03 - Mashonaland East</option>
+                        <option value="04">04 - Matabeleland North</option>
+                        <option value="05">05 - Midlands</option>
+                        <option value="06">06 - Masvingo</option>
+                        <option value="07">07 - Mashonaland Central</option>
+                        <option value="08">08 - Mashonaland West</option>
+                        <option value="09">09 - Matabeleland South</option>
+                        <option value="10">10 - Bulawayo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button id="exportButton" class="btn btn-success me-md-2" type="button">
+                <i class="fas fa-upload me-2"></i>Export Examiner Transactions
+            </button>
+            <button id="clearButton" class="btn btn-secondary" type="button">
+                <i class="fas fa-undo me-2"></i>Clear
+            </button>
+        </div>
+    </div>
+</form>
+
+@if (Model is null)
+{
+
+}
+
+
+<script>
+    $(document).ready(function () {
+        var subjects = @Html.Raw(subjectArray);
+
+        $('#exportButton').click(function () {
+            var examCode = $('#filterExamCode').val();
+            var subjectCode = $('#filterSubject').val();
+            var paperCode = $('#filterPaperCode').val();
+            var regionCode = $('#filterRegionCode').val();
+
+            if (!examCode || !subjectCode || !paperCode) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Fields',
+                    text: 'Please select Exam, Subject, and Paper Code before exporting.'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Exporting...',
+                text: 'Please wait while the data is being exported to Oracle.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '@Url.Action("ExportExaminerTransactionToOracle", "Transaction")',
+                type: 'POST',
+                data: {
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode
+                },
+                success: function (result) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Export Complete',
+                        text: 'Data was successfully exported to Oracle!'
+                    }).then(() => {
+                        // Optional redirect or refresh
+                        location.reload();
+                    });
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Export Failed',
+                        text: 'Something went wrong during export. Please try again.'
+                    });
+                }
+            });
+        });
+
+        // Function to populate subject dropdown based on selected exam code
+        $('#filterExamCode').change(function () {
+            var selectedExamCode = $(this).val();
+            var subjectSelect = $('#filterSubject');
+            subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+            // Filter subjects based on selected exam code and remove duplicates
+            var uniqueSubjects = {};
+            subjects.forEach(function (subject) {
+                var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                if (subSubIdPrefix === selectedExamCode) {
+                    uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                }
+            });
+
+            // Populate subject dropdown with unique subjects
+            Object.keys(uniqueSubjects).forEach(function (key) {
+                var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                console.log("Appended subject: " + key);
+            });
+        });
+
+        // Function to populate paper code dropdown based on selected subject
+        $('#filterSubject').change(function () {
+            var selectedSubjectId = $(this).val();
+            var paperCodeSelect = $('#filterPaperCode');
+            paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+            if (selectedSubjectId && selectedSubjectId.length >= 4) {
+                var subjectCheck = selectedSubjectId.substring(3, 4);
+
+
+                if (subjectCheck === '7') {
+                    $('#filterRegionCodeContainer').show();
+                    $('#filterRegionCode').attr('required', 'required');
+                } else {
+
+                    $('#filterRegionCodeContainer').hide();
+                    $('#filterRegionCode').removeAttr('required');
+                }
+            } else {
+                $('#filterRegionCodeContainer').hide();
+                $('#filterRegionCode').removeAttr('required');
+            }
+
+            if (selectedSubjectId) {
+                // Make an AJAX call to get the paper codes
+                $.ajax({
+                    url: '@Url.Action("GetPaperCodes", "Subjects")',
+                    type: 'GET',
+                    data: { subjectCode: selectedSubjectId },
+                    success: function (data) {
+                        data.forEach(function (paperCode) {
+                            paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching paper codes: " + error);
+                    }
+                });
+            }
+        });
+    });
+</script>

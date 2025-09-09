@@ -1,0 +1,2342 @@
+﻿@model IEnumerable<RegisterViewModel>
+
+@{
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+
+    var allExaminers = ViewBag.AllExaminers as List<Examiner>;
+}
+
+
+<style>
+    #allExaminersTable, #selectedExaminersTable {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+        #allExaminersTable th, #selectedExaminersTable th {
+            text-align: center;
+        }
+
+        #allExaminersTable td, #selectedExaminersTable td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    .status-approved {
+        color: white;
+        background-color: green;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-rejected {
+        color: white;
+        background-color: red;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-pending {
+        color: black;
+        background-color: orange;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+ /*    #regTable {
+        font-size: 0.78rem;
+    } */
+    .btn-outline-primary {
+        border-color: #153355;
+        color: #153355;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem;
+        white-space: nowrap;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #153355;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(21, 51, 85, 0.2);
+        }
+
+    .bi {
+        font-size: 1.1rem;
+    }
+</style>
+
+
+@if(activity == "BEM")
+{
+
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-users" style="color: #2a5a8a;"></i>
+            <h4 class="fw-bold mb-0" style="color: #153355;">
+                Select Team Structure:
+                <span style="color: #2a5a8a;">
+                    @subjectCode / @paperCode
+                    @if (!string.IsNullOrEmpty(regionCode))
+                    {
+                        <text> Region: @regionCode</text>
+                    }
+                </span>
+            </h4>
+    </div>
+    <hr style="
+        border-top: 1px solid black;
+        width: 100px;
+        margin: 8px auto;
+    ">
+</div>
+
+<div class="row g-2 align-items-center">
+    <div class="col-auto">
+        <a asp-controller="ManageTeams" asp-action="ExaminerApportionment"
+           asp-route-examCode="@ViewBag.ExamCode"
+           asp-route-subjectCode="@ViewBag.SubjectCode"
+           asp-route-paperCode="@ViewBag.PaperCode"
+           asp-route-regionCode="@ViewBag.RegionCode"
+           asp-route-activity="@ViewBag.Activity"
+           class="btn btn-outline-primary d-flex align-items-center">
+            <i class="fas fa-id-card me-2"></i>Auto Org Card
+        </a>
+    </div>
+
+    <div class="col-auto">
+        <a asp-controller="ManageTeams" asp-action="ExaminerApportionment2"
+           asp-route-examCode="@ViewBag.ExamCode"
+           asp-route-subjectCode="@ViewBag.SubjectCode"
+           asp-route-paperCode="@ViewBag.PaperCode"
+           asp-route-regionCode="@ViewBag.RegionCode"
+           asp-route-activity="@ViewBag.Activity"
+           class="btn btn-outline-primary d-flex align-items-center">
+            <i class="fas fa-id-card me-2"></i> Manual Org Card
+        </a>
+    </div>
+    <div class="col-auto">
+        <a asp-controller="ManageTeams" asp-action="MarkingMaterial"
+           asp-route-examCode="@ViewBag.ExamCode"
+           asp-route-subjectCode="@ViewBag.SubjectCode"
+           asp-route-paperCode="@ViewBag.PaperCode"
+           asp-route-regionCode="@ViewBag.RegionCode"
+           asp-route-activity="@ViewBag.Activity"
+           class="btn btn-outline-primary d-flex align-items-center">
+            <i class="fas fa-database me-2"></i> Marking Material
+        </a>
+    </div>
+
+    <div class="col-auto">
+        <a asp-controller="ManageTeams" asp-action="ExportSelectedTeamStructure"
+           asp-route-examCode="@ViewBag.ExamCode"
+           asp-route-subjectCode="@ViewBag.SubjectCode"
+           asp-route-paperCode="@ViewBag.PaperCode"
+           asp-route-regionCode="@ViewBag.RegionCode"
+           asp-route-activity="@ViewBag.Activity"
+           class="btn btn-outline-primary d-flex align-items-center">
+            <i class="fas fa-download me-2"></i> Download Selected
+        </a>
+    </div>
+    <div class="col-auto">
+        <a asp-controller="ManageTeams" asp-action="SelectTeam2"
+           asp-route-examCode="@ViewBag.ExamCode"
+           asp-route-subjectCode="@ViewBag.SubjectCode"
+           asp-route-paperCode="@ViewBag.PaperCode"
+           asp-route-regionCode="@ViewBag.RegionCode"
+           asp-route-activity="@ViewBag.Activity"
+           class="btn btn-outline-primary d-flex align-items-center">
+            <i class="fas fa-id-card me-2"></i> Select From other Subject/Component
+        </a>
+    </div>
+
+
+        <form id="uploadForm" asp-controller="ManageTeams" asp-action="UploadTeamStructure"
+              asp-route-examCode="@ViewBag.ExamCode"
+              asp-route-subjectCode="@ViewBag.SubjectCode"
+              asp-route-paperCode="@ViewBag.PaperCode"
+              asp-route-regionCode="@ViewBag.RegionCode"
+              asp-route-activity="@ViewBag.Activity"
+              method="post"
+              enctype="multipart/form-data"
+              class="mt-4">
+
+            <div class="card">
+                <div class="card-header  text-white" style="background-color: #153355;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-upload me-2"></i> Upload Team Structure
+                    </h5>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between">
+                        <a asp-controller="ManageTeams" asp-action="ExportTeamStructure"
+                           asp-route-examCode="@ViewBag.ExamCode"
+                           asp-route-subjectCode="@ViewBag.SubjectCode"
+                           asp-route-paperCode="@ViewBag.PaperCode"
+                           asp-route-regionCode="@ViewBag.RegionCode"
+                           asp-route-activity="@ViewBag.Activity"
+                           class="btn btn-outline-primary d-flex align-items-center">
+                            <i class="fas fa-download me-2"></i> Download Template
+                        </a>
+
+                        <a asp-controller="ManageTeams" asp-action="Index"
+                           asp-route-examCode="@ViewBag.ExamCode"
+                           asp-route-subjectCode="@ViewBag.SubjectCode"
+                           asp-route-paperCode="@ViewBag.PaperCode"
+                           asp-route-regionCode="@ViewBag.RegionCode"
+                           asp-route-activity="@ViewBag.Activity"
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i> Reset
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="teamStructureFile" class="form-label">Select Excel File</label>
+                                <input type="file" class="form-control"  id="teamStructureFile" name="file" accept=".xlsx" required>
+                                <div class="form-text">Only Excel (.xlsx) files exported from this system are supported</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn w-100 text-white" id="uploadBtn" style="background-color: #153355;">
+                                <span id="uploadIcon"><i class="fas fa-upload me-2"></i></span>
+                                <span id="uploadText">Upload</span>
+                                <span id="uploadSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div id="uploadProgress" class="progress mt-2 d-none">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated"
+                             role="progressbar" style="width: 0%"></div>
+                    </div>
+
+                    <!-- Status messages -->
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success mt-3">
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger mt-3">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+                </div>
+            </div>
+        </form>
+
+</div>
+
+
+
+<div class="card mt-2 mb-1 p-1 shadow rounded">
+    <div class="card-header p-1">
+        <div class="row g-0 text-center">
+            <!-- Total Invited -->
+            <div class="col">
+                    <div id="totalExaminersCounter" class="counter btn  text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;background-color: #153355;"  onclick="filterData('TotalInvited')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">Total Available</small>
+                </div>
+            </div>
+            <!-- Confirmed Attending -->
+            <div class="col">
+
+                <div id="selectedExaminersCounter" class="counter btn btn-success text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('Selected')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">Selected</small>
+
+                </div>
+            </div>
+            <!-- Pending -->
+            <div class="col">
+                <div id="pmsExaminersCounter" class="counter btn btn-warning text-dark d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('PMS')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">PMS</small>
+                </div>
+            </div>
+            <!-- Not Attending -->
+            <div class="col">
+                <div id="rpmsExaminersCounter" class="counter btn btn-danger text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('RPMS')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">RPMS</small>
+                </div>
+            </div>
+            <!-- Recommended -->
+            <div class="col">
+                <div id="dpmsExaminersCounter" class="counter btn btn-info text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('DPMS')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">DPMS</small>
+                </div>
+            </div>
+            <!-- Absent -->
+            <div class="col">
+                <div id="bmsExaminersCounter" class="counter btn btn-secondary text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('BMS')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">BMS</small>
+                </div>
+            </div>
+            <!-- Additional Counter -->
+            <div class="col">
+                <div id="aeExaminersCounter" class="counter btn btn-dark text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('AE')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">E</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+        <div class="table-responsive mt-4">
+            <table id="regTable" class="table table-sm table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Sex</th>
+                        <th>Status</th>
+                        <th>C/V</th>
+                        <th>Station</th>
+                        <th>Province</th>
+                        <th>Action</th>
+                        <th>Ex No</th>
+                        <th>Team</th>
+                        <th>Sel</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+
+
+
+    <div class="modal fade" id="teamSelectModal" tabindex="-1" aria-labelledby="teamSelectModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header  text-white" style="background-color: #153355;">
+                    <h5 class="modal-title" id="teamSelectModalLabel">Assign Team & Category</h5>
+                    <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <input type="hidden" id="modalidNumberDropdown" name="idNumber" />
+                <input type="hidden" id="modalexaminerNumberDropdown" name="examinerNumber" />
+                <input type="hidden" id="modalcapturingRoleDropdown" name="capturingRole" />
+
+
+                <div class="modal-body" style="font-size: 0.9rem;">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="modalTeamDropdown" class="form-label">Select Team:</label>
+                            <select id="modalTeamDropdown" class="form-select">
+                                <option value="">-- Select Team --</option>
+                                @foreach (var team in ViewBag.Teams)
+                                {
+                                    <option value="@team">@team</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="modalCategoryDropdown" class="form-label">Select Category:</label>
+                            <select id="modalCategoryDropdown" class="form-select">
+                                <option value="">-- Select Category --</option>
+                                <option value="PMS">PMS</option>
+                                <option value="RPMS">RPMS</option>
+                                <option value="DPMS">DPMS</option>
+                                <option value="BMS">BMS</option>
+                                <option value="E">E</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- All Examiners -->
+                        <div class="col-md-5">
+                            <h6>Select Examiners</h6>
+                            <input type="text" id="searchAll" class="form-control mb-2" placeholder="Search examiners..." />
+
+                            <!-- Move Buttons -->
+                            <div class="text-center mb-2">
+                                <button id="moveToSelected" class="btn btn-success btn-sm">→</button>
+                                <button id="moveToAll" class="btn btn-danger btn-sm">←</button>
+                            </div>
+
+                            <div style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-bordered table-sm" id="allExaminersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Select</th>
+                                            <th>Name</th>
+                                            <th>ID Number</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="allExaminersBody">
+                                        @foreach (var examiner in ViewBag.AllExaminers as List<ExaminerSelect>)
+                                        {
+                                            <tr>
+                                                <td><input type="checkbox" class="examiner-checkbox" data-id="@examiner.IdNumber" data-name="@examiner.Name" /></td>
+                                                <td>@examiner.Name</td>
+                                                <td>@examiner.IdNumber</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Selected Examiners -->
+                        <div class="col-md-7">
+                            <h6>Selected Examiners</h6>
+                            <div style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-bordered table-sm" id="selectedExaminersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>ID Number</th>
+                                            <th>C/V</th>
+                                            <th>Category</th>
+                                            <th>Remove</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="selectedExaminersBody">
+                                        <!-- Filled by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button id="confirmSelectBtn" type="button" class="btn  btn-sm text-white" style="background-color: #153355;">Confirm Selection</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+   
+
+
+
+<script>
+    document.getElementById('cancelSelectBtn').addEventListener('click', function () {
+        $('#regTable').DataTable().ajax.reload(); // refresh table
+        if (selectData.checkboxRef) {
+            selectData.checkboxRef.checked = false; // uncheck the box
+        }
+    });
+</script>
+
+
+    <script>
+        let selectData = {};
+
+        // This function handles checkbox change to either show the modal or update the selection directly
+        function onCheckboxChange(checkbox, idNumber, category, capturingRole, examinerNumber, currentTeam) {
+            console.log("idNumber:", idNumber);
+            console.log("capturingRole:", capturingRole);
+            console.log("examinerNumber:", examinerNumber);
+
+            if (checkbox.checked) {
+                selectData = {
+                    idNumber,
+                    category,
+                    capturingRole,
+                    examinerNumber,
+                    isSelected: true,
+                    checkboxRef: checkbox
+                };
+                $('#teamSelectModal').modal('show');
+            } else {
+                updateSelect(idNumber, false, category, capturingRole, examinerNumber, currentTeam);
+                updateCounts();
+            }
+        }
+
+
+        // Confirm selection and assign team/category when user confirms the modal
+        document.getElementById('confirmSelectBtn').addEventListener('click', function () {
+            const selectedTeam = document.getElementById('modalTeamDropdown').value;
+            const selectedCategory = document.getElementById('modalCategoryDropdown').value;
+
+            // Validate that both team and category are selected
+            if (!selectedTeam) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Team Required',
+                    text: 'Please select a team before confirming.',
+                    showConfirmButton: true,
+                });
+                return;
+            }
+
+            if (!selectedCategory) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Category Required',
+                    text: 'Please select a category before confirming.',
+                    showConfirmButton: true,
+                });
+                return;
+            }
+
+            // Close the modal
+            $('#teamSelectModal').modal('hide');
+
+            
+
+            // Update the examiner selection with the selected team and category
+            updateSelect(
+                selectData.idNumber,
+                true,
+                selectedCategory,
+                selectData.capturingRole,
+                selectData.examinerNumber,
+                selectedTeam
+            );
+        });
+
+        // This function updates the selection (either selecting or deselecting the examiner)
+        function updateSelect(idNumber, isSelected, category, capturingRole, examinerNumber, team) {
+            const examCode = '@examCode';
+            const subjectCode = '@subjectCode';
+            const paperCode = '@paperCode';
+            const regionCode = '@regionCode';
+            const activity = '@activity';
+
+            // Build team members list from the selected table
+            const teamMembers = [];
+            const rows = document.querySelectorAll('#selectedExaminersBody tr');
+
+            rows.forEach(function (row) {
+                const name = row.querySelector('td:nth-child(1)').textContent;
+                const idNum = row.querySelector('td:nth-child(2)').textContent;
+               
+                const capturingRole = row.querySelector('td:nth-child(3) select').value;
+                const category = row.querySelector('td:nth-child(4) select').value;
+
+                teamMembers.push({
+                    name: name,
+                    idNumber: idNum,
+                    category: category,
+                    team: '',
+                    capturingRole: capturingRole, // Update if you have a value
+                    examinerNumber: '' // Update if needed
+                });
+            });
+
+            const allHaveCategory = teamMembers.every(member => member.category && member.category.trim() !== '' && member.category !== '--Select--');
+
+            if (!allHaveCategory) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Missing Category',
+                    text: 'Please make sure all team members have a selected category before submitting.'
+                }).then(() => {
+                    $('#regTable').DataTable().ajax.reload();
+                    updateCounts();
+                          location.reload();
+                });
+                return;
+            }
+
+
+            fetch('@Url.Action("UpdateSelect", "ManageTeams")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    idNumber,
+                    isSelected,
+                    examCode,
+                    subjectCode,
+                    paperCode,
+                    regionCode,
+                    activity,
+                    category,
+                    capturingRole,
+                    examinerNumber,
+                    team,
+                    teamMembers
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: isSelected ? 'Examiner Selected' : 'Selection Removed',
+                            text: isSelected ? 'Team successfully assigned.' : 'Selection removed.',
+                            timer: 1000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload();
+                            updateCounts();
+                                  location.reload();
+                        });
+                    } else {
+                        return response.text().then(errMessage => {
+                            throw new Error(errMessage); // throw so it goes to .catch
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: error.message || 'Could not update examiner status.'
+                    }).then(() => {
+                        // Reload the DataTable or the page after user clicks OK
+                        $('#regTable').DataTable().ajax.reload();
+                             location.reload();
+                    });
+                });
+        }
+   // Function to filter examiners based on search input
+    function filterExaminers() {
+        const searchTerm = document.getElementById('searchAll').value.toLowerCase();
+        const allExaminersTable = document.getElementById('allExaminersTable');
+        const rows = allExaminersTable.getElementsByTagName('tr');
+
+        for (let i = 1; i < rows.length; i++) {
+            const nameCell = rows[i].getElementsByTagName('td')[1];  // Name column
+            const idCell = rows[i].getElementsByTagName('td')[2];  // ID Number column
+
+            const nameText = nameCell ? nameCell.textContent.toLowerCase() : '';
+            const idText = idCell ? idCell.textContent.toLowerCase() : '';
+
+            if (nameText.includes(searchTerm) || idText.includes(searchTerm)) {
+                rows[i].style.display = '';  // Show the row
+            } else {
+                rows[i].style.display = 'none';  // Hide the row
+            }
+        }
+    }
+
+    // Event listener for the search input (optional if you already used onkeyup="filterExaminers()")
+    document.getElementById('searchAll').addEventListener('keyup', filterExaminers);
+
+        function openTeamModal(button) {
+            console.log("DATASET:", button.dataset);
+
+            const idNumber = button.dataset.idnumber || '';
+            const examinerNumber = button.dataset.examinernumber || '';
+            const capturingRole = button.dataset.capturingrole || '';
+
+            console.log('ID:', idNumber);
+            console.log('Examiner:', examinerNumber);
+            console.log('Capturing Role:', capturingRole);
+            const team = button.dataset.team || '';
+            const category = button.dataset.category || '';
+
+            document.getElementById('modalTeamDropdown').value = team;
+            document.getElementById('modalCategoryDropdown').value = category;
+
+            const idInput = document.getElementById('modalidNumberDropdown');
+            const examinerInput = document.getElementById('modalexaminerNumberDropdown');
+            const roleInput = document.getElementById('modalcapturingRoleDropdown');
+
+            console.log('idInput:', idInput); // Should NOT be null
+            console.log('examinerInput:', examinerInput);
+            console.log('roleInput:', roleInput);
+
+            // Only assign if elements are found
+            if (idInput) idInput.value = idNumber;
+            if (examinerInput) examinerInput.value = examinerNumber;
+            if (roleInput) roleInput.value = capturingRole;
+
+            // const idNumber = document.getElementById('modalidNumberDropdown').value;
+            // const examinerNumber = document.getElementById('modalexaminerNumberDropdown').value;
+            // const capturingRole = document.getElementById('modalcapturingRoleDropdown').value;
+
+            console.log("idNumber:", idNumber);
+            console.log("capturingRole:", capturingRole);
+            console.log("examinerNumber:", examinerNumber);
+
+            selectData = {
+                idNumber,
+                category,
+                capturingRole,
+                examinerNumber,
+                isSelected: true,
+                checkboxRef: null // No checkbox in this case
+            };
+
+         
+
+         
+        }
+
+
+
+    // Function to move selected examiners to the "Selected" table
+    document.getElementById('moveToSelected').addEventListener('click', function() {
+        const selectedExaminersTable = document.getElementById('selectedExaminersBody');
+        const checkboxes = document.querySelectorAll('.examiner-checkbox:checked');
+        
+        checkboxes.forEach(function(checkbox) {
+            const row = checkbox.closest('tr');
+            const name = row.querySelector('td:nth-child(2)').textContent;
+            const idNumber = row.querySelector('td:nth-child(3)').textContent;
+
+            // Create a new row for the selected examiner
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${name}</td>
+                <td>${idNumber}</td>
+                <td>
+                    <select class="form-select" style="font-size: 0.85rem;">
+                              <option value="N/A">--select--</option>
+                        <option value="C">C </option>
+                        <option value="V">V</option>
+                    </select>
+                </td>
+                           <td>
+                                <select class="form-select" style="font-size: 0.85rem;">
+                                          <option value="">--Select--</option>
+                                    <option value="PMS">PMS</option>
+                                    <option value="RPMS">RPMS</option>
+                                    <option value="DPMS">DPMS</option>
+                                    <option value="BMS">BMS</option>
+                                    <option value="E">E</option>
+                                </select>
+                            </td>
+                <td><button class="btn btn-danger btn-sm remove-examiner">Remove</button></td>
+            `;
+
+            // Append the new row to the selected table
+            selectedExaminersTable.appendChild(newRow);
+
+            // Uncheck the checkbox and hide the row in the All Examiners table
+            checkbox.checked = false;
+            row.style.display = 'none';
+        });
+    });
+
+    // Function to move selected examiners back to the "All Examiners" table
+    document.getElementById('moveToAll').addEventListener('click', function() {
+        const selectedExaminersTable = document.getElementById('selectedExaminersBody');
+        const rows = selectedExaminersTable.querySelectorAll('tr');
+
+        rows.forEach(function(row) {
+            const name = row.querySelector('td:nth-child(1)').textContent;
+            const idNumber = row.querySelector('td:nth-child(2)').textContent;
+
+            // Find the original row in the All Examiners table
+            const allExaminersTable = document.getElementById('allExaminersBody');
+            const allRows = allExaminersTable.querySelectorAll('tr');
+
+            allRows.forEach(function(allRow) {
+                const allName = allRow.querySelector('td:nth-child(2)').textContent;
+                const allIdNumber = allRow.querySelector('td:nth-child(3)').textContent;
+
+                if (allName === name && allIdNumber === idNumber) {
+                    // Show the row again and uncheck the checkbox
+                    allRow.style.display = '';
+                    const checkbox = allRow.querySelector('.examiner-checkbox');
+                    checkbox.checked = false;
+                }
+            });
+
+            // Remove the row from the selected table
+            row.remove();
+        });
+    });
+
+    // Function to remove examiner from the selected list
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('remove-examiner')) {
+            const row = event.target.closest('tr');
+            row.remove();
+        }
+    });
+
+    // Validation before confirming selection
+    function validateSelection() {
+        const selectedExaminers = document.querySelectorAll('#selectedExaminersBody tr');
+        let valid = true;
+        let errorMessage = "Please select both a Capturer (C) and a Verifier (V) for each team.";
+
+        // Iterate through each row in the selected examiners table
+        selectedExaminers.forEach(function(row) {
+            const categorySelect = row.querySelector('select');
+            const selectedCategory = categorySelect.value;
+            if (selectedCategory !== 'C' && selectedCategory !== 'V') {
+                valid = false;
+            }
+        });
+
+        // If validation fails, show error message
+        if (!valid) {
+            alert(errorMessage);
+        } else {
+            // Proceed with confirming the selection (you can implement any further logic here)
+            alert("Selection confirmed!");
+            $('#teamSelectModal').modal('hide');
+        }
+    }
+    </script>
+
+
+
+
+@section Scripts {
+
+        <script>
+            document.getElementById('uploadForm').addEventListener('submit', function(e) {
+                const btn = document.getElementById('uploadBtn');
+                const text = document.getElementById('uploadText');
+                const spinner = document.getElementById('uploadSpinner');
+                const progressBar = document.querySelector('.progress-bar');
+                const progressContainer = document.getElementById('uploadProgress');
+
+                // Show loading state
+                btn.disabled = true;
+                text.textContent = 'Uploading...';
+                spinner.classList.remove('d-none');
+                progressContainer.classList.remove('d-none');
+
+                // Simulate progress (remove this in production)
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 5;
+                    progressBar.style.width = progress + '%';
+                    if (progress >= 95) clearInterval(progressInterval);
+                }, 100);
+
+                // Form will submit normally and page will refresh when done
+                // For AJAX upload, you would need additional handling
+            });
+        </script>
+
+
+    <script>
+        function updateCounts() {
+            // Construct the URL with parameters from the ViewBag
+            const url = `@Url.Action("CountStats", "ManageTeams")?examCode=@ViewBag.ExamCode&subjectCode=@ViewBag.SubjectCode&paperCode=@ViewBag.PaperCode&activity=@ViewBag.Activity&regionCode=@ViewBag.RegionCode`;
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const setCounterValue = (id, label, value) => {
+                        const counterElement = document.getElementById(id);
+                        if (counterElement) {
+                            counterElement.innerHTML = `<h6 class="mb-0">${value}</h6><p class="mb-0">${label}</p>`;
+                        }
+                    };
+
+                    setCounterValue('totalExaminersCounter', 'Total Available', data.total);
+                    setCounterValue('selectedExaminersCounter', 'Selected', data.selectedCount);
+                    setCounterValue('pmsExaminersCounter', 'PMS', data.pmsCount);
+                    setCounterValue('rpmsExaminersCounter', 'RPMS', data.rpmsCount);
+                    setCounterValue('dpmsExaminersCounter', 'DPMS', data.dpmsCount);
+                    setCounterValue('bmsExaminersCounter', 'BMS', data.bmsCount);
+                    setCounterValue('aeExaminersCounter', 'E', data.aeCount);
+                })
+                .catch(error => {
+                    console.error('Error fetching counts:', error);
+                });
+        }
+
+        updateCounts();
+
+    </script>
+
+
+
+    <script>
+        $(document).ready(function () {
+            var table = $('#regTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "lengthMenu": [
+                    [10, 25, 50, 100, 250, 500, 1000],
+                    [10, 25, 50, 100, 250, 500, 1000]
+                ],
+                "pageLength": 100,
+           
+                "buttons": [
+                    {
+                        extend: 'excelHtml5',
+                        className: 'btn btn-sm btn-success',
+                        text: '<i class="fa fa-file-excel"></i> Excel',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        className: 'btn btn-sm btn-info',
+                        text: '<i class="fa fa-file-csv"></i> CSV',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        className: 'btn btn-sm btn-danger',
+                        text: '<i class="fa fa-file-pdf"></i> PDF',
+                        exportOptions: { columns: ':visible' }
+                    }
+                ],
+                "ajax": {
+                        url: "/ManageTeams/GetDataSelectTeam",
+                    type: "POST",
+                    data: function (d) {
+                        d.examCode = "@examCode";
+                        d.subjectCode = "@subjectCode";
+                        d.paperCode = "@paperCode";
+                        d.activity = "@activity";
+                        d.regionCode = "@regionCode";
+                    }
+                },
+                "columns": [
+                    {
+                        "data": "name",
+                        "name": "Name",
+                        "width": "80px",
+                    },
+              
+                    {
+                        "data": "sex",
+                        "name": "Sex",
+                        "width": "30px",
+                    },
+                    {
+                        "data": "category",
+                        "width": "60px",
+                        "className": "dt-body-center",
+                        "render": function (data, type, row) {
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+                            return `<select class="form-control form-control-sm" onchange="updateCategory('${row.idNumber}', this.value)" ${isDisabled}>
+                            <option value="PMS" ${data === 'PMS' ? 'selected' : ''}>PMS</option>
+                            <option value="RPMS" ${data === 'RPMS' ? 'selected' : ''}>RPMS</option>
+                            <option value="DPMS" ${data === 'DPMS' ? 'selected' : ''}>DPMS</option>
+                            <option value="BMS" ${data === 'BMS' ? 'selected' : ''}>BMS</option>
+                            <option value="E" ${data === 'E' ? 'selected' : ''}>E</option>
+                        </select>`;
+                        }
+                    },
+                    {
+                        "data": "capturingRole",
+                        "render": function (data, type, row) {
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+                            return `<select class="form-control form-control-sm"
+                    onchange="updateCapturingRole('${row.idNumber}', this.value)"
+                    ${isDisabled}>
+                <option value="N/A">N/A</option>
+                <option value="C" ${data === 'C' ? 'selected' : ''}>C</option>
+                <option value="V" ${data === 'V' ? 'selected' : ''}>V</option>
+            </select>`;
+                        }
+                    },
+
+
+                    {
+                        "data": "station",
+                        "name": "Station",
+                  
+                    },
+                
+                    {
+                        "data": "province",
+                        "name": "Province",
+                        "width": "60px",
+                   
+                    },
+                                {
+                "render": function (data, type, row) {
+                    const isChecked = row.status === "Selected";
+                    const isDisabled = row.registerStatus === "Present"; // Check if RegisterStatus is "Present"
+
+                    const checkboxHtml = `
+                        <input type="checkbox" class="form-check-input me-1"
+                            ${isChecked ? "checked" : ""}
+                            ${isDisabled ? "disabled" : ""}
+                            onchange="onCheckboxChange(this, '${row.idNumber}', '${row.category}',
+                                '${row.capturingRole}', '${row.examinerNumber}', '${row.team}')" />
+                    `;
+
+                    const iconHtml = isChecked
+                        ? `<button class="btn btn-sm btn-outline-primary ms-2"
+                            title="Edit Team"
+                            data-bs-toggle="modal"
+                            data-bs-target="#teamSelectModal"
+                            data-idnumber="${row.idNumber ?? ''}"
+                            data-examinernumber="${row.examinerNumber ?? ''}"
+                            data-team="${row.team ?? ''}"
+                            data-capturingrole="${row.capturingRole ?? ''}"
+                            data-category="${row.category ?? ''}"
+                            onclick="openTeamModal(this)">
+                            <i class="bi bi-people-fill"></i>
+                        </button>`
+                        : '';
+
+                    return `
+                        <div class="text-center d-flex align-items-center justify-content-center">
+                            ${checkboxHtml}
+                            ${iconHtml}
+                        </div>
+                    `;
+                }
+            },
+
+
+                    {
+                        "data": "examinerNumber",
+                       "name": "ExaminerNumber",
+                    },
+                    {
+                        "data": "team",
+                        "render": function (data, type, row) {
+                            const teams = @Html.Raw(Json.Serialize(ViewBag.Teams)); // Assuming your list is passed via ViewBag
+                            const options = teams.map(team =>
+                                `<option value="${team}" ${data === team ? 'selected' : ''}>${team}</option>`
+                            ).join('');
+
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+
+                            return `
+        <select class="form-control form-control-sm team-input"
+                onchange="updateTeam('${row.idNumber}', this.value)" ${isDisabled}>
+            ${options}
+        </select>`;
+                        }
+                    },
+
+                    {
+               
+                        "data": "status",
+                        "render": function (data) {
+                            return data === "Selected"
+                                ? `<span class="badge bg-success">Selected</span>`
+                                : `<span class="badge bg-secondary">Pending</span>`;
+                        }
+                    }
+                ],
+                "order": [[7, "asc"]],
+                "initComplete": function () {
+                    // This ensures proper column alignment after table initialization
+                    this.api().columns.adjust().draw();
+
+                    // Fix for potential horizontal scrollbar issues
+                    $('.dataTables_scrollBody').css('overflow-x', 'auto');
+                },
+                "drawCallback": function () {
+                    // Re-align columns on each draw
+                    this.api().columns.adjust();
+                }
+            });
+
+            // Handle window resize events
+            $(window).on('resize', function () {
+                table.columns.adjust();
+            });
+        });
+
+        function filterData(status) {
+            var table = $('#regTable').DataTable();
+                table.ajax.url(`/ManageTeams/GetDataSelectTeam?status=${encodeURIComponent(status)}`).load();
+        }
+
+        function updateCategory(idNumber, value) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/ManageTeams/UpdateCategory',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    category: value,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Category updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                },
+                error: function (xhr) {
+                    let errorMessage = "Error updating category";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: errorMessage,
+                 
+                        showConfirmButton: true
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                              location.reload();
+                    });
+                }
+            });
+        }
+
+
+        function updateCapturingRole(idNumber, value) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/ManageTeams/UpdateCapturingRole',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    capturingRole: value,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Capturing Role updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                            
+                    });
+                },
+                error: function (xhr) {
+                    let errorMessage = "Error updating capturing role";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: errorMessage,
+                      
+                        showConfirmButton: true
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                              location.reload();
+                    });
+                }
+            });
+        }
+
+
+
+        // Save Examiner Number
+        function saveExaminerNumber(icon, idNumber) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+            const row = $(icon).closest('div');
+            const input = row.find('.examiner-input');
+            const newValue = input.val();
+
+            $.ajax({
+                url: '/ManageTeams/UpdateExaminerNumber',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    examinerNumber: newValue,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Examiner Number updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+
+                    // Reset to read-only mode
+                    input.prop('readonly', true);
+                    row.find('.edit-icon').removeClass('d-none');
+                    row.find('.save-icon').addClass('d-none');
+                },
+                error: function (xhr) {
+                    let errorMessage = "Error updating Examiner Number";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: errorMessage,
+                   
+                        showConfirmButton: true
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                }
+            });
+        }
+
+        function updateTeam(idNumber, selectedTeam) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/ManageTeams/UpdateTeam',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    team: selectedTeam,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Team updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                              location.reload();
+                    });
+                },
+                error: function (xhr) {
+                    let errorMessage = "Error updating team";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: errorMessage,
+                       
+                        showConfirmButton: true
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                }
+            });
+        }
+
+
+
+    </script>
+
+
+        @if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+        {
+            <script>
+                $(document).ready(function () {
+                var table = $('#regTable').DataTable({
+                    "processing": true,
+                    "serverSide": true,
+                    "lengthMenu": [
+                        [10, 25, 50, 100, 250, 500, 1000],
+                        [10, 25, 50, 100, 250, 500, 1000]
+                    ],
+                    "pageLength": 100,
+
+                    "buttons": [
+                        {
+                            extend: 'excelHtml5',
+                            className: 'btn btn-sm btn-success',
+                            text: '<i class="fa fa-file-excel"></i> Excel',
+                            exportOptions: { columns: ':visible' }
+                        },
+                        {
+                            extend: 'csvHtml5',
+                            className: 'btn btn-sm btn-info',
+                            text: '<i class="fa fa-file-csv"></i> CSV',
+                            exportOptions: { columns: ':visible' }
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            className: 'btn btn-sm btn-danger',
+                            text: '<i class="fa fa-file-pdf"></i> PDF',
+                            exportOptions: { columns: ':visible' }
+                        }
+                    ],
+                    "ajax": {
+                        url: "/ManageTeams/GetData",
+                        type: "POST",
+                        data: function (d) {
+                            d.examCode = "@examCode";
+                            d.subjectCode = "@subjectCode";
+                            d.paperCode = "@paperCode";
+                            d.activity = "@activity";
+                            d.regionCode = "@regionCode";
+                        }
+                    },
+                    "columns": [
+                        {
+                            "data": "name",
+                            "name": "Name",
+                            "width": "80px",
+                        },
+
+                        {
+                            "data": "sex",
+                            "name": "Sex",
+                            "width": "30px",
+                        },
+                        {
+                            "data": "category",
+                            "width": "60px",
+                            "className": "dt-body-center",
+                            "render": function (data, type, row) {
+                                const isDisabled = row.status !== "Selected" ? "disabled" : "";
+                                return `<select class="form-control form-control-sm" onchange="updateCategory('${row.idNumber}', this.value)" ${isDisabled}>
+                                <option value="PMS" ${data === 'PMS' ? 'selected' : ''}>PMS</option>
+                                <option value="RPMS" ${data === 'RPMS' ? 'selected' : ''}>RPMS</option>
+                                <option value="DPMS" ${data === 'DPMS' ? 'selected' : ''}>DPMS</option>
+                                <option value="BMS" ${data === 'BMS' ? 'selected' : ''}>BMS</option>
+                                <option value="E" ${data === 'E' ? 'selected' : ''}>E</option>
+                            </select>`;
+                            }
+                        },
+                        {
+                            "data": "capturingRole",
+                            "render": function (data, type, row) {
+                                const isDisabled = row.status !== "Selected" ? "disabled" : "";
+                                return `<select class="form-control form-control-sm"
+                        onchange="updateCapturingRole('${row.idNumber}', this.value)"
+                        ${isDisabled}>
+                    <option value="N/A">N/A</option>
+                    <option value="C" ${data === 'C' ? 'selected' : ''}>C</option>
+                    <option value="V" ${data === 'V' ? 'selected' : ''}>V</option>
+                </select>`;
+                            }
+                        },
+
+
+                        {
+                            "data": "station",
+                            "name": "Station",
+
+                        },
+
+                        {
+                            "data": "province",
+                            "name": "Province",
+                            "width": "60px",
+
+                        },
+                        {
+                            "render": function (data, type, row) {
+                                const isChecked = row.status === "Selected";
+
+                                const checkboxHtml = `
+                        <input type="checkbox" class="form-check-input me-1"
+                            ${isChecked ? "checked" : ""}
+                            onchange="onCheckboxChange(this, '${row.idNumber}', '${row.category}',
+                                '${row.capturingRole}', '${row.examinerNumber}', '${row.team}')" />
+                    `;
+
+                                const iconHtml = isChecked
+                                    ? `<button class="btn btn-sm btn-outline-primary ms-2"
+                   title="Edit Team"
+                   data-bs-toggle="modal"
+                   data-bs-target="#teamSelectModal"
+                   data-idnumber="${row.idNumber ?? ''}"
+                   data-examinernumber="${row.examinerNumber ?? ''}"
+                   data-team="${row.team ?? ''}"
+                   data-capturingrole="${row.capturingRole ?? ''}"
+                   data-category="${row.category ?? ''}"
+                   onclick="openTeamModal(this)">
+                   <i class="bi bi-people-fill"></i>
+               </button>`
+                                    : '';
+
+
+                                return `
+                        <div class="text-center d-flex align-items-center justify-content-center">
+                            ${checkboxHtml}
+                            ${iconHtml}
+                        </div>
+                    `;
+                            }
+                        },
+
+
+                        {
+                            "data": "examinerNumber",
+                           "name": "ExaminerNumber",
+                        },
+                        {
+                            "data": "team",
+                            "render": function (data, type, row) {
+                                const teams = @Html.Raw(Json.Serialize(ViewBag.Teams)); // Assuming your list is passed via ViewBag
+                                const options = teams.map(team =>
+                                    `<option value="${team}" ${data === team ? 'selected' : ''}>${team}</option>`
+                                ).join('');
+
+                                const isDisabled = row.status !== "Selected" ? "disabled" : "";
+
+                                return `
+            <select class="form-control form-control-sm team-input"
+                    onchange="updateTeam('${row.idNumber}', this.value)" ${isDisabled}>
+                ${options}
+            </select>`;
+                            }
+                        },
+
+                        {
+
+                            "data": "status",
+                            "render": function (data) {
+                                return data === "Selected"
+                                    ? `<span class="badge bg-success">Selected</span>`
+                                    : `<span class="badge bg-secondary">Pending</span>`;
+                            }
+                        }
+                    ],
+                    "order": [[7, "asc"]],
+                    "initComplete": function () {
+                        // This ensures proper column alignment after table initialization
+                        this.api().columns.adjust().draw();
+
+                        // Fix for potential horizontal scrollbar issues
+                        $('.dataTables_scrollBody').css('overflow-x', 'auto');
+                    },
+                    "drawCallback": function () {
+                        // Re-align columns on each draw
+                        this.api().columns.adjust();
+                    }
+                });
+
+                // Handle window resize events
+                $(window).on('resize', function () {
+                    table.columns.adjust();
+                });
+            });
+
+            function filterData(status) {
+                var table = $('#regTable').DataTable();
+                table.ajax.url(`/ManageTeams/GetData?status=${encodeURIComponent(status)}`).load();
+            }
+
+            function updateCategory(idNumber, value) {
+                var examCode = '@examCode';
+                var subjectCode = '@subjectCode';
+                var paperCode = '@paperCode';
+                var regionCode = '@regionCode';
+                var activity = '@activity';
+
+                $.ajax({
+                    url: '/ManageTeams/UpdateCategory',
+                    type: 'POST',
+                    data: {
+                        idNumber: idNumber,
+                        category: value,
+                        examCode: examCode,
+                        subjectCode: subjectCode,
+                        paperCode: paperCode,
+                        regionCode: regionCode,
+                        activity: activity
+                    },
+                    success: function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Category updated successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false);
+                            updateCounts();
+                        });
+                    },
+                    error: function (xhr) {
+                        let errorMessage = "Error updating category";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops!',
+                            text: errorMessage,
+
+                            showConfirmButton: true
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false);
+                            updateCounts();
+                        });
+                    }
+                });
+            }
+
+
+            function updateCapturingRole(idNumber, value) {
+                var examCode = '@examCode';
+                var subjectCode = '@subjectCode';
+                var paperCode = '@paperCode';
+                var regionCode = '@regionCode';
+                var activity = '@activity';
+
+                $.ajax({
+                    url: '/ManageTeams/UpdateCapturingRole',
+                    type: 'POST',
+                    data: {
+                        idNumber: idNumber,
+                        capturingRole: value,
+                        examCode: examCode,
+                        subjectCode: subjectCode,
+                        paperCode: paperCode,
+                        regionCode: regionCode,
+                        activity: activity
+                    },
+                    success: function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Capturing Role updated successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false);
+                            updateCounts();
+
+                        });
+                    },
+                    error: function (xhr) {
+                        let errorMessage = "Error updating capturing role";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops!',
+                            text: errorMessage,
+
+                            showConfirmButton: true
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false);
+                            updateCounts();
+                        });
+                    }
+                });
+            }
+
+
+
+            // Save Examiner Number
+            function saveExaminerNumber(icon, idNumber) {
+                var examCode = '@examCode';
+                var subjectCode = '@subjectCode';
+                var paperCode = '@paperCode';
+                var regionCode = '@regionCode';
+                var activity = '@activity';
+                const row = $(icon).closest('div');
+                const input = row.find('.examiner-input');
+                const newValue = input.val();
+
+                $.ajax({
+                    url: '/ManageTeams/UpdateExaminerNumber',
+                    type: 'POST',
+                    data: {
+                        idNumber: idNumber,
+                        examinerNumber: newValue,
+                        examCode: examCode,
+                        subjectCode: subjectCode,
+                        paperCode: paperCode,
+                        regionCode: regionCode,
+                        activity: activity
+                    },
+                    success: function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Examiner Number updated successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false);
+                            updateCounts();
+                        });
+
+                        // Reset to read-only mode
+                        input.prop('readonly', true);
+                        row.find('.edit-icon').removeClass('d-none');
+                        row.find('.save-icon').addClass('d-none');
+                    },
+                    error: function (xhr) {
+                        let errorMessage = "Error updating Examiner Number";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops!',
+                            text: errorMessage,
+
+                            showConfirmButton: true
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false);
+                            updateCounts();
+                        });
+                    }
+                });
+            }
+
+            function updateTeam(idNumber, selectedTeam) {
+                var examCode = '@examCode';
+                var subjectCode = '@subjectCode';
+                var paperCode = '@paperCode';
+                var regionCode = '@regionCode';
+                var activity = '@activity';
+
+                $.ajax({
+                    url: '/ManageTeams/UpdateTeam',
+                    type: 'POST',
+                    data: {
+                        idNumber: idNumber,
+                        team: selectedTeam,
+                        examCode: examCode,
+                        subjectCode: subjectCode,
+                        paperCode: paperCode,
+                        regionCode: regionCode,
+                        activity: activity
+                    },
+                    success: function () {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Team updated successfully',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false);
+                            updateCounts();
+                        });
+                    },
+                    error: function (xhr) {
+                        let errorMessage = "Error updating team";
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        }
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops!',
+                            text: errorMessage,
+
+                            showConfirmButton: true
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false);
+                            updateCounts();
+                        });
+                    }
+                });
+            }
+
+
+
+        </script>
+
+        }
+
+}
+
+
+
+
+
+}
+else
+{
+    <div class="text-center mb-4 mt-4">
+        <div class="d-flex align-items-center justify-content-center gap-2">
+            <i class="fas fa-users" style="color: #2a5a8a;"></i>
+            <h4 class="fw-bold mb-0" style="color: #153355;">
+                Select Team Structure:
+                <span style="color: #2a5a8a;">@subjectCode / @paperCode</span>
+            </h4>
+        </div>
+        <hr style="
+        border-top: 1px solid black;
+        width: 100px;
+        margin: 8px auto;
+        ">
+    </div>
+
+ <div class="row g-2 align-items-center">
+   
+   
+    <div class="col-auto">
+        <a asp-controller="ManageTeams" asp-action="SelectTeam2"
+           asp-route-examCode="@ViewBag.ExamCode"
+           asp-route-subjectCode="@ViewBag.SubjectCode"
+           asp-route-paperCode="@ViewBag.PaperCode"
+           asp-route-regionCode="@ViewBag.RegionCode"
+           asp-route-activity="@ViewBag.Activity"
+           class="btn btn-outline-primary d-flex align-items-center">
+            <i class="fas fa-id-card me-2"></i> Select From other Subject/Component
+        </a>
+    </div>
+    </div>
+
+
+    <div class="card mt-2 mb-1 p-1 shadow rounded">
+        <div class="card-header p-1">
+            <div class="row g-0 text-center">
+                <!-- Total Invited -->
+                <div class="col">
+                    <div id="totalExaminersCounter" class="counter btn btn-primary text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('TotalInvited')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">Total Available</small>
+                    </div>
+                </div>
+                <!-- Confirmed Attending -->
+                <div class="col">
+
+                    <div id="selectedExaminersCounter" class="counter btn btn-success text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('Selected')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">Selected</small>
+
+                    </div>
+                </div>
+                <!-- Pending -->
+                <div class="col">
+                    <div id="pmsExaminersCounter" class="counter btn btn-warning text-dark d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('PMS')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">PMS</small>
+                    </div>
+                </div>
+                <!-- Not Attending -->
+                <div class="col">
+                    <div id="rpmsExaminersCounter" class="counter btn btn-danger text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('RPMS')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">RPMS</small>
+                    </div>
+                </div>
+                <!-- Recommended -->
+                <div class="col">
+                    <div id="dpmsExaminersCounter" class="counter btn btn-info text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('DPMS')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">DPMS</small>
+                    </div>
+                </div>
+                <!-- Absent -->
+                <div class="col">
+                    <div id="bmsExaminersCounter" class="counter btn btn-secondary text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('BMS')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">BMS</small>
+                    </div>
+                </div>
+                <!-- Additional Counter -->
+                <div class="col">
+                    <div id="aeExaminersCounter" class="counter btn btn-dark text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('AE')">
+                        <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                        <small class="mb-0" style="font-size: 0.6rem;">E</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="table-responsive mt-4">
+        <table id="regTable" class="table table-sm table-bordered table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Sex</th>
+                    <th>Status</th>
+                    <th>C/V</th>
+                    <th>Station</th>
+                    <th>Province</th>
+                    <th>Action</th>
+                    <th>Ex No</th>
+                    <th>Team</th>
+                    <th>Sel</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+
+
+
+
+
+    @section Scripts {
+    <script>
+        function updateSelect(idNumber, isSelected, category, capturingRole, examinerNumber, team) {
+            const examCode = '@examCode';
+            const subjectCode = '@subjectCode';
+            const paperCode = '@paperCode';
+            const regionCode = '@regionCode';
+            const activity = '@activity';
+
+            fetch('@Url.Action("UpdateSelect", "ManageTeams")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    idNumber: idNumber,
+                    isSelected: isSelected,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity,
+                    category: category,
+                    capturingRole: capturingRole,
+                    examinerNumber: examinerNumber,
+                    team: team
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        const statusMessage = isSelected ? 'Selected' : 'Removed';
+                        const titleMessage = `Examiner ${statusMessage}`;
+                        const textMessage = `Examiner Updated ${statusMessage} Successfully.`;
+                        const backgroundColor = isSelected ? '#153355' : '#dc3545';
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: titleMessage,
+                            text: textMessage,
+                            showConfirmButton: false,
+                            timer: 1000,
+                            background: backgroundColor,
+                            color: '#ffffff',
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload();
+                            updateCounts();
+                                 location.reload();
+                        });
+                    } else {
+                        throw new Error('Failed to update presence status.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating presence status:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: 'Failed to update presence status. Please try again.',
+                        showConfirmButton: true,
+                    });
+                });
+        }
+
+    </script>
+
+
+
+    <script>
+        function updateCounts() {
+            // Construct the URL with parameters from the ViewBag
+            const url = `@Url.Action("CountStats", "ManageTeams")?examCode=@ViewBag.ExamCode&subjectCode=@ViewBag.SubjectCode&paperCode=@ViewBag.PaperCode&activity=@ViewBag.Activity&regionCode=@ViewBag.RegionCode`;
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const setCounterValue = (id, label, value) => {
+                        const counterElement = document.getElementById(id);
+                        if (counterElement) {
+                            counterElement.innerHTML = `<h6 class="mb-0">${value}</h6><p class="mb-0">${label}</p>`;
+                        }
+                    };
+
+                    setCounterValue('totalExaminersCounter', 'Total Available', data.total);
+                    setCounterValue('selectedExaminersCounter', 'Selected', data.selectedCount);
+                    setCounterValue('pmsExaminersCounter', 'PMS', data.pmsCount);
+                    setCounterValue('rpmsExaminersCounter', 'RPMS', data.rpmsCount);
+                    setCounterValue('dpmsExaminersCounter', 'DPMS', data.dpmsCount);
+                    setCounterValue('bmsExaminersCounter', 'BMS', data.bmsCount);
+                    setCounterValue('aeExaminersCounter', 'E', data.aeCount);
+                })
+                .catch(error => {
+                    console.error('Error fetching counts:', error);
+                });
+        }
+
+        updateCounts();
+
+    </script>
+
+
+
+    <script>
+        $(document).ready(function () {
+            var table = $('#regTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "lengthMenu": [
+                    [10, 25, 50, 100, 250, 500, 1000],
+                    [10, 25, 50, 100, 250, 500, 1000]
+                ],
+                "pageLength": 100,
+
+                "buttons": [
+                    {
+                        extend: 'excelHtml5',
+                        className: 'btn btn-sm btn-success',
+                        text: '<i class="fa fa-file-excel"></i> Excel',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        className: 'btn btn-sm btn-info',
+                        text: '<i class="fa fa-file-csv"></i> CSV',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        className: 'btn btn-sm btn-danger',
+                        text: '<i class="fa fa-file-pdf"></i> PDF',
+                        exportOptions: { columns: ':visible' }
+                    }
+                ],
+                "ajax": {
+                        url: "/ManageTeams/GetDataSelectTeam",
+                    type: "POST",
+                    data: function (d) {
+                        d.examCode = "@examCode";
+                        d.subjectCode = "@subjectCode";
+                        d.paperCode = "@paperCode";
+                        d.activity = "@activity";
+                        d.regionCode = "@regionCode";
+                    }
+                },
+                "columns": [
+                    {
+                        "data": "name",
+                        "name": "Name",
+                        "width": "80px",
+                    },
+
+                    {
+                        "data": "sex",
+                        "name": "Sex",
+                        "width": "30px",
+                    },
+                    {
+                        "data": "category",
+                        "width": "60px",
+                        "className": "dt-body-center",
+                        "render": function (data, type, row) {
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+                            return `<select class="form-control form-control-sm" onchange="updateCategory('${row.idNumber}', this.value)" ${isDisabled}>
+                                    <option value="PMS" ${data === 'PMS' ? 'selected' : ''}>PMS</option>
+                                    <option value="RPMS" ${data === 'RPMS' ? 'selected' : ''}>RPMS</option>
+                                    <option value="DPMS" ${data === 'DPMS' ? 'selected' : ''}>DPMS</option>
+                                    <option value="BMS" ${data === 'BMS' ? 'selected' : ''}>BMS</option>
+                                    <option value="E" ${data === 'E' ? 'selected' : ''}>E</option>
+                                </select>`;
+                        }
+                    },
+                    {
+                        "data": "capturingRole",
+                        "render": function (data, type, row) {
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+                            return `<select class="form-control form-control-sm"
+                            onchange="updateCapturingRole('${row.idNumber}', this.value)"
+                            ${isDisabled}>
+                        <option value="N/A">N/A</option>
+                        <option value="C" ${data === 'C' ? 'selected' : ''}>C</option>
+                        <option value="V" ${data === 'V' ? 'selected' : ''}>V</option>
+                    </select>`;
+                        }
+                    },
+
+
+                    {
+                        "data": "station",
+                        "name": "Station",
+
+                    },
+
+                    {
+                        "data": "province",
+                        "name": "Province",
+                        "width": "60px",
+
+                    },
+                    {
+
+                        "render": function (data, type, row) {
+                            return `<div class="text-center">
+                                <input type="checkbox" class="form-check-input"
+                                    ${row.status === "Selected" ? "checked" : ""}
+                                    onchange="updateSelect('${row.idNumber}', this.checked,
+                                    '${row.category}', '${row.capturingRole}',
+                                    '${row.examinerNumber}', '${row.team}')" />
+                            </div>`;
+                        }
+
+                    },
+                    {
+                        "data": "examinerNumber",
+                        "name": "ExaminerNumber",
+                    },
+                    {
+                        "data": "team",
+                        "render": function (data, type, row) {
+                            const teams = @Html.Raw(Json.Serialize(ViewBag.Teams)); // Assuming your list is passed via ViewBag
+                            const options = teams.map(team =>
+                                `<option value="${team}" ${data === team ? 'selected' : ''}>${team}</option>`
+                            ).join('');
+
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+
+                            return `
+                <select class="form-control form-control-sm team-input"
+                        onchange="updateTeam('${row.idNumber}', this.value)" ${isDisabled}>
+                    ${options}
+                </select>`;
+                        }
+                    },
+
+                    {
+
+                        "data": "status",
+                        "render": function (data) {
+                            return data === "Selected"
+                                ? `<span class="badge bg-success">Selected</span>`
+                                : `<span class="badge bg-secondary">Pending</span>`;
+                        }
+                    }
+                ],
+                "order": [[9, "asc"]],
+                "initComplete": function () {
+                    // This ensures proper column alignment after table initialization
+                    this.api().columns.adjust().draw();
+
+                    // Fix for potential horizontal scrollbar issues
+                    $('.dataTables_scrollBody').css('overflow-x', 'auto');
+                },
+                "drawCallback": function () {
+                    // Re-align columns on each draw
+                    this.api().columns.adjust();
+                }
+            });
+
+            // Handle window resize events
+            $(window).on('resize', function () {
+                table.columns.adjust();
+            });
+        });
+
+        function filterData(status) {
+            var table = $('#regTable').DataTable();
+                table.ajax.url(`/ManageTeams/GetDataSelectTeam?status=${encodeURIComponent(status)}`).load();
+        }
+
+        function updateCategory(idNumber, value) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/ManageTeams/UpdateCategory',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    category: value,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Category updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                },
+                error: function (xhr) {
+                    let errorMessage = "Error updating category";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: errorMessage,
+
+                        showConfirmButton: true
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                }
+            });
+        }
+
+
+        function updateCapturingRole(idNumber, value) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/ManageTeams/UpdateCapturingRole',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    capturingRole: value,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Capturing Role updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                },
+                error: function (xhr) {
+                    let errorMessage = "Error updating capturing role";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: errorMessage,
+
+                        showConfirmButton: true
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                }
+            });
+        }
+
+
+
+        // Save Examiner Number
+        function saveExaminerNumber(icon, idNumber) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+            const row = $(icon).closest('div');
+            const input = row.find('.examiner-input');
+            const newValue = input.val();
+
+            $.ajax({
+                url: '/ManageTeams/UpdateExaminerNumber',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    examinerNumber: newValue,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Examiner Number updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+
+                    // Reset to read-only mode
+                    input.prop('readonly', true);
+                    row.find('.edit-icon').removeClass('d-none');
+                    row.find('.save-icon').addClass('d-none');
+                },
+                error: function (xhr) {
+                    let errorMessage = "Error updating Examiner Number";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: errorMessage,
+
+                        showConfirmButton: true
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                }
+            });
+        }
+
+        function updateTeam(idNumber, selectedTeam) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/ManageTeams/UpdateTeam',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    team: selectedTeam,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Team updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                },
+                error: function (xhr) {
+                    let errorMessage = "Error updating team";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: errorMessage,
+
+                        showConfirmButton: true
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                }
+            });
+        }
+
+
+
+    </script>
+
+    }
+}
+
+
+
+
+
+

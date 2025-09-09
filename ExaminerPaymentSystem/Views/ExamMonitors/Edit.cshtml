@@ -1,0 +1,914 @@
+﻿@model ExamMonitorViewModel
+
+
+
+@{
+    ViewBag.Title = "Exam Monitor Record";
+    bool isSuccess = ViewBag.IsSuccess != null && (bool)ViewBag.IsSuccess;
+    string message = ViewBag.Message != null ? ViewBag.Message.ToString() : "";
+
+
+}
+<link href="/css/monitorlist.css" rel="stylesheet" />
+
+<div class="container-fluid px-4 mt-3">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2">
+        <div>
+            <div class="header-container mb-4">
+                <h5 class="fw-bold text-gradient mb-1">
+                    @ViewData["Title"]
+               
+                </h5>
+                <div class="accent-line"></div>
+            </div>
+
+        </div>
+      
+    </div>
+
+
+
+    <form asp-action="Edit" class="needs-validation mb-5" novalidate enctype="multipart/form-data">
+        <input asp-for="NationalId" type="hidden" />
+
+    <!-- Personal Details Section -->
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h5 class="mb-0">Personal Details</h5>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="NationalId" class="form-control" disabled />
+                    <label asp-for="NationalId">National ID</label>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="LastName" class="form-control" placeholder="Last Name" required />
+                    <label asp-for="LastName">Last Name</label>
+                    <span asp-validation-for="LastName" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="FirstName" class="form-control" placeholder="First Name" required />
+                    <label asp-for="FirstName">First Name</label>
+                    <span asp-validation-for="FirstName" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="form-floating">
+                    <select asp-for="Sex" class="form-select" required>
+                        <option value="">Select Gender</option>
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                    </select>
+                    <label asp-for="Sex">Gender</label>
+                    <span asp-validation-for="Sex" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="Age" class="form-control" placeholder="Age" required />
+                    <label asp-for="Age">Age</label>
+                    <span asp-validation-for="Age" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+               
+
+                    <div class="form-floating">
+                        <select asp-for="Status" class="form-select">
+                            <option value="Resident Monitor">Resident Monitor</option>
+                            <option value="Assistant Cluster Manager">Assistant Cluster Manager</option>
+                            <option value="Cluster Manager">Cluster Manager</option>
+                        </select>
+                        <label asp-for="Status">Status</label>
+                    </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="Centre" class="form-control" placeholder="Centre Number" required />
+                    <label asp-for="Centre">Centre Number</label>
+                    <span asp-validation-for="Centre" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-3">
+                <div class="form-floating">
+                    <input asp-for="Qualification" class="form-control" placeholder="Qualification" />
+                    <label asp-for="Qualification">Professional Qualification</label>
+                </div>
+            </div>
+        </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-floating">
+                        <input asp-for="Experience" class="form-control number-only" placeholder="Experience" required />
+                        <label asp-for="Experience">Experience (Years)</label>
+                        <span asp-validation-for="Experience" class="text-danger small"></span>
+                    </div>
+                </div>
+        </div>
+
+    </div>
+
+    <!-- Contact Details Section -->
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h5 class="mb-0">Contact Details</h5>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="Region" class="form-select" required>
+                        <option value="">Select Region</option>
+                        <option value="01">Harare</option>
+                        <option value="02">Manicaland</option>
+                        <option value="03">Mashonaland East</option>
+                        <option value="04">Matabeleland North</option>
+                        <option value="05">Midlands</option>
+                        <option value="06">Masvingo</option>
+                        <option value="07">Mashonaland Central</option>
+                        <option value="08">Mashonaland West</option>
+                        <option value="09">Matabeleland South</option>
+                        <option value="10">Bulawayo</option>
+                    </select>
+                    <label asp-for="Region">Region</label>
+                    <span asp-validation-for="Region" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <select asp-for="District" class="form-select">
+                        <option value="">Select District</option>
+                        @if (ViewBag.Districts != null)
+                        {
+                            foreach (var district in ViewBag.Districts)
+                            {
+                                <option value="@district.Value">@district.Text</option>
+                            }
+                        }
+                    </select>
+                    <label asp-for="District">District</label>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="Station" class="form-control" placeholder="Station" />
+                    <label asp-for="Station">Station</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="form-floating">
+                    <input asp-for="Phone" class="form-control" placeholder="Phone" required />
+                    <label asp-for="Phone">Phone Number</label>
+                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                    <div class="form-floating">
+                        <input asp-for="Email" class="form-control" placeholder="Email" required />
+                        <label asp-for="Email">Contact Email</label>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Qualifications Section -->
+        <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+            <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+                <h5 class="mb-0">Professional Qualifications</h5>
+            </div>
+
+            <div id="professionalQualifications">
+                @if (Model.ProfessionalQualifications != null && Model.ProfessionalQualifications.Any())
+                {
+                    for (int i = 0; i < Model.ProfessionalQualifications.Count; i++)
+                    {
+                        var qual = Model.ProfessionalQualifications[i];
+                        <div class="professional-qualification-row mb-3">
+                            <div class="row align-items-end">
+                                <div class="col-md-4 mb-2">
+                                    <div class="form-floating">
+                                        <select class="form-select qualification-programme" name="ProfessionalQualifications[@i].ProgrammeName" required>
+                                            <option value="">Select Programme</option>
+                                            <option value="Bachelor of Education (B.Ed)" selected="@(qual.ProgrammeName == "Bachelor of Education (B.Ed)")">Bachelor of Education (B.Ed)</option>
+                                            <option value="Postgraduate Certificate in Education (PGCE)" selected="@(qual.ProgrammeName == "Postgraduate Certificate in Education (PGCE)")">Postgraduate Certificate in Education (PGCE)</option>
+                                            <option value="Diploma in Education" selected="@(qual.ProgrammeName == "Diploma in Education")">Diploma in Education</option>
+                                            <option value="Bachelor of Arts in Education" selected="@(qual.ProgrammeName == "Bachelor of Arts in Education")">Bachelor of Arts in Education</option>
+                                            <option value="Bachelor of Science in Education" selected="@(qual.ProgrammeName == "Bachelor of Science in Education")">Bachelor of Science in Education</option>
+                                            <option value="Master of Education (M.Ed)" selected="@(qual.ProgrammeName == "Master of Education (M.Ed)")">Master of Education (M.Ed)</option>
+                                            <option value="National Professional Diploma in Education (NPDE)" selected="@(qual.ProgrammeName == "National Professional Diploma in Education (NPDE)")">National Professional Diploma in Education (NPDE)</option>
+                                            <option value="Certificate in Early Childhood Education" selected="@(qual.ProgrammeName == "Certificate in Early Childhood Education")">Certificate in Early Childhood Education</option>
+                                            <option value="Diploma in Special Needs Education" selected="@(qual.ProgrammeName == "Diploma in Special Needs Education")">Diploma in Special Needs Education</option>
+                                            <option value="Advanced Certificate in Education (ACE)" selected="@(qual.ProgrammeName == "Advanced Certificate in Education (ACE)")">Advanced Certificate in Education (ACE)</option>
+                                        </select>
+                                        <label>Programme Name</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3 mb-2">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control qualification-institution" name="ProfessionalQualifications[@i].InstitutionName" value="@qual.InstitutionName" placeholder="Institution name" required />
+                                        <label>Institution Name</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-2 mb-2">
+                                    <div class="form-floating">
+                                        <select class="form-select qualification-start" name="ProfessionalQualifications[@i].StartYear"
+                                                data-saved-value="@qual.StartYear" required>
+                                            <option value="">Start Year</option>
+                                            @if (!string.IsNullOrEmpty(qual.StartYear))
+                                            {
+                                                <option value="@qual.StartYear" selected>@qual.StartYear</option>
+                                            }
+                                        </select>
+                                        <label>Start Year</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-2 mb-2">
+                                    <div class="form-floating">
+                                        <select class="form-select qualification-end" name="ProfessionalQualifications[@i].EndYear"
+                                                data-saved-value="@qual.EndYear" required>
+                                            <option value="">End Year</option>
+                                            @if (!string.IsNullOrEmpty(qual.EndYear))
+                                            {
+                                                <option value="@qual.EndYear" selected>@qual.EndYear</option>
+                                            }
+                                        </select>
+                                        <label>End Year</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-1 mb-2">
+                                    @if (i == 0)
+                                    {
+                                        <button type="button" class="btn btn-success btn-sm add-qualification">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-danger btn-sm remove-qualification">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <!-- Default empty row if no qualifications exist -->
+                    <div class="professional-qualification-row mb-3">
+                        <div class="row align-items-end">
+                            <div class="col-md-4 mb-2">
+                                <div class="form-floating">
+                                    <select class="form-select qualification-programme" name="ProfessionalQualifications[0].ProgrammeName" required>
+                                        <option value="">Select Programme</option>
+                                        <option value="Bachelor of Education (B.Ed)">Bachelor of Education (B.Ed)</option>
+                                        <option value="Postgraduate Certificate in Education (PGCE)">Postgraduate Certificate in Education (PGCE)</option>
+                                        <option value="Diploma in Education">Diploma in Education</option>
+                                        <option value="Bachelor of Arts in Education">Bachelor of Arts in Education</option>
+                                        <option value="Bachelor of Science in Education">Bachelor of Science in Education</option>
+                                        <option value="Master of Education (M.Ed)">Master of Education (M.Ed)</option>
+                                        <option value="National Professional Diploma in Education (NPDE)">National Professional Diploma in Education (NPDE)</option>
+                                        <option value="Certificate in Early Childhood Education">Certificate in Early Childhood Education</option>
+                                        <option value="Diploma in Special Needs Education">Diploma in Special Needs Education</option>
+                                        <option value="Advanced Certificate in Education (ACE)">Advanced Certificate in Education (ACE)</option>
+                                    </select>
+                                    <label>Programme Name</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-2">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control qualification-institution" name="ProfessionalQualifications[0].InstitutionName" placeholder="Institution name" required />
+                                    <label>Institution Name</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 mb-2">
+                                <div class="form-floating">
+                                    <select class="form-select qualification-start" name="ProfessionalQualifications[0].StartYear" required>
+                                        <option value="">Start Year</option>
+                                    </select>
+                                    <label>Start Year</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 mb-2">
+                                <div class="form-floating">
+                                    <select class="form-select qualification-end" name="ProfessionalQualifications[0].EndYear" required>
+                                        <option value="">End Year</option>
+                                    </select>
+                                    <label>End Year</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-1 mb-2">
+                                <button type="button" class="btn btn-success btn-sm add-qualification">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+    <!-- Banking Details Section -->
+    <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+            <h5 class="mb-0">Banking Details</h5>
+        </div>
+        
+        <h6 class="text-muted mb-3">USD Account Details</h6>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <select id="bankSelect" class="form-select" asp-for="BankCodeUsd" required>
+                        <option value="">Select Nostro Bank</option>
+                        <!-- Bank options will be populated by JavaScript -->
+                    </select>
+                        <label asp-for="BankCodeUsd">Bank Name (USD)</label>
+                        <span asp-validation-for="BankCodeUsd" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <select id="branchSelect" class="form-select" asp-for="BankBranchCodeUsd" required>
+                        <option value="">Select Branch</option>
+                        <!-- Branch options will be populated by JavaScript based on bank selection -->
+                    </select>
+                        <label asp-for="BankBranchCodeUsd">Branch Name (USD)</label>
+                        <span asp-validation-for="BankBranchCodeUsd" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="AccountNumberUsd" class="form-control number-only" placeholder="Account Number" required />
+                    <label asp-for="AccountNumberUsd">Account Number (USD)</label>
+                    <span asp-validation-for="AccountNumberUsd" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+
+        <h6 class="text-muted mb-3 mt-4">ZWL Account Details</h6>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <select id="bankSelect1" class="form-select" asp-for="BankCodeZwg" required>
+                        <option value="">Select ZIG Bank</option>
+                        <!-- Bank options will be populated by JavaScript -->
+                    </select>
+                        <label asp-for="BankCodeZwg">Bank Name (ZWL)</label>
+                        <span asp-validation-for="BankCodeZwg" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <select id="branchSelect1" class="form-select" asp-for="BankBranchCodeZwg" required>
+                        <option value="">Select Branch</option>
+                        <!-- Branch options will be populated by JavaScript based on bank selection -->
+                    </select>
+                        <label asp-for="BankBranchCodeZwg">Branch Name (ZWL)</label>
+                        <span asp-validation-for="BankBranchCodeZwg" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="form-floating">
+                    <input asp-for="AccountNumberZwg" class="form-control number-only" placeholder="Account Number" required />
+                    <label asp-for="AccountNumberZwg">Account Number (ZWL)</label>
+                    <span asp-validation-for="AccountNumberZwg" class="text-danger small"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attachments Section -->
+        <div class="border rounded p-4 mb-4 position-relative" style="border-width: 2px;">
+            <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color:#123255;">
+                <h5 class="mb-0">Attachments</h5>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">Academic Qualifications (PDF, max 5MB)</label>
+                    <input asp-for="AcademicQualificationsFile" type="file" class="form-control" accept=".pdf,.doc,.docx" />
+                    <div class="form-text">Upload your academic certificates</div>
+                    <span asp-validation-for="AcademicQualificationsFile" class="text-danger small"></span>
+
+                    <!-- Show existing file if available -->
+                    @if (!string.IsNullOrEmpty(Model.AcademicQualifications))
+                    {
+                        <div class="mt-2">
+                            <span class="badge bg-info">Current file: @Model.AcademicQualifications</span>
+                            <a href="@Url.Action("DownloadFile", new { nationalId = Model.NationalId, fileType = "academic" })"
+                               class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">National ID (PDF/Image, max 5MB)</label>
+                    <input asp-for="NationalIdDocsFile" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
+                    <div class="form-text">Upload copy of your National ID</div>
+                    <span asp-validation-for="NationalIdDocsFile" class="text-danger small"></span>
+
+                    <!-- Show existing file if available -->
+                    @if (!string.IsNullOrEmpty(Model.NationalIdDocs))
+                    {
+                        <div class="mt-2">
+                            <span class="badge bg-info">Current file: @Model.NationalIdDocs</span>
+                            <a href="@Url.Action("DownloadFile", new { nationalId = Model.NationalId, fileType = "nationalId" })"
+                               class="btn btn-sm btn-outline-primary ms-2">
+                                <i class="fas fa-download"></i> Download
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+    <!-- Submit Button -->
+    <div class="d-grid mb-5">
+        <button class="btn btn-lg text-white" style="background-color:#123255;" type="submit">
+            <i class="fas fa-save me-2"></i>Update Details
+        </button>
+    </div>
+</form>
+
+  
+
+
+ </div>
+
+
+<script>
+    // Populate year dropdowns and preserve selected values
+    function populateYearDropdowns() {
+        const currentYear = new Date().getFullYear();
+        const startYear = currentYear - 50;
+
+        $('.qualification-start, .qualification-end').each(function() {
+            const $select = $(this);
+            const savedValue = $select.data('saved-value'); // Get saved value from data attribute
+
+            // Only populate if empty (has only the default option)
+            if ($select.find('option').length <= 1) {
+                $select.empty().append($('<option>', { value: '', text: 'Select Year' }));
+
+                for (let year = currentYear; year >= startYear; year--) {
+                    $select.append($('<option>', {
+                        value: year,
+                        text: year,
+                        selected: (savedValue == year)
+                    }));
+                }
+            }
+            // If already populated but we have a saved value, set it
+            else if (savedValue) {
+                $select.val(savedValue);
+            }
+        });
+    }
+
+    // Add new qualification row
+    $('.add-qualification').click(function() {
+        const index = $('.professional-qualification-row').length;
+        const newRow = `
+            <div class="professional-qualification-row mb-3">
+                <div class="row align-items-end">
+                    <div class="col-md-4 mb-2">
+                        <div class="form-floating">
+                            <select class="form-select qualification-programme" name="ProfessionalQualifications[${index}].ProgrammeName" required>
+                                <option value="">Select Programme</option>
+                                <option value="Bachelor of Education (B.Ed)">Bachelor of Education (B.Ed)</option>
+                                <option value="Postgraduate Certificate in Education (PGCE)">Postgraduate Certificate in Education (PGCE)</option>
+                                <option value="Diploma in Education">Diploma in Education</option>
+                                <option value="Bachelor of Arts in Education">Bachelor of Arts in Education</option>
+                                <option value="Bachelor of Science in Education">Bachelor of Science in Education</option>
+                                <option value="Master of Education (M.Ed)">Master of Education (M.Ed)</option>
+                                <option value="National Professional Diploma in Education (NPDE)">National Professional Diploma in Education (NPDE)</option>
+                                <option value="Certificate in Early Childhood Education">Certificate in Early Childhood Education</option>
+                                <option value="Diploma in Special Needs Education">Diploma in Special Needs Education</option>
+                                <option value="Advanced Certificate in Education (ACE)">Advanced Certificate in Education (ACE)</option>
+                            </select>
+                            <label>Programme Name</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 mb-2">
+                        <div class="form-floating">
+                            <input type="text" class="form-control qualification-institution" name="ProfessionalQualifications[${index}].InstitutionName" placeholder="Institution name" required />
+                            <label>Institution Name</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 mb-2">
+                        <div class="form-floating">
+                            <select class="form-select qualification-start" name="ProfessionalQualifications[${index}].StartYear" required>
+                                <option value="">Start Year</option>
+                            </select>
+                            <label>Start Year</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 mb-2">
+                        <div class="form-floating">
+                            <select class="form-select qualification-end" name="ProfessionalQualifications[${index}].EndYear" required>
+                                <option value="">End Year</option>
+                            </select>
+                            <label>End Year</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-1 mb-2">
+                        <button type="button" class="btn btn-danger btn-sm remove-qualification">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        $('#professionalQualifications').append(newRow);
+        populateYearDropdowns(); // This will only populate the new empty dropdowns
+    });
+
+    // Remove qualification row
+    $(document).on('click', '.remove-qualification', function() {
+        if ($('.professional-qualification-row').length > 1) {
+            $(this).closest('.professional-qualification-row').remove();
+
+            // Reindex all rows to maintain proper array indexing
+            $('.professional-qualification-row').each(function(index) {
+                $(this).find('[name^="ProfessionalQualifications"]').each(function() {
+                    const name = $(this).attr('name');
+                    const newName = name.replace(/ProfessionalQualifications\[\d+\]/, `ProfessionalQualifications[${index}]`);
+                    $(this).attr('name', newName);
+                });
+            });
+        }
+    });
+
+    // Only allow numbers in number-only fields
+    $('.number-only').on('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+
+    // Initialize on document ready
+    $(document).ready(function() {
+        // Set programme dropdown values from server
+        $('.qualification-programme').each(function() {
+            const selectedOption = $(this).find('option[selected]');
+            if (selectedOption.length) {
+                $(this).val(selectedOption.val());
+            }
+        });
+
+        populateYearDropdowns();
+    });
+</script>
+
+   <script>
+                // Add event listener to elements with the 'number-only' class
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.querySelectorAll('.number-only').forEach(function (input) {
+                        input.addEventListener('input', function () {
+                            // Remove any non-numeric characters
+                            this.value = this.value.replace(/[^0-9]/g, '');
+                        });
+                    });
+                });
+            </script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const inputField = document.getElementById('emsNationalId');
+
+        inputField.addEventListener('input', function () {
+            // Convert lowercase letters to uppercase and remove non-alphanumeric characters
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        });
+    });
+</script>
+
+@* <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const currentYear = new Date().getFullYear();
+        const minYear = currentYear - 80;
+
+        // Function to populate year options
+        function populateYearOptions(selectElement) {
+            for (let year = currentYear; year >= minYear; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.text = year;
+                selectElement.appendChild(option);
+            }
+        }
+
+        // Function to apply year constraints and validation
+        function applyYearConstraints(row) {
+            const startSelect = row.querySelector('.qualification-start');
+            const endSelect = row.querySelector('.qualification-end');
+
+            // Populate years if not already populated
+            if (startSelect.options.length === 1) {
+                populateYearOptions(startSelect);
+            }
+            if (endSelect.options.length === 1) {
+                populateYearOptions(endSelect);
+            }
+
+            // Add validation
+            [startSelect, endSelect].forEach(select => {
+                select.addEventListener('change', function () {
+                    const startYear = parseInt(startSelect.value) || 0;
+                    const endYear = parseInt(endSelect.value) || 0;
+                    if (startYear && endYear && endYear < startYear) {
+                        endSelect.setCustomValidity('End year cannot be before start year');
+                    } else {
+                        endSelect.setCustomValidity('');
+                    }
+                });
+            });
+        }
+
+        // Apply to initial row
+        const initialRow = document.querySelector('.professional-qualifications-row');
+        applyYearConstraints(initialRow);
+
+        // Add new row functionality
+        $(document).on("click", ".addQualification", function () {
+            const $newRow = $(".professional-qualifications-row:first").clone();
+            $newRow.find("input").val(""); // Clear input values
+            $newRow.find("select").val(""); // Clear select values
+
+            // Replace the btn-group with both buttons
+            $newRow.find(".btn-group").html(`
+                <button type="button" class="btn btn-success btn-sm addQualification">+</button>
+                <button type="button" class="btn btn-danger btn-sm removeQualification">-</button>
+            `);
+
+            // Update array indices
+            const rowCount = $("#professionalQualifications .professional-qualifications-row").length;
+            $newRow.find("input, select").each(function () {
+                const name = $(this).attr("name");
+                const newName = name.replace(/\[\d+\]/, `[${rowCount}]`);
+                $(this).attr("name", newName);
+            });
+
+            // Add the new row
+            $("#professionalQualifications").append($newRow);
+
+            // Apply year constraints to new row
+            applyYearConstraints($newRow[0]);
+        });
+
+        // Remove row functionality
+        $(document).on("click", ".removeQualification", function () {
+            $(this).closest(".professional-qualifications-row").remove();
+        });
+    });
+</script> *@
+
+@* <script>
+    function activateForm() {
+        // Enable all readonly inputs
+        var inputs = document.querySelectorAll('input[readonly]');
+        inputs.forEach(function (input) {
+            input.removeAttribute('readonly');
+        });
+
+        // Display submit and cancel buttons
+        document.getElementById('submitBtn').style.display = 'block';
+        document.getElementById('cancelBtn').style.display = 'block';
+
+        // Change color of the edit button
+        var editButton = document.getElementById('editIconContainer');
+        editButton.style.backgroundColor = '#008000'; // New color when activated
+    }
+
+    // Optional: Reload page to revert changes
+    function reloadPage() {
+        location.reload();
+    }
+</script> *@
+
+
+<script>
+    $(document).ready(function () {
+        // Use the correct model properties for USD account
+        var selectedBankCodeUsd = '@Model.BankCodeUsd';
+        var selectedBranchCodeUsd = '@Model.BankBranchCodeUsd';
+
+        // Fetch banks for USD account on page load
+        $.ajax({
+            url: '@Url.Action("GetBanks", "Bank")',
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                var banks = response.data;
+                console.log("Received banks:", banks);
+
+                // Clear and add default option
+                $('#bankSelect').empty().append('<option value="">Select Nostro Bank</option>');
+
+                $.each(banks, function (index, bank) {
+                    console.log("Bank code:", bank.b_BANK_CODE);
+                    console.log("Bank name:", bank.b_BANK_NAME);
+
+                    // Append option to select element
+                    $('#bankSelect').append($('<option>', {
+                        value: bank.b_BANK_CODE,
+                        text: bank.b_BANK_NAME,
+                        selected: (bank.b_BANK_CODE == selectedBankCodeUsd)
+                    }));
+                });
+
+                // If we have a selected bank code, trigger change to load branches
+                if (selectedBankCodeUsd) {
+                    $('#bankSelect').trigger('change');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching banks:", error);
+            }
+        });
+
+        // Fetch branches based on selected bank for USD account
+        $('#bankSelect').change(function () {
+            var bankCode = $(this).val();
+            $('#branchSelect').empty().append('<option value="">Select Branch</option>');
+
+            if (bankCode) {
+                $.ajax({
+                    url: '@Url.Action("GetBranches", "Bank")',
+                    type: 'GET',
+                    data: { bankCode: bankCode },
+                    dataType: 'json',
+                    success: function (response) {
+                        var branches = response.data;
+                        console.log("Received branches for bank code " + bankCode + ":", branches);
+
+                        $.each(branches, function (index, branch) {
+                            console.log("Branch code:", branch.bB_BRANCH_CODE);
+                            console.log("Branch name:", branch.bB_BRANCH_NAME);
+
+                            // Append option to select element
+                            $('#branchSelect').append($('<option>', {
+                                value: branch.bB_BRANCH_CODE,
+                                text: branch.bB_BRANCH_NAME,
+                                selected: (branch.bB_BRANCH_CODE == selectedBranchCodeUsd)
+                            }));
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching branches:", error);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        // Use the correct model properties for ZWL account
+        var selectedBankCodeZwg = '@Model.BankCodeZwg';
+        var selectedBranchCodeZwg = '@Model.BankBranchCodeZwg';
+
+        // Fetch banks for ZWL account on page load
+        $.ajax({
+            url: '@Url.Action("GetBanks", "Bank")',
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                var banks = response.data;
+                console.log("Received banks for ZWL:", banks);
+
+                // Clear and add default option
+                $('#bankSelect1').empty().append('<option value="">Select ZIG Bank</option>');
+
+                $.each(banks, function (index, bank) {
+                    console.log("Bank code:", bank.b_BANK_CODE);
+                    console.log("Bank name:", bank.b_BANK_NAME);
+
+                    // Append option to select element
+                    $('#bankSelect1').append($('<option>', {
+                        value: bank.b_BANK_CODE,
+                        text: bank.b_BANK_NAME,
+                        selected: (bank.b_BANK_CODE == selectedBankCodeZwg)
+                    }));
+                });
+
+                // If we have a selected bank code, trigger change to load branches
+                if (selectedBankCodeZwg) {
+                    $('#bankSelect1').trigger('change');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error fetching banks for ZWL:", error);
+            }
+        });
+
+        // Fetch branches based on selected bank for ZWL account
+        $('#bankSelect1').change(function () {
+            var bankCode = $(this).val();
+            $('#branchSelect1').empty().append('<option value="">Select Branch</option>');
+
+            if (bankCode) {
+                $.ajax({
+                    url: '@Url.Action("GetBranches", "Bank")',
+                    type: 'GET',
+                    data: { bankCode: bankCode },
+                    dataType: 'json',
+                    success: function (response) {
+                        var branches = response.data;
+                        console.log("Received branches for ZWL bank code " + bankCode + ":", branches);
+
+                        $.each(branches, function (index, branch) {
+                            console.log("Branch code:", branch.bB_BRANCH_CODE);
+                            console.log("Branch name:", branch.bB_BRANCH_NAME);
+
+                            // Append option to select element
+                            $('#branchSelect1').append($('<option>', {
+                                value: branch.bB_BRANCH_CODE,
+                                text: branch.bB_BRANCH_NAME,
+                                selected: (branch.bB_BRANCH_CODE == selectedBranchCodeZwg)
+                            }));
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error fetching branches for ZWL:", error);
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+
+
+
+    <script>
+        $(document).ready(function () {
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: '@TempData["SuccessMessage"]',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+            </text>
+        }
+        else if (TempData["ErrorMessage"] != null)
+        {
+            <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: '@TempData["ErrorMessage"]',
+                        showConfirmButton: true
+                    });
+            </text>
+        }
+
+  
+                                });
+    </script>

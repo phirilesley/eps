@@ -1,0 +1,514 @@
+﻿@model IEnumerable<RegisterViewModel>
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+@inject IActivityRepository activityRepo
+@inject IVenueRepository venueRepo
+
+@{
+    ViewBag.Title = "EPS Report";
+
+    IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+    IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+    IEnumerable<Venue> venues = await venueRepo.VenuesGetAll();
+    var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+    IEnumerable<Activity> activities = await activityRepo.GetAllActivitiesAsync();
+    int currentYear = DateTime.Now.Year;
+    int lastYear = currentYear - 1;
+
+
+
+}
+
+
+
+
+
+<style>
+
+    .status-approved {
+        color: white;
+        background-color: green;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-rejected {
+        color: white;
+        background-color: red;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-pending {
+        color: black;
+        background-color: orange;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+</style>
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-file-excel" style="color: #2a5a8a;"></i>
+        <h5 class="fw-bold mb-0" style="color: #153355;">
+            T and S Report
+
+        </h5>
+    </div>
+    <hr style="border-top: 1px solid black;
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+
+<!-- Filter Form -->
+<form id="searchForm" asp-action="Search" class="needs-validation mb-5" novalidate>
+    <div class="border rounded p-4 mb-4 shadow-sm position-relative" style="border-width: 2px; background-color: #f8f9fa;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color: #123255;">
+            <!-- Optional heading -->
+        </div>
+
+        <div class="row g-3">
+            <!-- Status Filter -->
+            <div class="col-md-3">
+                <label for="filterStatus" class="form-label">Status</label>
+                <select class="form-select" id="filterStatus" name="filterStatus" multiple>
+                    <option value="All">All</option>
+
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Paid">Paid</option>
+                    <option value="NotPaid">Not Paid</option>
+
+                </select>
+            </div>
+
+       
+
+            <!-- Exam Session Filter -->
+            <div class="col-md-3">
+                <label for="mkExamCode" class="form-label">Exam Session</label>
+                <select class="form-select" id="filterExamCode" required>
+                    <option value="">-- Select Session --</option>
+                    @foreach (var examCod in examCodes)
+                    {
+                        if (int.TryParse(examCod.EXM_EXAM_YEAR, out int examYear))
+                        {
+                            if (examCod.ACTIVATED_SESSION == "Activated")
+                            {
+                                <option value="@examCod.EXM_EXAM_CODE">@examCod.EXM_EXAM_LEVEL @examCod.EXM_EXAM_SESSION @examCod.EXM_EXAM_YEAR</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Subject Code Filter -->
+            <div class="col-md-3">
+                <label for="mkSubject" class="form-label">Subject Code</label>
+                <select class="form-select" id="filterSubject" required>
+                    <option value="">-- Select Subject --</option>
+                </select>
+            </div>
+
+            <!-- Paper Code Filter -->
+            <div class="col-md-3">
+                <label for="mkPaperCode" class="form-label">Paper Code</label>
+                <select class="form-select" id="filterPaperCode" required>
+                    <option value="">-- Select Paper Code --</option>
+                </select>
+            </div>
+
+            <!-- Region Code Filter -->
+            <div class="col-md-3">
+                <div class="form-group" id="filterRegionCodeContainer" style="display: none;">
+                    <label for="mkRegionCode" class="form-label">Region Code</label>
+                    <select id="filterRegionCode" name="regionCode" class="form-select">
+                        <option value="">-- Select Region Code --</option>
+                        <option value="01">01 - Harare</option>
+                        <option value="02">02 - Manicaland</option>
+                        <option value="03">03 - Mashonaland East</option>
+                        <option value="04">04 - Matabeleland North</option>
+                        <option value="05">05 - Midlands</option>
+                        <option value="06">06 - Masvingo</option>
+                        <option value="07">07 - Mashonaland Central</option>
+                        <option value="08">08 - Mashonaland West</option>
+                        <option value="09">09 - Matabeleland South</option>
+                        <option value="10">10 - Bulawayo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button id="filterButton" class="btn me-md-2" type="button" style="background-color: #153355;color:white;">
+                <i class="fas fa-search me-2"></i>Filter
+            </button>
+            <button id="clearButton" class="btn btn-secondary" type="button">
+                <i class="fas fa-undo me-2"></i>Clear
+            </button>
+        </div>
+    </div>
+</form>
+
+<div class="mb-3 d-flex justify-content-end">
+    <button id="downloadExcelBtn" class="btn btn-success">
+        <i class="fas fa-file-excel me-2"></i>Download Report
+    </button>
+</div>
+
+
+<!-- Report Table -->
+<div class="card p-4 shadow-sm border-1">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="reportTable" class="table table-bordered table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Payment</th>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+                        <th>National ID</th>
+                        <th>Subject</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Scripts Marked</th>
+                        <th>Responsibility</th>
+                        <th>Coordination</th>
+                        <th>Grand Total</th>
+                        <th>Capturing</th>
+                        <th>Amount</th>
+                        <th>Paid</th>
+                        <th>Balance</th>
+                        <th>Paid Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+        $(document).ready(function () {
+        $('#filterStatus, #filterExamCode').select2({
+      
+            placeholder: "Select options",
+            allowClear: true,
+            width: '100%'
+        });
+    });
+
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('#downloadExcelBtn').on('click', function () {
+            const requestData = {
+                draw: 0,
+                start: 0,
+                length: 0,
+                filterStatus: $('#filterStatus').val(),
+                venue: $('#filterVenue').val(),
+                activity: $('#filterPurposeOfJourney').val(),
+                examCode: $('#filterExamCode').val(),
+                subject: $('#filterSubject').val(),
+                paperCode: $('#filterPaperCode').val(),
+                regionCode: $('#filterRegionCode').val()
+            };
+
+            fetch('/Reports/DownloadEPSReportCSV', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to download file');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'tands_report_' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '_') + '.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error(error);
+                alert("Download failed: " + error.message);
+            });
+        });
+    });
+</script>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable
+            var table = $('#reportTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "lengthMenu": [
+                    [10, 25, 50, 100, 250, 500, 1000],
+                    [10, 25, 50, 100, 250, 500, 1000]
+                ],
+                "pageLength": 100,
+                "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                    '<t>' +
+                    '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+                "buttons": [
+                    {
+                        extend: 'excelHtml5',
+                        className: 'btn btn-sm btn-success',
+                        text: '<i class="fa fa-file-excel me-2"></i>Excel',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        className: 'btn btn-sm btn-info',
+                        text: '<i class="fa fa-file-csv me-2"></i>CSV',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        className: 'btn btn-sm btn-danger',
+                        text: '<i class="fa fa-file-pdf me-2"></i>PDF',
+                        exportOptions: { columns: ':visible' }
+                    }
+                ],
+                "ajax": {
+                    url: "/Reports/GetAccountsEPSReportData",
+                    type: "POST",
+                    contentType: "application/json",  // Ensure JSON data is sent
+                    data: function (d) {
+                        return JSON.stringify({
+                            draw: d.draw,
+                            start: d.start,
+                            length: d.length,
+                            filterStatus: $('#filterStatus').val(),
+                            venue: $('#filterVenue').val(),
+                         
+                            examCode: $('#filterExamCode').val(),
+                            subject: $('#filterSubject').val(),
+                            paperCode: $('#filterPaperCode').val(),
+                            regionCode: $('#filterRegionCode').val()
+                        });
+                    }
+                },
+                "columns": [
+                                   {
+            data: null,
+            title: "Actions",
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row) {
+                return `
+                    <button class="btn btn-sm btn-primary update-payment-btn"
+                        data-subkey="${row.subKey}"
+                        data-amount="${row.amount}"
+                        data-status="${row.paidStatus}">
+                        <i class="fas fa-edit"></i> Update
+                    </button>`;
+            }
+        },
+
+                    { "data": "lastName", "name": "LastName", "autoWidth": true },
+                    { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                    { "data": "idNumber", "name": "IdNumber", className: "text-nowrap" },
+                    { "data": "subject", "name": "Subject", "autoWidth": true },
+                     { "data": "category", "name": "Category", "autoWidth": true },
+                    { "data": "status", "name": "Status", "autoWidth": true },
+                    { "data": "scriptsMarked", "name": "ScriptsMarked", "autoWidth": true },
+                     { "data": "responsibility", "name": "Responsibility", "autoWidth": true },
+                       { "data": "coordination", "name": "Coordination", "autoWidth": true },
+                         { "data": "grandTotal", "name": "GrandTotal", "autoWidth": true },
+                           { "data": "capturing", "name": "Capturing", "autoWidth": true },
+                     { "data": "amount", "name": "Amount", "autoWidth": true },
+                    { "data": "paid", "name": "Paid", "autoWidth": true },
+                    { "data": "balance", "name": "Balance", "autoWidth": true },
+                    { "data": "paidStatus", "name": "PaidStatus", "autoWidth": true },
+                ]
+            });
+
+            // Filter button click event
+            $('#filterButton').on('click', function () {
+                // Reload the DataTable with the new filter values
+                table.ajax.reload();
+            });
+
+            // Clear button click event
+            $('#clearButton').on('click', function () {
+                // Reset the form
+                $('#searchForm')[0].reset();
+                // Reload the DataTable to show all data
+                table.ajax.reload();
+            });
+        });
+    </script>
+
+
+    <script>
+        $(document).ready(function () {
+            // Open modal with data
+            $('#reportTable').on('click', '.update-payment-btn', function () {
+                    const subkey = $(this).data('subkey'); // lowercase!
+        const amount = $(this).data('amount');
+        const status = $(this).data('status');
+
+        $('#modalSubkey').val(subkey);
+        $('#modalAmount').val(amount);
+        $('#modalStatus').val(status);
+
+                $('#paymentModal').modal('show');
+            });
+
+            // Submit form via AJAX
+            $('#updatePaymentForm').on('submit', function (e) {
+                e.preventDefault();
+
+                const payload = {
+                    subKey: $('#modalSubkey').val(),
+                    amount: $('#modalAmount').val(),
+                    paidStatus: $('#modalStatus').val()
+                };
+
+                $.ajax({
+                    url: '/Reports/UpdateEPSPayment',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload),
+                    success: function (res) {
+                        Swal.fire('Success', 'Payment updated.', 'success');
+                        $('#paymentModal').modal('hide');
+                        $('#reportTable').DataTable().ajax.reload(null, false);
+                    },
+                    error: function () {
+                        Swal.fire('Error', 'Failed to update payment.', 'error');
+                    }
+                });
+            });
+        });
+    </script>
+
+
+    <script>
+        $(document).ready(function () {
+            var subjects = @Html.Raw(subjectArray);
+
+            // Function to populate subject dropdown based on selected exam code
+            $('#filterExamCode').change(function () {
+                var selectedExamCode = $(this).val();
+                var subjectSelect = $('#filterSubject');
+                subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+                // Filter subjects based on selected exam code and remove duplicates
+                var uniqueSubjects = {};
+                subjects.forEach(function (subject) {
+                    var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                    if (subSubIdPrefix === selectedExamCode) {
+                        uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                    }
+                });
+
+                // Populate subject dropdown with unique subjects
+                Object.keys(uniqueSubjects).forEach(function (key) {
+                    var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                    subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                    console.log("Appended subject: " + key);
+                });
+            });
+
+            // Function to populate paper code dropdown based on selected subject
+            $('#filterSubject').change(function () {
+                var selectedSubjectId = $(this).val();
+                var paperCodeSelect = $('#filterPaperCode');
+                paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+                if (selectedSubjectId && selectedSubjectId.length >= 4) {
+                    var subjectCheck = selectedSubjectId.substring(3, 4);
+
+
+                    if (subjectCheck === '7') {
+                        $('#filterRegionCodeContainer').show();
+                        $('#filterRegionCode').attr('required', 'required');
+                    } else {
+
+                        $('#filterRegionCodeContainer').hide();
+                        $('#filterRegionCode').removeAttr('required');
+                    }
+                } else {
+                    $('#filterRegionCodeContainer').hide();
+                    $('#filterRegionCode').removeAttr('required');
+                }
+
+                if (selectedSubjectId) {
+                    // Make an AJAX call to get the paper codes
+                    $.ajax({
+                        url: '@Url.Action("GetPaperCodes", "Subjects")',
+                        type: 'GET',
+                        data: { subjectCode: selectedSubjectId },
+                        success: function (data) {
+                            data.forEach(function (paperCode) {
+                                paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching paper codes: " + error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+
+
+<!-- Payment Update Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="updatePaymentForm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modalSubkey" name="subKey" />
+
+                    <div class="mb-3">
+                        <label for="modalAmount" class="form-label">Amount</label>
+                        <input type="number" step="0.01" class="form-control" id="modalAmount" name="amount" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modalStatus" class="form-label">Status</label>
+                        <select class="form-select" id="modalStatus" name="paidStatus" required>
+                            <option value="Pending">Pending</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Not Paid">Not Paid</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Update</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

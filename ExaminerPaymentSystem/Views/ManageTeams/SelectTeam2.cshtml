@@ -1,0 +1,826 @@
+﻿@model IEnumerable<RegisterViewModel>
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+@inject IVenueRepository venueRepo
+
+@{
+
+    IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+    IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+    IEnumerable<Venue> venues = await venueRepo.VenuesGetAll();
+
+    // IEnumerable<PaperMarkingRate> paperCodes = await papercodesRepo.GetPaperCodeById();
+
+
+    var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+    int currentYear = DateTime.Now.Year;
+    int lastYear = currentYear - 1;
+
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+}
+
+
+<style>
+
+    .status-approved {
+        color: white;
+        background-color: green;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-rejected {
+        color: white;
+        background-color: red;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    .status-pending {
+        color: black;
+        background-color: orange;
+        padding: 5px 10px;
+        border-radius: 4px;
+    }
+
+    /*    #regTable {
+            font-size: 0.78rem;
+        } */
+    .btn-outline-primary {
+        border-color: #153355;
+        color: #153355;
+        transition: all 0.3s ease;
+        padding: 0.5rem 1rem;
+        white-space: nowrap;
+    }
+
+        .btn-outline-primary:hover {
+            background-color: #153355;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(21, 51, 85, 0.2);
+        }
+
+    .bi {
+        font-size: 1.1rem;
+    }
+</style>
+
+
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-users" style="color: #2a5a8a;"></i>
+        <h4 class="fw-bold mb-0" style="color: #153355;">
+           Select Team For :
+            <span style="color: #2a5a8a;">@subjectCode / @paperCode
+                @if (!string.IsNullOrEmpty(regionCode))
+                {
+                    <text> Region: @regionCode</text>
+                }
+            </span>
+        </h4>
+    </div>
+    <hr style="
+        border-top: 1px solid black;
+        width: 100px;
+        margin: 8px auto;
+    ">
+</div>
+
+
+<div class="card mt-4 mb-1 p-2 shadow rounded">
+    <div class="card-header">
+
+        <form id="searchForm">
+            <div class="container py-4">
+                <div class="row g-3">
+                    <!-- Exam Session Dropdown -->
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="ddlExamSession" class="form-label">Exam Session:</label>
+                            <select id="ddlExamSession" name="examCode" class="form-select" required>
+                                <option value="">-- Select Session --</option>
+                                @foreach (var examCod in examCodes)
+                                {
+                                    int examYear;
+                                    if (int.TryParse(examCod.EXM_EXAM_YEAR, out examYear))
+                                    {
+                                        if (examCod.ACTIVATED_SESSION == "Activated")
+                                        {
+                                            <option value="@examCod.EXM_EXAM_CODE">
+                                                @examCod.EXM_EXAM_LEVEL @examCod.EXM_EXAM_SESSION @examCod.EXM_EXAM_YEAR
+                                            </option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Subject Dropdown -->
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="ddlSubject" class="form-label">Subject:</label>
+                            <select id="ddlSubject" name="SubjectCode" class="form-select">
+                                <option value="">-- Select Subject --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Paper Code Dropdown -->
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="ddlPaperCode" class="form-label">Paper Code:</label>
+                            <select id="ddlPaperCode" name="paperCode" class="form-select">
+                                <option value="">-- Select Paper Code --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Region Code Dropdown -->
+                    <div class="col-md-3">
+                        <div class="form-group" id="scriptRegionCodeContainer" style="display: none;">
+                            <label for="scriptRegionCode" class="form-label">Region Code:</label>
+                            <select id="scriptRegionCode" name="regionCode" class="form-select">
+                                <option value="">--- Select Region Code ---</option>
+                                <option value="01">01 - Harare</option>
+                                <option value="02">02 - Manicaland</option>
+                                <option value="03">03 - Mashonaland East</option>
+                                <option value="04">04 - Matabeleland North</option>
+                                <option value="05">05 - Midlands</option>
+                                <option value="06">06 - Masvingo</option>
+                                <option value="07">07 - Mashonaland Central</option>
+                                <option value="08">08 - Mashonaland West</option>
+                                <option value="09">09 - Matabeleland South</option>
+                                <option value="10">10 - Bulawayo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="searchButton" class="btn btn-primary w-100 shadow" style="background-color: #153355;">
+                        <i class="fas fa-search me-2"></i> Search
+                    </button>
+                
+                </div>
+            </div>
+
+        </form>
+
+
+    </div>
+</div>
+
+
+
+<div class="card mt-2 mb-1 p-1 shadow rounded">
+    <div class="card-header p-1">
+        <div class="row g-0 text-center">
+            <!-- Total Invited -->
+            <div class="col">
+                <div id="totalExaminersCounter" class="counter btn btn-primary text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('TotalInvited')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">Total Available</small>
+                </div>
+            </div>
+            <!-- Confirmed Attending -->
+            <div class="col">
+                <div id="selectedExaminersCounter" class="counter btn btn-success text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('Selected')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">Selected</small>
+                </div>
+            </div>
+            <!-- Pending -->
+            <div class="col">
+                <div id="pmsExaminersCounter" class="counter btn btn-warning text-dark d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('PMS')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">PMS</small>
+                </div>
+            </div>
+            <!-- Not Attending -->
+            <div class="col">
+                <div id="rpmsExaminersCounter" class="counter btn btn-danger text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('RPMS')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">RPMS</small>
+                </div>
+            </div>
+            <!-- Recommended -->
+            <div class="col">
+                <div id="dpmsExaminersCounter" class="counter btn btn-info text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('DPMS')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">DPMS</small>
+                </div>
+            </div>
+            <!-- Absent -->
+            <div class="col">
+                <div id="bmsExaminersCounter" class="counter btn btn-secondary text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('BMS')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">BMS</small>
+                </div>
+            </div>
+            <!-- Additional Counter -->
+            <div class="col">
+                <div id="aeExaminersCounter" class="counter btn btn-dark text-white d-flex flex-column justify-content-center align-items-center py-0" style="height: 42px; margin:1px;" onclick="filterData('AE')">
+                    <span class="mb-0" style="font-size: 0.75rem; line-height:1.1">Loading...</span>
+                    <small class="mb-0" style="font-size: 0.6rem;">AE</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="table-responsive mt-4">
+    <table id="regTable" class="table table-sm table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Sex</th>
+                <th>Status</th>
+                <th>C/V</th>
+                <th>Subjects</th>
+                <th>Province</th>
+                <th>Action</th>
+                <th>Ex No</th>
+                <th>Team</th>
+                <th>Sel</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+
+@section Scripts {
+    <script>
+        function updateSelect(idNumber, isSelected, category, capturingRole, examinerNumber, team) {
+            const examCode = '@examCode';
+            const subjectCode = '@subjectCode';
+            const paperCode = '@paperCode';
+            const regionCode = '@regionCode';
+            const activity = '@activity';
+
+            fetch('@Url.Action("UpdateSelect", "ManageTeams")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    idNumber: idNumber,
+                    isSelected: isSelected,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity,
+                    category: category,
+                    capturingRole: capturingRole,
+                    examinerNumber: examinerNumber,
+                    team: team
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        const statusMessage = isSelected ? 'Selected' : 'Removed';
+                        const titleMessage = `Examiner ${statusMessage}`;
+                        const textMessage = `Examiner Updated ${statusMessage} Successfully.`;
+                        const backgroundColor = isSelected ? '#153355' : '#dc3545';
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: titleMessage,
+                            text: textMessage,
+                            showConfirmButton: false,
+                            timer: 1000,
+                            background: backgroundColor,
+                            color: '#ffffff',
+                        }).then(() => {
+                            $('#regTable').DataTable().ajax.reload(null, false);
+                            updateCounts();
+                        });
+                    } else {
+                        throw new Error('Failed to update presence status.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating presence status:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Update Failed',
+                        text: 'Failed to update presence status. Please try again.',
+                        showConfirmButton: true,
+                    });
+                });
+        }
+
+    </script>
+
+
+
+    <script>
+        function updateCounts() {
+            // Construct the URL with parameters from the ViewBag
+            const url = `@Url.Action("CountStats", "ManageTeams")?examCode=@ViewBag.ExamCode&subjectCode=@ViewBag.SubjectCode&paperCode=@ViewBag.PaperCode&activity=@ViewBag.Activity&regionCode=@ViewBag.RegionCode`;
+
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const setCounterValue = (id, label, value) => {
+                        const counterElement = document.getElementById(id);
+                        if (counterElement) {
+                            counterElement.innerHTML = `<h6 class="mb-0">${value}</h6><p class="mb-0">${label}</p>`;
+                        }
+                    };
+
+                    setCounterValue('totalExaminersCounter', 'Total Available', data.total);
+                    setCounterValue('selectedExaminersCounter', 'Selected', data.selectedCount);
+                    setCounterValue('pmsExaminersCounter', 'PMS', data.pmsCount);
+                    setCounterValue('rpmsExaminersCounter', 'RPMS', data.rpmsCount);
+                    setCounterValue('dpmsExaminersCounter', 'DPMS', data.dpmsCount);
+                    setCounterValue('bmsExaminersCounter', 'BMS', data.bmsCount);
+                    setCounterValue('aeExaminersCounter', 'AE', data.aeCount);
+                })
+                .catch(error => {
+                    console.error('Error fetching counts:', error);
+                });
+        }
+
+        updateCounts();
+
+    </script>
+
+
+
+    <script>
+        var table; // Declare globally
+
+        $(document).ready(function () {
+            table = $('#regTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "lengthMenu": [
+                    [10, 25, 50, 100, 250, 500, 1000],
+                    [10, 25, 50, 100, 250, 500, 1000]
+                ],
+                "pageLength": 100,
+
+                "buttons": [
+                    {
+                        extend: 'excelHtml5',
+                        className: 'btn btn-sm btn-success',
+                        text: '<i class="fa fa-file-excel"></i> Excel',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        className: 'btn btn-sm btn-info',
+                        text: '<i class="fa fa-file-csv"></i> CSV',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        className: 'btn btn-sm btn-danger',
+                        text: '<i class="fa fa-file-pdf"></i> PDF',
+                        exportOptions: { columns: ':visible' }
+                    }
+                ],
+                "ajax": {
+                    url: "/ManageTeams/GetData2",
+                    type: "POST",
+                    data: function (d) {
+                        d.examCode = $('#ddlExamSession').val();
+                        d.subjectCode = $('#ddlSubject').val();
+                        d.paperCode = $('#ddlPaperCode').val();
+                        d.regionCode = $('#scriptRegionCode').val();
+                    
+                    }
+                },
+                "columns": [
+                    {
+                        "data": "name",
+                        "name": "Name",
+                        "width": "80px",
+                    },
+
+                    {
+                        "data": "sex",
+                        "name": "Sex",
+                        "width": "30px",
+                    },
+                    {
+                        "data": "category",
+                        "width": "60px",
+                        "className": "dt-body-center",
+                        "render": function (data, type, row) {
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+                            return `<select class="form-control form-control-sm" onchange="updateCategory('${row.idNumber}', this.value)" ${isDisabled}>
+                                    <option value="PMS" ${data === 'PMS' ? 'selected' : ''}>PMS</option>
+                                    <option value="RPMS" ${data === 'RPMS' ? 'selected' : ''}>RPMS</option>
+                                    <option value="DPMS" ${data === 'DPMS' ? 'selected' : ''}>DPMS</option>
+                                    <option value="BMS" ${data === 'BMS' ? 'selected' : ''}>BMS</option>
+                                    <option value="E" ${data === 'E' ? 'selected' : ''}>E</option>
+                                </select>`;
+                        }
+                    },
+                    {
+                        "data": "capturingRole",
+                        "render": function (data, type, row) {
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+                            return `<select class="form-control form-control-sm"
+                            onchange="updateCapturingRole('${row.idNumber}', this.value)"
+                            ${isDisabled}>
+                        <option value="N/A">N/A</option>
+                        <option value="C" ${data === 'C' ? 'selected' : ''}>C</option>
+                        <option value="V" ${data === 'V' ? 'selected' : ''}>V</option>
+                    </select>`;
+                        }
+                    },
+
+                    {
+                        "data": "subjects",
+                        "name": "Subjects",
+                        "width": "60px",
+                        "render": function (data, type, row) {
+                            if (Array.isArray(data)) {
+                                return data.map(s => `<span class="badge bg-info text-dark m-1">${s}</span>`).join('');
+                            }
+                            return '';
+                        }
+                    },
+
+             
+
+                    {
+                        "data": "province",
+                        "name": "Province",
+                        "width": "60px",
+
+                    },
+                    {
+
+                        "render": function (data, type, row) {
+                            return `<div class="text-center">
+                                <input type="checkbox" class="form-check-input"
+                                    ${row.status === "Selected" ? "checked" : ""}
+                                    onchange="updateSelect('${row.idNumber}', this.checked,
+                                    '${row.category}', '${row.capturingRole}',
+                                    '${row.examinerNumber}', '${row.team}')" />
+                            </div>`;
+                        }
+
+                    },
+                    {
+                        "data": "examinerNumber",
+                        "name": "ExaminerNumber",
+                    },
+                    {
+                        "data": "team",
+                        "render": function (data, type, row) {
+                            const teams = @Html.Raw(Json.Serialize(ViewBag.Teams)); // Assuming your list is passed via ViewBag
+                            const options = teams.map(team =>
+                                `<option value="${team}" ${data === team ? 'selected' : ''}>${team}</option>`
+                            ).join('');
+
+                            const isDisabled = row.status !== "Selected" ? "disabled" : "";
+
+                            return `
+                <select class="form-control form-control-sm team-input"
+                        onchange="updateTeam('${row.idNumber}', this.value)" ${isDisabled}>
+                    ${options}
+                </select>`;
+                        }
+                    },
+
+                    {
+
+                        "data": "status",
+                        "render": function (data) {
+                            return data === "Selected"
+                                ? `<span class="badge bg-success">Selected</span>`
+                                : `<span class="badge bg-secondary">Pending</span>`;
+                        }
+                    }
+                ],
+                "order": [[6, "asc"]],
+                "initComplete": function () {
+                    // This ensures proper column alignment after table initialization
+                    this.api().columns.adjust().draw();
+
+                    // Fix for potential horizontal scrollbar issues
+                    $('.dataTables_scrollBody').css('overflow-x', 'auto');
+                },
+                "drawCallback": function () {
+                    // Re-align columns on each draw
+                    this.api().columns.adjust();
+                }
+            });
+
+            // Handle window resize events
+            $(window).on('resize', function () {
+                table.columns.adjust();
+            });
+        });
+
+
+        function filterData(status) {
+            var table = $('#regTable').DataTable();
+            table.ajax.url(`/ManageTeams/GetData?status=${encodeURIComponent(status)}`).load();
+        }
+
+        // Trigger filter on form submit
+        // Submit filter form
+        $("#searchForm").submit(function (e) {
+            e.preventDefault();
+            table.ajax.reload(); // reload table with new filters
+        });
+
+
+
+        function updateCategory(idNumber, value) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/ManageTeams/UpdateCategory',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    category: value,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Category updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: 'Error updating category',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        function updateCapturingRole(idNumber, value) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/ManageTeams/UpdateCapturingRole',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    capturingRole: value,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Capturing Role updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: 'Error updating capturing role',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+
+        // Save Examiner Number
+        function saveExaminerNumber(icon, idNumber) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+            const row = $(icon).closest('div');
+            const input = row.find('.examiner-input');
+            const newValue = input.val();
+
+            $.ajax({
+                url: '/ManageTeams/UpdateExaminerNumber',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    examinerNumber: newValue,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Examiner Number updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+
+                    // Reset to read-only mode
+                    input.prop('readonly', true);
+                    row.find('.edit-icon').removeClass('d-none');
+                    row.find('.save-icon').addClass('d-none');
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: 'Error updating Examiner Number',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+        function updateTeam(idNumber, selectedTeam) {
+            var examCode = '@examCode';
+            var subjectCode = '@subjectCode';
+            var paperCode = '@paperCode';
+            var regionCode = '@regionCode';
+            var activity = '@activity';
+
+            $.ajax({
+                url: '/ManageTeams/UpdateTeam',
+                type: 'POST',
+                data: {
+                    idNumber: idNumber,
+                    team: selectedTeam,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode,
+                    regionCode: regionCode,
+                    activity: activity
+                },
+                success: function () {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Team updated successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        $('#regTable').DataTable().ajax.reload(null, false);
+                        updateCounts();
+                    });
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: 'Error updating team',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            var subjects = @Html.Raw(subjectArray);
+
+            // Function to populate subject dropdown based on selected exam code
+            $('#ddlExamSession').change(function () {
+                console.log("Exam code selection changed");
+                var selectedExamCode = $(this).val();
+                console.log("Selected exam code: " + selectedExamCode);
+                var subjectSelect = $('#ddlSubject');
+                subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+                // Filter subjects based on selected exam code and remove duplicates
+                var uniqueSubjects = {};
+                subjects.forEach(function (subject) {
+                    var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                    if (subSubIdPrefix === selectedExamCode) {
+                        uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                    }
+                });
+
+                // Populate subject dropdown with unique subjects
+                Object.keys(uniqueSubjects).forEach(function (key) {
+                    var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                    subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                    console.log("Appended subject: " + key);
+                });
+            });
+
+            // Function to populate paper code dropdown based on selected subject
+            $('#ddlSubject').change(function () {
+                console.log("Subject selection changed");
+                var selectedSubjectId = $(this).val();
+                console.log("Selected subject ID: " + selectedSubjectId);
+                var paperCodeSelect = $('#ddlPaperCode');
+                paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+                if (selectedSubjectId && selectedSubjectId.length >= 4) {
+                    var subjectCheck = selectedSubjectId.substring(3, 4);
+                    console.log("Checking subject at 4th position: " + subjectCheck);
+
+                    if (subjectCheck === '7') {
+                        console.log("Subject has '7' at 4th position, showing regionCode dropdown.");
+                        $('#scriptRegionCodeContainer').show();
+                        $('#scriptRegionCode').attr('required', 'required');
+                    } else {
+                        console.log("Subject does not have '7' at 4th position, hiding regionCode dropdown.");
+                        $('#scriptRegionCodeContainer').hide();
+                        $('#scriptRegionCode').removeAttr('required');
+                    }
+                } else {
+                    console.log("No subject selected or too short, hiding regionCode dropdown.");
+                    $('#scriptRegionCodeContainer').hide();
+                    $('#scriptRegionCode').removeAttr('required');
+                }
+
+                if (selectedSubjectId) {
+                    // Make an AJAX call to get the paper codes
+                    $.ajax({
+                        url: '@Url.Action("GetPaperCodes", "Subjects")',
+                        type: 'GET',
+                        data: { subjectCode: selectedSubjectId },
+                        success: function (data) {
+                            data.forEach(function (paperCode) {
+                                paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+                                console.log("Appended paper code: " + paperCode.ppR_PAPER_CODE);
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching paper codes: " + error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+}
+
+
+

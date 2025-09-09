@@ -1,0 +1,336 @@
+﻿@model IEnumerable<ExaminerRecruitmentTrainingSelectionViewModel>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
+<!-- Download All Button -->
+<div class="row shadow p-4 mt-2 mb-3 rounded">
+    <div class="col-12 col-md-3">
+        <button id="downloadAllInvitations" class="btn btn-success"><i class="bi bi-cloud-download-fill"></i> Download Bulk Invitations</button>
+    </div>
+
+    <div class="col-12 col-md-3">
+        <button id="sendInvitationsByEmail" class="btn btn-warning"><i class="bi bi-envelope"></i> Send Bulk Email Invitations</button>
+    </div>
+
+    <div class="col-12 col-md-3">
+        <span class="btn btn-outline-primary">
+            <i class="bi bi-file-earmark-ppt"></i> Total Records: <span id="grandTotalInvites">0</span>
+        </span>
+    </div>
+
+    <div class="col-12 col-md-3">
+    </div>
+</div>
+
+<!-- Table Wrapped in table-responsive -->
+<div class="table-responsive">
+    <table id="trainingSelectionTable" class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Gender</th>
+                <th>Phone</th>
+                <th>Subject</th>
+                <th>Level</th>
+                <th>Paper Code</th>
+                <th>Region</th>
+                <th>Download Letter</th>
+                <th>SendEmail</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        var regionCode = '@ViewBag.Region';
+        var subject = '@ViewBag.Subject';
+        var paperCode = '@ViewBag.PaperCode';
+        var experience = '@ViewBag.Experience';
+
+        var table = $('#trainingSelectionTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "/ExaminerRecruitmentInvitation/GetTrainingSelectionDataTable",
+                type: "GET",
+                data: function (d) {
+                    d.Region = regionCode;
+                    d.Subject = subject;
+                    d.PaperCode = paperCode;
+                    d.Experience = experience;
+                    d.start = d.start;
+                    d.length = d.length;
+                    d.searchValue = d.search.value;
+                    d.sortColumn = d.order[0].column;
+                    d.sortColumn = d.order[0].dir;
+                },
+                dataSrc: function (json) {
+                    $('#grandTotalInvites').text(json.recordsFiltered);
+                    return json.data;
+                }
+            },
+            columns: [
+                { data: "examinerName" },
+                { data: "lastName" },
+                { data: "cemId" },
+                { data: "emailAddress" },
+                { data: "gender" },
+                { data: "phoneHome" },
+                { data: "subject" },
+                { data: "experience" },
+                { data: "paperCode" },
+                { data: "regionCode" },
+                {
+                    data: "examinerRecruitmentId",
+                    render: function (data) {
+                        return `<a href="/ExaminerRecruitmentInvitation/GenarateInvitationLetter?examinerRecruitmentId=${data}"
+                                class="btn btn-primary download-btn"
+                                data-id="${data}">
+                                <span class="btn-text">Download</span>
+                                <i class="fa fa-spinner fa-spin d-none"></i>
+                            </a>`;
+                    }
+                },
+                {
+                    data: "examinerRecruitmentId",
+                    render: function (data) {
+                        return `
+                            <a href="javascript:void(0);"
+                               class="btn btn-primary sendEmailInvite"
+                               data-id="${data}">
+                               Email_Invite
+                            </a>
+                        `;
+                    }
+                }
+            ]
+        });
+
+        // Handle bulk actions (download and email)
+        function handleBulkAction(url, button, download = false) {
+            var requestData = {
+                Region: regionCode,
+                Subject: subject,
+                PaperCode: paperCode,
+                Experience: experience
+            };
+
+            var queryString = $.param(requestData);
+            var $button = $(button);
+            $button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+
+            $.ajax({
+                url: url + "?" + queryString,
+                type: "GET",
+                xhrFields: download ? { responseType: 'blob' } : {}, // Handle blob response for downloads
+                success: function (data, status, xhr) {
+                    var isJson = xhr.getResponseHeader("content-type")?.includes("application/json");
+
+                    if (isJson) {
+                        // Handle JSON response for email invitations
+                        if (data.success) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Success",
+                                text: data.message, // Use server-provided message
+                                showConfirmButton: true,
+                                confirmButtonText: "OK"
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: data.message || "An error occurred.", // Use server-provided message or fallback
+                                showConfirmButton: true,
+                                confirmButtonText: "OK"
+                            });
+                        }
+                    } else if (download) {
+                        // Handle file download for bulk invitations
+                        var blob = new Blob([data], { type: "application/zip" });
+                        var link = document.createElement("a");
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = "Examiner_Invitations.zip";
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success",
+                            text: "Invitations downloaded successfully!", // Keep static message for downloads
+                            showConfirmButton: true,
+                            confirmButtonText: "OK"
+                        });
+                    }
+                },
+                error: function (xhr) {
+                    var errorMessage = "An error occurred. Please try again.";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message; // Use server-provided error message if available
+                    }
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: errorMessage,
+                        showConfirmButton: true,
+                        confirmButtonText: "OK"
+                    });
+                },
+                complete: function () {
+                    $button.prop('disabled', false).html($button.data("original-text"));
+                }
+            });
+        }
+
+        $("#downloadAllInvitations").on("click", function () {
+            $(this).data("original-text", $(this).html());
+            // Show SweetAlert confirmation dialog
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to download bulk invitation letters for all selected examiners?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, download!",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Proceed with bulk download action
+                    handleBulkAction("/ExaminerRecruitmentInvitation/GenerateBulkInvitationLetters", this, true);
+                } else {
+                    // Restore button state if cancelled
+                    $(this).prop('disabled', false).html($(this).data("original-text"));
+                }
+            });
+        });
+
+        $("#sendInvitationsByEmail").on("click", function () {
+            $(this).data("original-text", $(this).html());
+            // Show SweetAlert confirmation dialog
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You want to send bulk email invitations to all selected examiners?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, send emails!",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Proceed with bulk email action
+                    handleBulkAction("/ExaminerRecruitmentInvitation/InviteBulkByEmail", this);
+                } else {
+                    // Restore button state if cancelled
+                    $(this).prop('disabled', false).html($(this).data("original-text"));
+                }
+            });
+        });
+
+        // Handle single email invitation
+        $(document).on('click', '.sendEmailInvite', async function () {
+            const button = $(this);
+            const examinerRecruitmentId = button.data('id');
+
+            // Save the original button text and disable the button with a spinner
+            const originalText = button.html();
+            button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Sending...');
+
+            try {
+                let response = await fetch(`/ExaminerRecruitmentInvitation/InviteByEmail?examinerRecruitmentId=${examinerRecruitmentId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                let data = await response.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.message, // Use server-provided message
+                        showConfirmButton: true,
+                        confirmButtonText: "OK"
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to send invitation.', // Use server-provided message or fallback
+                        showConfirmButton: true,
+                        confirmButtonText: "OK"
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong. Please try again.',
+                    showConfirmButton: true,
+                    confirmButtonText: "OK"
+                });
+            } finally {
+                // Restore the original button text and enable the button
+                button.prop('disabled', false).html(originalText);
+            }
+        });
+
+        // Handle single download
+        $(document).on("click", ".download-btn", function (e) {
+            e.preventDefault();
+            var $button = $(this);
+            var url = $button.attr("href");
+
+            // Disable the button and show the spinner
+            $button.prop("disabled", true);
+            $button.find(".btn-text").text("Processing...");
+            $button.find(".fa-spinner").removeClass("d-none");
+
+            // Perform the file download
+            $.ajax({
+                url: url,
+                type: "GET",
+                xhrFields: { responseType: "blob" }, // Handle as a file download
+                success: function (data) {
+                    var blob = new Blob([data], { type: "application/pdf" });
+                    var link = document.createElement("a");
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "Invitation_Letter.pdf";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: "Download failed. Please try again.",
+                        showConfirmButton: true,
+                        confirmButtonText: "OK"
+                    });
+                },
+                complete: function () {
+                    // Re-enable button and reset text
+                    $button.prop("disabled", false);
+                    $button.find(".btn-text").text("Download");
+                    $button.find(".fa-spinner").addClass("d-none");
+                }
+            });
+        });
+    });
+</script>

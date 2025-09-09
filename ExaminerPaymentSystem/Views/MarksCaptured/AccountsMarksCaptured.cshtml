@@ -1,0 +1,373 @@
+﻿@using ExaminerPaymentSystem.Data
+@using Microsoft.AspNetCore.Identity
+@using ExaminerPaymentSystem.Interfaces
+@inject SignInManager<ApplicationUser> SignInManager
+
+@{
+    ViewBag.Title = "Marks Captured";
+}
+
+<style>
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+
+    .flex-item {
+        flex: 1 1 30%;
+        margin-right: 10px;
+    }
+
+        .flex-item label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .flex-item input, .flex-item select {
+            width: 100%;
+            padding: 5px;
+        }
+
+    .form-wrapper {
+        border: 1px solid #ced4da;
+        border-radius: 10px;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+</style>
+
+@using (Html.BeginForm("Index", "MarksCaptured", FormMethod.Get, new { id = "searchForm" }))
+{
+    <div class="form-wrapper">
+        <h2>Marks Captured</h2>
+
+        <div class="flex-container">
+
+ @*            <div class="form-group flex-item">
+                @Html.Label("regionCode", "Region: ")
+                @Html.DropDownList("regionCode", new List<SelectListItem>
+            {
+            new SelectListItem { Text = "01-Harare", Value = "01" },
+            new SelectListItem { Text = "02-Manicaland", Value = "02" },
+            new SelectListItem { Text = "03-Mashonaland East", Value = "03" },
+            new SelectListItem { Text = "04-Matebeleland North", Value = "04" },
+            new SelectListItem { Text = "05-Midlands", Value = "05" },
+            new SelectListItem { Text = "06-Masvingo", Value = "06" },
+            new SelectListItem { Text = "07-Mashonaland Central", Value = "07" },
+            new SelectListItem { Text = "08-Mashonaland West", Value = "08" },
+            new SelectListItem { Text = "09-Matebeleland South", Value = "09" },
+            new SelectListItem { Text = "10-Bulawayo", Value = "10" },
+            }, "--- Select ---", new { @class = "form-control", id = "regionContainer", @required = "required" })
+            </div> *@
+
+
+
+            <div class="form-group flex-item">
+                @Html.Label("ExaminerCode", "Exam Session: ")
+                @Html.DropDownList("ExaminerCode", new SelectList(ViewBag.ExamCodes, "EXM_EXAM_CODE", "ExamCaption"), "--- Select Session ---", new { @class = "form-control", id = "ddlExamSession", @required = "required" })
+            </div>
+
+            <div class="form-group flex-item">
+                @Html.Label("SubjectCode", "Subject: ")
+                <select id="ddlSubject" name="SubjectCode" class="form-control" required>
+                    <option value="">--- Select Subject ---</option>
+                </select>
+            </div>
+
+
+        </div>
+
+
+
+
+
+        <div class="flex-container">
+
+            <div class="form-group flex-item">
+                @Html.Label("PaperCode", "Paper Code: ")
+                <select id="ddlPaperCode" name="paperCode" class="form-control" required>
+                    <option value="">--- Select Paper ---</option>
+                </select>
+            </div>
+
+     
+                <div class="form-group flex-item">
+                    @Html.Label("accountsTotalScriptCaptured", "Marks Captured: ")
+                @Html.TextBox("accountsTotalScriptCaptured", null, new { @class = "form-control", id = "accountsTotalScriptCaptured", @required = "required" })
+
+                </div>
+            
+
+
+
+
+        </div>
+
+
+
+
+
+        <div class="form-group">
+            <button type="submit" class="btn text-white" style="background-color: #153355;" onclick="javascript:validateBeforeSave();" id="saveButton" disabled>
+                <i class="fas fa-save mr-2"></i>
+                Save
+            </button>
+        </div>
+    </div>
+}
+
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#ddlSubject').change(function () {
+            var subjectCode = $(this).val();
+            if (subjectCode.startsWith('7')) {
+                $('#regionContainer').show();
+            } else {
+                $('#regionContainer').hide();
+            }
+        });
+    });
+</script>
+
+<script>
+    var globalExamCode = null;
+    $(document).ready(function () {
+        $('#ddlExamSession').change(function () {
+            var examcode = $(this).val();
+            globalExamCode = examcode;
+            if (examcode) {
+                $.ajax({
+                    url: '@Url.Action("GetSubjectsByExamSession", "PaperMarkingRate")',
+                    type: 'GET',
+                    data: { examcode: examcode },
+                    success: function (response) {
+                        var jsonData = response;//JSON.stringify(response);
+
+                        var subjects = [];
+
+                        for (var i = 0; i < jsonData.length; i++) {
+                            var item = jsonData[i];
+                            if (item.hasOwnProperty('suB_SUBJECT_DESC') && item.hasOwnProperty('suB_SUBJECT_CODE')) {
+                                subjects.push(item.suB_SUBJECT_CODE + " " + item.suB_SUBJECT_DESC);
+                            }
+                            else {
+                                alert('property not found');
+                            }
+                        }
+                        var uniqueSubjects = new Set(subjects);
+
+                        subjects = Array.from(uniqueSubjects);
+
+                        var dropdown = document.getElementById('ddlSubject');
+                        dropdown.innerHTML = "";
+                        var option1 = document.createElement('option');
+                        option1.text = "Select Subject";
+                        option1.value = "select_examtype";
+                        dropdown.appendChild(option1);
+
+                        subjects.forEach(function (subject) {
+
+                            var option = document.createElement('option');
+
+                            option.text = subject;
+
+                            option.value = subject.substring(0, 4);
+
+                            dropdown.appendChild(option);
+
+                        });
+
+                    }
+                });
+            }
+        });
+
+        $('#ddlSubject').change(function () {
+            event.preventDefault();
+
+            var selectedSubjectFull = $(this).val();
+            var selectedSubject = selectedSubjectFull.substring(0, 4);
+
+            if (selectedSubject) {
+
+                $.ajax({
+                    url: '@Url.Action("GetPaperCodesBySubject", "PaperMarkingRate")',
+                    type: 'GET',
+                    data: {
+                        subject: selectedSubject,
+                        examcode: globalExamCode
+                    },
+                    success: function (response) {
+
+                        var jsonData = response;//JSON.stringify(response);
+
+                        var paperCodes = [];
+
+                        for (var i = 0; i < jsonData.length; i++) {
+                            var item = jsonData[i];
+                            if (item.hasOwnProperty('ppR_PAPER_CODE')) {
+                                paperCodes.push(item.ppR_PAPER_CODE);
+                            }
+                            else {
+                                alert('property not found');
+                            }
+                        }
+
+                        var uniquePaperCodes = new Set(paperCodes);
+
+
+                        paperCodes = Array.from(uniquePaperCodes);
+
+
+
+                        var dropdown = document.getElementById('ddlPaperCode');
+                        dropdown.innerHTML = "";
+                        var option1 = document.createElement('option');
+                        option1.text = "Select Paper Code";
+                        option1.value = "select_papercode";
+                        dropdown.appendChild(option1);
+                        paperCodes.forEach(function (papercode) {
+                            var option = document.createElement('option');
+                            option.text = papercode;
+                            option.value = papercode;
+                            dropdown.appendChild(option);
+                            $('#saveButton').prop('disabled', false);
+                        });
+
+                    },
+
+                });
+            }
+        });
+
+
+        $('#ddlPaperCode').change(function () {
+            var paperCode = $(this).val();
+            var examCode = document.getElementById("ddlExamSession").value;
+            var subjectCode = document.getElementById("ddlSubject").value;
+            
+
+            $.ajax({
+                url: '@Url.Action("GetMarksCaptured", "MarksCaptured")',
+                type: 'GET',
+                data: { paperCode: paperCode, ExaminerCode: examCode, subjectCode: subjectCode, regionCode: regionCode },
+                success: function (response) {
+                    var theDecodedResponse = JSON.stringify(response);
+                    var jsonObject = JSON.parse(theDecodedResponse);
+
+
+
+                    document.getElementById("regionContainer").value = jsonObject[0].regionCode;
+                  
+                    document.getElementById("accountsTotalScriptCaptured").value = jsonObject[0].accountsTotalScriptCaptured;
+
+
+                    $('#saveButton').prop('disabled', false);
+                }
+            });
+        });
+
+
+
+
+    });
+
+
+    function validateBeforeSave() {
+
+        var ddlExamSession = document.getElementById("ddlExamSession").value;
+        var ddlSubject = document.getElementById("ddlSubject").value;
+        var ddlPaperCode = document.getElementById("ddlPaperCode").value;
+     
+        var accountsTotalScriptCaptured = document.getElementById("accountsTotalScriptCaptured").value;
+
+
+
+        postToController();
+
+    }
+
+
+    function postToController() {
+        event.preventDefault();
+        var ddlExamSession = document.getElementById("ddlExamSession").value;
+        var ddlSubject = document.getElementById("ddlSubject").value;
+        var ddlPaperCode = document.getElementById("ddlPaperCode").value;
+     
+    
+        var accountsTotalScriptCaptured = document.getElementById("accountsTotalScriptCaptured").value;
+
+        var proceed = true;
+
+
+        var newEMS_SUB_SUB_ID = globalExamCode + "" + ddlSubject.slice(0, 4);
+
+
+
+        // Add the values from the select elements to the JSON data
+        const jsonData = {
+            SUBJECT_CODE: ddlSubject.substring(0, 4),
+            PAPER_CODE: ddlPaperCode,
+            Exam_Code: ddlExamSession,
+         
+         
+            AccountsTotalScriptCaptured: document.getElementById("accountsTotalScriptCaptured").value,
+
+        };
+
+        // Stringify the JSON data
+        const jsonString = JSON.stringify(jsonData);
+        //alert(jsonString);
+
+        // AJAX to save to DB
+
+        if (proceed) {
+            $.ajax({
+                url: '@Url.Action("InsertExaminerTransactions", "MarksCaptured")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: jsonString, // Ensure that the JSON data is stringified before sending
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            title: "Information updated!",
+                            text: "Information for examiners has been successfully updated",
+                            icon: "success"
+                        }).then(() => {
+                            location.reload(); // Reload page after successful save
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Information not updated!",
+                            text: "Information not updated, please try again",
+                            icon: "error"
+                        });
+                    }
+                },
+                error: function () {
+                    //alert("Error occurred while saving data!");
+                    Swal.fire({
+                        title: "Error!",
+                        text: "An error occured whilst servicing request, please try again.",
+                        icon: "error"
+                    });
+                }
+            });
+        }
+        else {
+            event.preventDefault();
+            Swal.fire({
+                title: "input value not allowed!",
+                text: "Please ensure that values put are valid numbers",
+                icon: "error"
+            });
+            return;
+        }
+
+    }
+</script>

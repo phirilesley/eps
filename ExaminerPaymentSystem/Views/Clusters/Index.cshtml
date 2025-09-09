@@ -1,0 +1,665 @@
+﻿@inject SignInManager<ApplicationUser> SignInManager
+@{
+    ViewData["Title"] = "Exam Clusters";
+
+    string regionCode = ViewBag.RegionCode ?? "";
+}
+
+<link href="/css/monitorlist.css" rel="stylesheet" />
+<style>
+    .badge.bg-pink {
+        background-color: #ff69b4;
+        color: white;
+    }
+
+    .btn-sm .fa-icon {
+        font-size: 0.9em;
+        line-height: 1;
+        vertical-align: middle;
+    }
+      .region-badge {
+      font-size: 0.6em;
+  
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      vertical-align: middle;
+  }
+
+    .display-6 {
+        font-size: 1.5rem;
+    }
+    /* Make Select2 match Bootstrap form control height */
+    .select2-container .select2-selection--single {
+        height: 38px !important;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 24px !important;
+    }
+</style>
+
+
+<div class="container-fluid px-4 mt-3">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2">
+        <div>
+            <div class="header-container mb-4">
+                <h5 class="display-6 fw-bold text-gradient mb-1">
+                    @ViewData["Title"]
+                    @if (User.IsInRole("RegionalManager"))
+                    {
+                        <span class="region-badge">Region: @regionCode</span>
+                    }
+                </h5>
+                <div class="accent-line"></div>
+            </div>
+
+        </div>
+        <div class="mt-3 mt-md-0">
+            <button id="addClusterBtn" class="btn text-white" style="background-color:#153355;" data-bs-toggle="modal" data-bs-target="#addMonitorModal">
+                <i class="fas fa-plus me-2"></i>Add Cluster
+            </button>
+            <a  href="/Clusters/BulkAddClusters" class="btn text-white ms-2" style="background-color:#153355;">
+                <i class="fas fa-upload me-2"></i>Bulk Upload
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Card -->
+    <div class="card border-0 shadow-sm mb-2 p-2">
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Region Filter - 2 columns on md screens (1/5 = 20%) -->
+                @if (User.IsInRole("Admin"))
+                {
+
+                    <div class="col-md-3">
+                        <label for="regionFilter" class="form-label">Region</label>
+                        <select id="regionFilter" class="form-select">
+                            <option value="">All Regions</option>
+                            <option value="01">01 - Harare</option>
+                            <option value="02">02 - Manicaland</option>
+                            <option value="03">03 - Mashonaland East</option>
+                            <option value="04">04 - Matabeleland North</option>
+                            <option value="05">05 - Midlands</option>
+                            <option value="06">06 - Masvingo</option>
+                            <option value="07">07 - Mashonaland Central</option>
+                            <option value="08">08 - Mashonaland West</option>
+                            <option value="09">09 - Matabeleland South</option>
+                            <option value="10">10 - Bulawayo</option>
+                        </select>
+                    </div>
+                }
+
+
+
+                <!-- District Filter (regular select) -->
+                <div class="col-md-3">
+                    <label for="districtFilter" class="form-label">District</label>
+                    <select id="districtFilter" class="form-select">
+                        <option value="">All Districts</option>
+                        @if (ViewBag.Districts != null)
+                        {
+                            @foreach (var district in ViewBag.Districts)
+                            {
+                                <option value="@district.Value">@district.Text</option>
+                            }
+                        }
+                        else
+                        {
+                            <option value="" disabled>No districts available</option>
+                        }
+                    </select>
+                </div>
+
+
+
+
+
+                <!-- Reset Button - 3 columns (matches input width) -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <button id="resetFiltersBtn" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-undo me-2"></i>Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+        $(document).ready(function() {
+            // Initialize all Select2 elements
+            $('.select2').select2({
+                width: '100%',
+                placeholder: function() {
+                    return $(this).data('placeholder') || "Select an option";
+                },
+                allowClear: true
+            });
+        });
+    </script>
+
+
+    <!-- Data Table Card -->
+    <div class="card border-0 shadow-sm p-2">
+        <!-- Table Container with Forced Visibility -->
+        <div id="clusterDataContainer" style="display: block; visibility: visible; opacity: 1;">
+            <!-- Basic Table Structure -->
+            <table id="clustersTable" class="table table-striped" style="width:100%; visibility: visible !important;">
+                <thead style="display: table-header-group !important;">
+                    <tr>
+                      
+                        <th>Cluster Code</th>
+                        <th>Cluster Name</th>
+                        <th>District Code</th>
+                        <th>District Name</th>
+                        <th>Region</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody style="display: table-row-group !important;">
+                    <!-- Data will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+
+
+
+    </div>
+
+    <!-- Edit Monitor Modal -->
+    <div class="modal fade" id="editClusterModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color:#153355;">
+                    <h5 class="modal-title">Edit Cluster</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editClusterForm">
+                        <input type="hidden" id="editClusterCode">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="editClusterName" class="form-label">Cluster Name</label>
+                                <input type="text" class="form-control" id="editClusterName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editDistrictCode" class="form-label">District Code</label>
+                                <select class="form-select" id="editDistrictCode" required>
+                                    <option value="">Select District Code</option>
+                                    @foreach (var district in ViewBag.Districts)
+                                    {
+                                        <option value="@district.Value">@district.Text (@district.Value)</option>
+                                    }
+                                </select>
+                            </div>
+
+                        
+                            <div class="col-md-6">
+                                <label for="editRegion" class="form-label">Region</label>
+                                <select class="form-select" id="editRegion" required>
+                                    <option value="01">01 - Harare</option>
+                                    <option value="02">02 - Manicaland</option>
+                                    <option value="03">03 - Mashonaland East</option>
+                                    <option value="04">04 - Matabeleland North</option>
+                                    <option value="05">05 - Midlands</option>
+                                    <option value="06">06 - Masvingo</option>
+                                    <option value="07">07 - Mashonaland Central</option>
+                                    <option value="08">08 - Mashonaland West</option>
+                                    <option value="09">09 - Matabeleland South</option>
+                                    <option value="10">10 - Bulawayo</option>
+                                </select>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="saveEditBtn" class="btn text-white" style="background-color:#153355;">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Monitor Modal -->
+    <div class="modal fade" id="addClusterModal" tabindex="-1" aria-labelledby="addClusterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <!-- Changed to modal-xl for extra large -->
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background-color:#153355;">
+                    <h5 class="modal-title" id="addClusterModalLabel">
+                        <i class="fas fa-user-plus me-2"></i>Add New Cluster
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addClusterForm">
+                        <div class="row">
+                            <!-- Column 1 - Personal Info -->
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="clusterCode" class="form-label">Cluster Code*</label>
+                                    <input type="text" class="form-control form-control-lg" id="clusterCode" name="clusterCode" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="clusterName" class="form-label">Cluster Name*</label>
+                                    <input type="text" class="form-control form-control-lg" id="clusterName" name="clusterName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="col-md-6">
+                                    <label for="editDistrictCode" class="form-label">District Code</label>
+                                    <select class="form-select" id="editDistrictCode" required>
+                                        <option value="">Select District Code</option>
+                                        @foreach (var district in ViewBag.Districts)
+                                        {
+                                            <option value="@district.Value">@district.Text (@district.Value)</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+
+                        </div>
+
+                        <!-- Column 2 - Regional Info -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="region" class="form-label">Region*</label>
+                                <select class="form-select form-select-lg" id="region" name="region" required>
+                                    <option value="">Select Region</option>
+                                    <option value="01">01 - Harare</option>
+                                    <option value="02">02 - Manicaland</option>
+                                    <option value="03">03 - Mashonaland East</option>
+                                    <option value="04">04 - Matabeleland North</option>
+                                    <option value="05">05 - Midlands</option>
+                                    <option value="06">06 - Masvingo</option>
+                                    <option value="07">07 - Mashonaland Central</option>
+                                    <option value="08">08 - Mashonaland West</option>
+                                    <option value="09">09 - Matabeleland South</option>
+                                    <option value="10">10 - Bulawayo</option>
+                                </select>
+                            </div>
+                            
+
+                        </div>
+
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="button" id="saveClusterBtn" class="btn text-white btn-lg" style="background-color:#153355;">
+                        <i class="fas fa-save me-2"></i>Save Cluster
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+@section Scripts {
+        <script>
+                    $(document).ready(function() {
+           
+                // Initialize table variable only once
+                var table = initializeDataTable();
+                var currentFilters = {
+                    regionFilter: '',
+              
+                    districtFilter: ''
+                };
+
+                // Load data initially
+                loadAndRenderTable();
+
+                function initializeDataTable() {
+                    return $('#clustersTable').DataTable({
+                        paging: true,
+                        searching: true,
+                        ordering: true,
+                        info: true,
+                        responsive: true,
+                        serverSide: false,
+                        ajax: null
+                    });
+                }
+
+                function loadAndRenderTable() {
+                    console.log("Loading monitor data with filters:", currentFilters);
+                    currentFilters.regionFilter = $('#regionFilter').val();
+
+                    $.ajax({
+                        url: '/Clusters/GetClusters',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(currentFilters),
+                        success: function(response) {
+                            console.log("Data received:", response);
+                            var data = response.data || response;
+
+                            if (!Array.isArray(data)) {
+                                console.error("Data is not an array:", data);
+                                showRawData();
+                                return;
+                            }
+
+                            table.clear().draw();
+                            data.forEach(function(item) {
+                                table.row.add([
+                                  
+                                    item.clusterCode || '-',
+                                    item.clusterName || '-',
+                                    item.districtCode || '-',
+                                    item.districtName || '-',
+                                    item.regionCode || '-',
+                                    `<div class="d-flex flex-nowrap gap-2">
+                <button class="btn btn-sm text-white edit-btn px-3 py-1 d-flex align-items-center"
+                       style="background-color:#153355;" data-id="${item.clusterCode || ''}">
+                    <i class="fas fa-edit me-2"></i>
+                    <span>Edit</span>
+                </button>
+                <button class="btn btn-sm btn-danger delete-btn px-3 py-1 d-flex align-items-center"
+                        data-id="${item.clusterCode}">
+                    <i class="fas fa-trash-alt me-2"></i>
+                    <span>Remove</span>
+                </button>
+            </div>`
+                                ]);
+                            });
+
+                            table.draw();
+                            $('#clusterDataContainer').show();
+                            $('#clustersTable').show().css('visibility', 'visible');
+                        },
+                        error: function(xhr) {
+                            console.error("Failed to load data:", xhr.responseText);
+                            showRawData();
+                        }
+                    });
+                }
+
+                // Filter handlers
+                function applyFilters() {
+                    currentFilters = {
+                        regionFilter: $('#regionFilter').val(),
+                       
+                        districtFilter: $('#districtFilter').val()
+                    };
+                    loadAndRenderTable();
+                }
+
+                $('#regionFilter, #districtFilter').on('change', applyFilters);
+             
+
+                $('#resetFiltersBtn').on('click', function() {
+                    $('#regionFilter, #districtFilter').val('').trigger('change');
+               
+                    currentFilters = {
+                        regionFilter: '',
+                    
+                        districtFilter: ''
+                    };
+                    loadAndRenderTable();
+                });
+
+                // Edit button handler
+                $(document).on('click', '.edit-btn', function(e) {
+                    e.preventDefault();
+                    var clusterCode = $(this).data('id');
+
+                    Swal.fire({
+                        title: 'Loading...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    $.get('/Clusters/GetCluster', { clusterCode: clusterCode})
+                        .done(function(data) {
+                            Swal.close();
+                       
+                            $('#editClusterName').val(data.clusterName || data.CusterName);
+                            $('#editClusterCode').val(data.clusterCode || data.ClusterCode);
+                            $('#editDistrictCode').val(data.districtCode || data.DistrictCode);
+                            $('#editRegion').val(data.regionCode || data.RegionCode);
+                            $('#editDistrictName').val(data.districtName || data.DistrictName);
+
+                            $('#editClusterModal').modal('show');
+                        })
+                        .fail(function(xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: xhr.status === 404 ? 'Cluster not found' : 'Error loading cluster data',
+                                confirmButtonColor: '#153355'
+                            });
+                        });
+                });
+
+                // Save edit handler
+                $('#saveEditBtn').click(function() {
+                    Swal.fire({
+                        title: 'Saving...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    $.ajax({
+                        url: '@Url.Action("UpdateCluster", "Clusters")',
+                        type: 'POST',
+                        data: {
+                        
+                            clusterName: $('#editClusterName').val(),
+                            clusterCode: $('#editClusterCode').val(),
+                            districtCode: $('#editDistrictCode').val(),
+                            regionCode: $('#editRegion').val(),
+                            districtName: $('#editDistrictName').val(),
+
+                        },
+                        success: function(response) {
+                            Swal.close();
+                            if (response && response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: response.message,
+                                    confirmButtonColor: '#153355'
+                                });
+                                $('#editClusterModal').modal('hide');
+                                loadAndRenderTable(); // Refresh the table
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: (response && response.message) || 'Unknown error occurred',
+                                    confirmButtonColor: '#153355'
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: (xhr.responseJSON && xhr.responseJSON.message) || 'Error updating cluster',
+                                confirmButtonColor: '#153355'
+                            });
+                        }
+                    });
+                });
+
+                // Delete button handler - using document for delegation
+                $(document).on('click', '.delete-btn', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    var centreNumber = $(this).data('id');
+                    var $button = $(this);
+
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#153355',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!',
+                        allowOutsideClick: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Deleting...',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                            });
+
+                            $.ajax({
+                                url: '/Clusters/DeleteCluster',
+                                type: 'POST',
+                                data: {
+                                    clusterCode: clusterCode,
+                                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                                },
+                                success: function(response) {
+                                    Swal.close();
+                                    if (response && response.success) {
+                                        Swal.fire({
+                                            icon: 'success',
+                                            title: 'Deleted!',
+                                            text: response.message || 'Cluster deleted successfully',
+                                            confirmButtonColor: '#153355'
+                                        }).then(() => {
+                                            $button.closest('tr').fadeOut(400, function() {
+                                                table.row(this).remove().draw(false);
+                                            });
+                                        });
+                                    } else {
+                                        showError(response?.message || 'Failed to delete centre');
+                                    }
+                                },
+                                error: function(xhr) {
+                                    Swal.close();
+                                    showError(xhr.responseJSON?.message || xhr.statusText);
+                                }
+                            });
+                        }
+                    });
+                });
+
+                function showError(message) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: message,
+                        confirmButtonColor: '#153355'
+                    });
+                }
+
+
+            });
+
+        </script>
+
+        <script>
+                        $(document).ready(function() {
+
+                $('#addClusterBtn').click(function() {
+                    $('#addClusterModal').modal('show');
+                });
+
+                // Handle form submission
+                $('#saveClusterBtn').click(function() {
+                    // Validate form
+                    if (!$('#addClusterForm')[0].checkValidity()) {
+                        $('#addClusterForm')[0].reportValidity();
+                        return;
+                    }
+
+                    // Show loading state
+                    Swal.fire({
+                        title: 'Saving...',
+                        allowOutsideClick: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    // Collect form data
+                    var formData = {
+                    
+                        clusterName: $('#clusterName').val(),
+                        clusterCode: $('#clusterCode').val(),
+                        districtCode: $('#districtCode').val(),
+                        regionCode: $('#region').val(),
+                        districtName: $('#districtName').val(),
+
+                    };
+
+                    // Submit via AJAX
+                    $.ajax({
+                        url: '@Url.Action("Create", "Clusters")',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(formData),
+                        success: function(response) {
+                            Swal.close();
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: 'Cluster added successfully',
+                                    confirmButtonColor: '#153355'
+                                });
+                                $('#addClusterModal').modal('hide');
+                                $('#addClusterForm')[0].reset();
+
+                                // Refresh DataTable if exists
+                                if (typeof table !== 'undefined') {
+                                    table.ajax.reload();
+                                }
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: response.message || 'Failed to add cluster',
+                                    confirmButtonColor: '#153355'
+                                });
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: xhr.responseJSON?.message || 'An error occurred',
+                                confirmButtonColor: '#153355'
+                            });
+                        }
+                    });
+                });
+            });
+        </script>
+}
+
+
+
+
+
+
+

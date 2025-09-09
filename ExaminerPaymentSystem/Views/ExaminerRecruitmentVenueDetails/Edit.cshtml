@@ -1,0 +1,111 @@
+﻿@model ExaminerRecruitmentVenueDetails
+
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Add Venue Details" : "Edit Venue Details";
+}
+
+<div class="container mt-5">
+
+    <div class="shadow p-5 rounded">
+
+    <h2 class="text-center">@ViewData["Title"]</h2>
+    <hr />
+
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <form asp-action="@((Model.Id == 0) ? "Create" : "Edit")" method="post" class="needs-validation" novalidate>
+
+        @if (Model.Id != 0)
+        {
+            <input type="hidden" asp-for="Id" />
+        }
+
+            <div class="row mb-3">
+                <div class="col-12 col-md-12">
+                    <div class="form-group">
+                        <label asp-for="VenueName" class="form-label">Venue Name</label>
+                        <input asp-for="VenueName" type="text" class="form-control" readonly required value="@Model.VenueName" />
+                        <span asp-validation-for="VenueName" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+        <div class="row mb-3">
+            <div class="col-12 col-md-6">
+                <div class="form-group">
+                    <label asp-for="TrainingStartDate" class="form-label">Training Start Date</label>
+                        <input asp-for="TrainingStartDate" type="date" class="form-control" required value="@(Model.TrainingStartDate.ToString("yyyy-MM-dd") ?? "")" />
+                    <span asp-validation-for="TrainingStartDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <div class="form-group">
+                    <label asp-for="TrainingEndDate" class="form-label">Training End Date</label>
+                    <input asp-for="TrainingEndDate" type="date" class="form-control" required value="@Model.TrainingEndDate.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="TrainingEndDate" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-12 col-md-4">
+                <div class="form-group">
+                    <label asp-for="CheckInDate" class="form-label">Check-In Date</label>
+                    <input asp-for="CheckInDate" type="date" class="form-control" required value="@Model.CheckInDate.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="CheckInDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group">
+                    <label asp-for="CheckOutDate" class="form-label">Check-Out Date</label>
+                        <input asp-for="CheckOutDate" type="date" class="form-control" required value="@Model.CheckOutDate?.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="CheckOutDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <div class="form-group">
+                    <label asp-for="TrainingTime" class="form-label">Training Time</label>
+                    <input asp-for="TrainingTime" type="time" class="form-control" value="@Model.TrainingTime?.ToString("HH:mm")" />
+                    <span asp-validation-for="TrainingTime" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-4">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <a asp-action="VenueIndex" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+
+</div>
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Bootstrap validation script
+        (function () {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script>
+}

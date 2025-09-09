@@ -1,0 +1,53 @@
+﻿@model ActivityModel
+
+@{
+    ViewData["Title"] = "Select Activity";
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var errorMsg = '@TempData["NotInTransaction"]';
+            if (errorMsg) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: errorMsg,
+                    showConfirmButton: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '@Url.Action("SelectActivity", "TandS")'; // Redirect to SelectActivity action
+                    }
+                });
+            }
+        });
+    </script>
+
+
+    <partial name="_ValidationScriptsPartial" />
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="margin-top: 100px;">
+    <div class="card shadow-lg p-4" style="max-width: 500px; width: 100%;">
+        <h2 class="text-center mb-4">Select Activity</h2>
+        <form asp-action="Index" method="get">
+            <div class="form-floating mb-3">
+                <select asp-for="Activity" class="form-select form-select-lg" required>
+                    <option value="">--Select Activity--</option>
+                    @foreach (var activity in Model.Activities)
+                    {
+                        <option value="@activity.Value">@activity.Text</option>
+                    }
+                </select>
+
+                <span asp-validation-for="Activity" class="text-danger"></span>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-lg text-white" style="background-color:#123255;">
+                    Submit
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

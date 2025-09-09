@@ -1,0 +1,316 @@
+﻿@inject ISubjectsRepository subjectRepo
+@inject IExamCodesRepository examCodeRepo
+@inject IPaperMarkingRateRepository papercodesRepo
+@inject IActivityRepository activityRepo
+@inject IVenueRepository venueRepo
+
+@{
+    ViewBag.Title = "Register Reporting";
+
+    IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
+    IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
+    IEnumerable<Venue> venues = await venueRepo.VenuesGetAll();
+    var subjectArray = Newtonsoft.Json.JsonConvert.SerializeObject(subjects);
+    IEnumerable<Activity> activities = await activityRepo.GetAllActivitiesAsync();
+
+}
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-file-excel" style="color: #2a5a8a;"></i>
+        <h5 class="fw-bold mb-0" style="color: #153355;">
+         Register Reporting
+         
+        </h5>
+    </div>
+    <hr style="border-top: 1px solid black;
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+
+<!-- Filter Form -->
+<form id="searchForm" asp-action="Search" class="needs-validation mb-5" novalidate>
+    <div class="border rounded p-4 mb-4 shadow-sm position-relative" style="border-width: 2px; background-color: #f8f9fa;">
+        <div class="position-absolute bg-white px-3" style="top: -12px; left: 15px; z-index: 1; color: #123255;">
+            <!-- Optional heading -->
+        </div>
+
+        <div class="row g-3">
+            <!-- Status Filter -->
+            <div class="col-md-3">
+                <label for="filterStatus" class="form-label">Status</label>
+                <select class="form-select" id="filterStatus" name="filterStatus" required>
+                    <option value="All">All Invited</option>
+                    <option value="Present">Present </option>
+                    <option value="Absent">Absent</option>
+                    <option value="Yes">Attending</option>
+                    <option value="No">Not Attending</option>
+                    <option value="DidNotMark">Present But Did Not Mark</option>
+                </select>
+            </div>
+
+        
+
+            <!-- Activity Filter -->
+            <div class="col-md-3">
+                <label for="PurposeOfJourney" class="form-label">Activity</label>
+                <select id="filterPurposeOfJourney" class="form-select" name="activity" required>
+                    <option value="">-- Select Activity --</option>
+                    @foreach (var activity in activities)
+                    {
+                        <option value="@activity.Value">@activity.Text</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Exam Session Filter -->
+            <div class="col-md-3">
+                <label for="mkExamCode" class="form-label">Exam Session</label>
+                <select class="form-select" id="filterExamCode" required>
+                    <option value="">-- Select Session --</option>
+                    @foreach (var examCod in examCodes)
+                    {
+                        if (int.TryParse(examCod.EXM_EXAM_YEAR, out int examYear))
+                        {
+                            if (examCod.ACTIVATED_SESSION == "Activated")
+                            {
+                                <option value="@examCod.EXM_EXAM_CODE">@examCod.EXM_EXAM_LEVEL @examCod.EXM_EXAM_SESSION @examCod.EXM_EXAM_YEAR</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Subject Code Filter -->
+            <div class="col-md-3">
+                <label for="mkSubject" class="form-label">Subject Code</label>
+                <select class="form-select" id="filterSubject" required>
+                    <option value="">-- Select Subject --</option>
+                </select>
+            </div>
+
+            <!-- Paper Code Filter -->
+            <div class="col-md-3">
+                <label for="mkPaperCode" class="form-label">Paper Code</label>
+                <select class="form-select" id="filterPaperCode" required>
+                    <option value="">-- Select Paper Code --</option>
+                </select>
+            </div>
+
+            <!-- Region Code Filter -->
+            <div class="col-md-3">
+                <div class="form-group" id="filterRegionCodeContainer" style="display: none;">
+                    <label for="mkRegionCode" class="form-label">Region Code</label>
+                    <select id="filterRegionCode" name="regionCode" class="form-select">
+                        <option value="">-- Select Region Code --</option>
+                        <option value="01">01 - Harare</option>
+                        <option value="02">02 - Manicaland</option>
+                        <option value="03">03 - Mashonaland East</option>
+                        <option value="04">04 - Matabeleland North</option>
+                        <option value="05">05 - Midlands</option>
+                        <option value="06">06 - Masvingo</option>
+                        <option value="07">07 - Mashonaland Central</option>
+                        <option value="08">08 - Mashonaland West</option>
+                        <option value="09">09 - Matabeleland South</option>
+                        <option value="10">10 - Bulawayo</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+            <button id="filterButton" class="btn btn-primary me-md-2" type="button" style="background-color: #153355;color:white;">
+                <i class="fas fa-search me-2"></i>Filter
+            </button>
+            <button id="clearButton" class="btn btn-secondary" type="button">
+                <i class="fas fa-undo me-2"></i>Clear
+            </button>
+        </div>
+    </div>
+</form>
+
+<!-- Report Table -->
+<div class="card p-4 shadow-sm border-1">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="reportTable" class="table table-bordered table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+                        <th>National ID</th>
+                        <th>Subject</th>
+                       <th>Role</th>
+                        <th>Examiner Number</th>
+                        <th>Supervisor</th>
+                        <th>Register Status</th>
+                        <th>Attendance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Initialize DataTable
+            var table = $('#reportTable').DataTable({
+                "processing": true,
+                "serverSide": true,
+                "lengthMenu": [
+                    [10, 25, 50, 100, 250, 500, 1000],
+                    [10, 25, 50, 100, 250, 500, 1000]
+                ],
+                "pageLength": 100,
+                "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                    '<t>' +
+                    '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+                "buttons": [
+                    {
+                        extend: 'excelHtml5',
+                        className: 'btn btn-sm btn-success',
+                        text: '<i class="fa fa-file-excel me-2"></i>Excel',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        className: 'btn btn-sm btn-info',
+                        text: '<i class="fa fa-file-csv me-2"></i>CSV',
+                        exportOptions: { columns: ':visible' }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        className: 'btn btn-sm btn-danger',
+                        text: '<i class="fa fa-file-pdf me-2"></i>PDF',
+                        exportOptions: { columns: ':visible' }
+                    }
+                ],
+                "ajax": {
+                    url: "/Reports/GetRegisterData",
+                    type: "POST",
+                    contentType: "application/json",  // Ensure JSON data is sent
+                    data: function (d) {
+                        return JSON.stringify({
+                            draw: d.draw,
+                            start: d.start,
+                            length: d.length,
+                            filterStatus: $('#filterStatus').val(),
+                            activity: $('#filterPurposeOfJourney').val(),
+                            examCode: $('#filterExamCode').val(),
+                            subject: $('#filterSubject').val(),
+                            paperCode: $('#filterPaperCode').val(),
+                            regionCode: $('#filterRegionCode').val()
+                        });
+                    }
+                },
+                "columns": [
+                    { "data": "lastName", "name": "LastName", "autoWidth": true },
+                    { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                    { "data": "idNumber", "name": "IdNumber", className: "text-nowrap" },
+                    { "data": "subject", "name": "Subject", "autoWidth": true },
+                    { "data": "role", "name": "Role", "autoWidth": true },
+                    { "data": "examinerNumber", "name": "ExaminerNumber", "autoWidth": true },
+                    { "data": "supervisor", "name": "Supervisor", "autoWidth": true },
+                    { "data": "registerStatus", "name": "RegisterStatus", "autoWidth": true },
+                    { "data": "attendance", "name": "Attendance", "autoWidth": true },
+                ]
+            });
+
+            // Filter button click event
+            $('#filterButton').on('click', function () {
+                // Reload the DataTable with the new filter values
+                table.ajax.reload();
+            });
+
+            // Clear button click event
+            $('#clearButton').on('click', function () {
+                // Reset the form
+                $('#searchForm')[0].reset();
+                // Reload the DataTable to show all data
+                table.ajax.reload();
+            });
+        });
+    </script>
+
+
+    <script>
+        $(document).ready(function () {
+            var subjects = @Html.Raw(subjectArray);
+
+            // Function to populate subject dropdown based on selected exam code
+            $('#filterExamCode').change(function () {
+                var selectedExamCode = $(this).val();
+                var subjectSelect = $('#filterSubject');
+                subjectSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Subject --'));
+
+                // Filter subjects based on selected exam code and remove duplicates
+                var uniqueSubjects = {};
+                subjects.forEach(function (subject) {
+                    var subSubIdPrefix = subject.SUB_SUB_ID.substring(0, 3);
+                    if (subSubIdPrefix === selectedExamCode) {
+                        uniqueSubjects[subject.SUB_SUB_ID] = subject.SUB_SUBJECT_DESC;
+                    }
+                });
+
+                // Populate subject dropdown with unique subjects
+                Object.keys(uniqueSubjects).forEach(function (key) {
+                    var optionText = key.substring(key.length - 4) + '-' + uniqueSubjects[key];
+                    subjectSelect.append($('<option></option>').attr('value', key).text(optionText));
+                    console.log("Appended subject: " + key);
+                });
+            });
+
+            // Function to populate paper code dropdown based on selected subject
+            $('#filterSubject').change(function () {
+                var selectedSubjectId = $(this).val();
+                var paperCodeSelect = $('#filterPaperCode');
+                paperCodeSelect.empty().append($('<option></option>').attr('value', '').text('-- Select Paper Code --'));
+
+                if (selectedSubjectId && selectedSubjectId.length >= 4) {
+                    var subjectCheck = selectedSubjectId.substring(3, 4);
+
+
+                    if (subjectCheck === '7') {
+                        $('#filterRegionCodeContainer').show();
+                        $('#filterRegionCode').attr('required', 'required');
+                    } else {
+
+                        $('#filterRegionCodeContainer').hide();
+                        $('#filterRegionCode').removeAttr('required');
+                    }
+                } else {
+                    $('#filterRegionCodeContainer').hide();
+                    $('#filterRegionCode').removeAttr('required');
+                }
+
+                if (selectedSubjectId) {
+                    // Make an AJAX call to get the paper codes
+                    $.ajax({
+                        url: '@Url.Action("GetPaperCodes", "Subjects")',
+                        type: 'GET',
+                        data: { subjectCode: selectedSubjectId },
+                        success: function (data) {
+                            data.forEach(function (paperCode) {
+                                paperCodeSelect.append($('<option></option>').attr('value', paperCode.ppR_PAPER_CODE).text(paperCode.ppR_PAPER_CODE));
+
+                            });
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching paper codes: " + error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+
+

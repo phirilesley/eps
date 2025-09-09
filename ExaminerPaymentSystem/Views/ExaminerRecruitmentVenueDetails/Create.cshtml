@@ -1,0 +1,125 @@
+﻿@model ExaminerRecruitmentVenueDetails
+
+@{
+    ViewData["Title"] = "Add Venue Details";
+}
+
+<div class="container mt-5">
+
+    <div class="shadow p-5 rounded">
+
+    <h2 class="text-center">Add Trainee Examiners Training Venues</h2>
+    <hr />
+
+    <div asp-validation-summary="ModelOnly"></div>
+
+        <form asp-action="Create" method="post" class="needs-validation" novalidate>
+
+      
+
+            <div class="row mb-3">
+                <div class="col-12 col-md-12">
+                    <div class="form-group">
+                        <label asp-for="VenueName" class="form-label">Venue Name</label>
+                        <select asp-for="VenueName" class="form-control" required>
+                            <option value="">-- Select Venue --</option>
+                            <!-- Predefined Venues -->
+                            <!-- Predefined Venues -->
+                            <option value="CHINHOYI">CHINHOYI</option>
+                            <option value="HARARE">HARARE</option>
+                            <option value="MARONDERA">MARONDERA</option>
+                            <option value="BULAWAYO">BULAWAYO</option>
+                            <option value="GWERU">GWERU</option>
+                            <option value="KADOMA">KADOMA</option>
+                            <option value="MASVINGO">MASVINGO</option>
+                            <option value="MUTARE">MUTARE</option>
+                        </select>
+                        <span asp-validation-for="VenueName" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="row mb-3">
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="TrainingStartDate" class="form-label">Training Start Date</label>
+                        <input asp-for="TrainingStartDate" type="date" class="form-control" required />
+                        <span asp-validation-for="TrainingStartDate" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6">
+                    <div class="form-group">
+                        <label asp-for="TrainingEndDate" class="form-label">Training End Date</label>
+                        <input asp-for="TrainingEndDate" type="date" class="form-control" required />
+                        <span asp-validation-for="TrainingEndDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row mb-3">
+                     <div class="col-12 col-md-4">
+                    <div class="form-group">
+                        <label asp-for="CheckInDate" class="form-label">Check-In Date</label>
+                        <input asp-for="CheckInDate" type="date" class="form-control" required />
+                        <span asp-validation-for="CheckInDate" class="text-danger"></span>
+                    </div>
+                     </div>
+                    <div class="col-12 col-md-4">
+
+                    <div class="form-group">
+                        <label asp-for="CheckOutDate" class="form-label">Check-Out Date</label>
+                        <input asp-for="CheckOutDate" type="date" class="form-control" />
+                        <span asp-validation-for="CheckOutDate" class="text-danger"></span>
+                    </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+
+
+                    <div class="form-group">
+                        <label asp-for="TrainingTime" class="form-label">Training Time</label>
+                        <input asp-for="TrainingTime" type="time" class="form-control" />
+                        <span asp-validation-for="TrainingTime" class="text-danger"></span>
+                    </div>
+                    </div>
+              </div>
+
+            <div class="form-group mt-4">
+                <button type="submit" class="btn btn-primary">Submit</button>
+                <a asp-action="VenueIndex" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+
+     </div>
+     </div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Bootstrap validation script
+        (function () {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.prototype.slice.call(forms)
+                .forEach(function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+        })()
+    </script>
+}

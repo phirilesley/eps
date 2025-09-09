@@ -1,0 +1,69 @@
+﻿@model BankData
+@{
+    ViewBag.Title = "Add Bank";
+}
+
+<div class="container">
+    <h2>Add Bank</h2>
+    <form id="userForm" asp-action="Create" method="post">
+        <div class="form-group">
+            <label for="B_BANK_CODE">Bank Code</label>
+            <input type="text" class="form-control" id="B_BANK_CODE" name="B_BANK_CODE" required>
+            <span asp-validation-for="B_BANK_CODE" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="B_BANK_NAME">Bank Name</label>
+            <input type="text" class="form-control" id="B_BANK_NAME" name="B_BANK_NAME" required>
+            <span asp-validation-for="B_BANK_NAME" class="text-danger"></span>
+        </div>
+
+
+        <div class="form-group">
+            <label for="BB_BRANCH_CODE">Branch Code</label>
+            <input type="text" class="form-control" id="BB_BRANCH_CODE" name="BB_BRANCH_CODE" required>
+            <span asp-validation-for="BB_BRANCH_CODE" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="BB_BRANCH_NAME">Branch Name</label>
+            <input type="text" class="form-control" id="BB_BRANCH_NAME" name="BB_BRANCH_NAME" required>
+            <span asp-validation-for="BB_BRANCH_NAME" class="text-danger"></span>
+        </div>
+
+
+
+        <div>
+            <button type="submit" class="btn text-white mt-3" style="background-color: #153355;">
+                <i class="fas fa-check-circle"></i> Submit
+            </button>
+            <a href="/Bank/Index" class="btn btn-danger mt-3">
+                <i class="fas fa-times-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+
+
+@if (@ViewBag.HasError != null)
+{
+    <script>
+        Swal.fire({
+            title: "Validation failed",
+            text: "@ViewBag.HasError",
+            icon: "error"
+        });
+    </script>
+}
+
+@if (@ViewBag.HasSuccess != null)
+{
+    <script>
+        Swal.fire({
+            title: "Succeded",
+            text: "@ViewBag.HasSuccess",
+            icon: "success"
+        });
+    </script>
+}

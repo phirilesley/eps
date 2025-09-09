@@ -1,0 +1,543 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model IEnumerable<ExaminerListViewModel>
+
+
+@inject SignInManager<ApplicationUser> SignInManager
+
+
+@{
+    ViewBag.Title = "Invited Examiners";
+
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+
+
+}
+
+
+
+
+<script>
+    $(document).ready(function () {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: '@TempData["SuccessMessage"]',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+        </text>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <text>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: '@TempData["Error"]',
+                    showConfirmButton: true
+                });
+        </text>
+    }
+            });
+</script>
+
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-envelope" style="color: #2a5a8a;"></i>
+        <h4 class="fw-bold mb-0" style="color: #153355;">
+            Invited Examiners :
+            <span style="color: #2a5a8a;">@subjectCode / @paperCode
+                @if (!string.IsNullOrEmpty(regionCode))
+                {
+                    <text> Region: @regionCode</text>
+                }
+            </span>
+        </h4>
+    </div>
+    <hr style="border-top: 1px solid black;
+    width: 100px;
+    margin: 8px auto;
+    ">
+</div>
+
+
+
+
+
+<!-- Table Section -->
+<div class="card p-4 shadow-sm border-1">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="examinersTable" class="table table-bordered table-striped table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>E.Number</th>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+                        <th>National ID</th>
+                        <th>Category</th>
+                        <th>BMS Code</th>
+
+
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dynamic data will populate here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOM fully loaded and parsed');
+
+        function attachDeleteEvent() {
+            const deleteButtons = document.querySelectorAll('.delete-button');
+            if (deleteButtons.length > 0) {
+                console.log(`Found ${deleteButtons.length} delete buttons`);
+
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        console.log('Delete button clicked');
+
+                        const idNumber = this.getAttribute('data-idnumber');
+                        const examinerCode = this.getAttribute('data-examinercode');
+                        const subKey = this.getAttribute('data-subkey');
+
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "You won't be able to revert this!",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, delete it!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                console.log('Confirmed delete');
+                                // Make a GET request to delete the item
+                                fetch(`/Examiner/DeleteExaminer?idNumber=${idNumber}&examinerCode=${examinerCode}&subKey=${subKey}`, {
+                                    method: 'GET',
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.success) {
+                                            Swal.fire(
+                                                'Deleted!',
+                                                'The record has been deleted.',
+                                                'success'
+                                            ).then(() => {
+                                                location.reload();
+                                            });
+                                        } else {
+                                            Swal.fire(
+                                                'Error!',
+                                                'There was an error deleting the record.',
+                                                'error'
+                                            );
+                                        }
+                                    });
+                            }
+                        });
+                    });
+                });
+            } else {
+                console.log('No delete buttons found');
+            }
+        }
+
+        // Initial attachment of events
+        attachDeleteEvent();
+
+        // Use MutationObserver to detect any added nodes and re-attach events
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.addedNodes.length > 0) {
+                    attachDeleteEvent();
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+
+</script>
+
+
+@if (User.IsInRole("BMS"))
+{
+
+
+    @section Scripts {
+
+    <script>
+
+
+
+        $('#examinersTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "lengthMenu": [
+                [10, 25, 50, 100, 250, 500, 1000],
+                [10, 25, 50, 100, 250, 500, 1000]
+            ],
+            "pageLength": 10,
+            "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                '<t>' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            "buttons": [
+                {
+                    extend: 'excelHtml5',
+                    className: 'btn btn-sm btn-success',
+                    text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel'
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'btn btn-sm btn-info',
+                    text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: 'btn btn-sm btn-danger',
+                    text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF'
+                }
+            ],
+            "ajax": {
+                url: "/Examiner/GetTransactionData",
+                type: "POST",
+                data: function (d) {
+                    // Add your custom parameters here
+                    d.examCode = "@examCode"; // Pass examCode from ViewBag
+                    d.subjectCode = "@subjectCode"; // Pass subjectCode from ViewBag
+                    d.paperCode = "@paperCode"; // Pass paperCode from ViewBag
+                    d.activity = "@activity"; // Pass activity from ViewBag
+                    d.regionCode = "@regionCode"; // Pass regionCode from ViewBag
+
+                }
+            },
+            "columns": [
+                { "data": "examinerNumber", "name": "ExaminerNumber", "autoWidth": true },
+                { "data": "lastName", "name": "LastName", "autoWidth": true },
+                { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                { "data": "idNumber", "name": "IDNumber", "autoWidth": true },
+                { "data": "category", "name": "Category", "autoWidth": true },
+                { "data": "bms", "name": "BMS", "autoWidth": true },
+                {
+                    "render": function (data, type, row) {
+                        return `
+                                    <div class="btn-group" role="group">
+                                                             
+                                                                                                <a href="/Examiner/ChangeTeam?idNumber=${row.idNumber}&activity=${"@activity"}&examCode=${"@examCode"}&subjectCode=${"@subjectCode"}&paperCode=${"@paperCode"}&examCode=${"@examCode"}"
+                                                                   class="btn btn-sm btn-outline-secondary me-1">
+                                                                    <i class="fa fa-users"></i> Change Team
+                                                                </a>
+
+
+
+                                    </div>
+                                `;
+                    }
+                }
+            ],
+
+        });
+
+    </script>
+    }
+}
+
+
+@if (User.IsInRole("PMS") || User.IsInRole("DPMS") || User.IsInRole("RPMS"))
+{
+
+
+    @section Scripts {
+
+    <script>
+
+
+
+        $('#examinersTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "lengthMenu": [
+                [10, 25, 50, 100, 250, 500, 1000],
+                [10, 25, 50, 100, 250, 500, 1000]
+            ],
+            "pageLength": 10,
+            "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                '<t>' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            "buttons": [
+                {
+                    extend: 'excelHtml5',
+                    className: 'btn btn-sm btn-success',
+                    text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel'
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'btn btn-sm btn-info',
+                    text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: 'btn btn-sm btn-danger',
+                    text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF'
+                }
+            ],
+            "ajax": {
+                url: "/Examiner/GetTransactionData",
+                type: "POST",
+                data: function (d) {
+                    // Add your custom parameters here
+                    d.examCode = "@examCode"; // Pass examCode from ViewBag
+                    d.subjectCode = "@subjectCode"; // Pass subjectCode from ViewBag
+                    d.paperCode = "@paperCode"; // Pass paperCode from ViewBag
+                    d.activity = "@activity"; // Pass activity from ViewBag
+                    d.regionCode = "@regionCode"; // Pass regionCode from ViewBag
+
+                }
+            },
+            "columns": [
+                { "data": "examinerNumber", "name": "ExaminerNumber", "autoWidth": true },
+                { "data": "lastName", "name": "LastName", "autoWidth": true },
+                { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                { "data": "idNumber", "name": "IDNumber", "autoWidth": true },
+                { "data": "category", "name": "Category", "autoWidth": true },
+                { "data": "bms", "name": "BMS", "autoWidth": true },
+                {
+                    "render": function (data, type, row) {
+                        return `
+                                            <div class="btn-group" role="group">
+                                                                      <a href="/Examiner/ChangeRole?idNumber=${row.idNumber}&activity=${"@activity"}&examCode=${"@examCode"}&subjectCode=${"@subjectCode"}&paperCode=${"@paperCode"}&examCode=${"@examCode"}"
+                                                                           class="btn btn-sm btn-outline-primary me-1">
+                                                                            <i class="fa fa-edit"></i> Change Role
+                                                                        </a>
+                                                                                                        <a href="/Examiner/ChangeTeam?idNumber=${row.idNumber}&activity=${"@activity"}&examCode=${"@examCode"}&subjectCode=${"@subjectCode"}&paperCode=${"@paperCode"}&examCode=${"@examCode"}"
+                                                                           class="btn btn-sm btn-outline-secondary me-1">
+                                                                            <i class="fa fa-users"></i> Change Team
+                                                                        </a>
+
+
+
+                                            </div>
+                                        `;
+                    }
+                }
+            ],
+
+        });
+
+    </script>
+    }
+}
+
+
+@if (User.IsInRole("SubjectManager") || User.IsInRole("CentreSupervisor"))
+{
+
+
+    @section Scripts {
+
+    <script>
+
+
+
+        $('#examinersTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "lengthMenu": [
+                [10, 25, 50, 100, 250, 500, 1000],
+                [10, 25, 50, 100, 250, 500, 1000]
+            ],
+            "pageLength": 10,
+            "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                '<t>' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            "buttons": [
+                {
+                    extend: 'excelHtml5',
+                    className: 'btn btn-sm btn-success',
+                    text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel'
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'btn btn-sm btn-info',
+                    text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: 'btn btn-sm btn-danger',
+                    text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF'
+                }
+            ],
+            "ajax": {
+                url: "/Examiner/GetTransactionData",
+                type: "POST",
+                data: function (d) {
+                    // Add your custom parameters here
+                    d.examCode = "@examCode"; // Pass examCode from ViewBag
+                    d.subjectCode = "@subjectCode"; // Pass subjectCode from ViewBag
+                    d.paperCode = "@paperCode"; // Pass paperCode from ViewBag
+                    d.activity = "@activity"; // Pass activity from ViewBag
+                    d.regionCode = "@regionCode"; // Pass regionCode from ViewBag
+
+                }
+            },
+            "columns": [
+                { "data": "examinerNumber", "name": "ExaminerNumber", "autoWidth": true },
+                { "data": "lastName", "name": "LastName", "autoWidth": true },
+                { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                { "data": "idNumber", "name": "IDNumber", "autoWidth": true },
+                { "data": "category", "name": "Category", "autoWidth": true },
+                { "data": "bms", "name": "BMS", "autoWidth": true },
+                {
+                    "render": function (data, type, row) {
+                        return `
+                                    <div class="btn-group" role="group">
+                                                           <a href="/Examiner/ChangeRole?idNumber=${row.idNumber}&activity=${"@activity"}&examCode=${"@examCode"}&subjectCode=${"@subjectCode"}&paperCode=${"@paperCode"}&examCode=${"@examCode"}"
+                                                           class="btn btn-sm btn-outline-primary me-1">
+                                                            <i class="fa fa-edit"></i> Change Role
+                                                        </a>
+                                                                                        <a href="/Examiner/ChangeTeam?idNumber=${row.idNumber}&activity=${"@activity"}&examCode=${"@examCode"}&subjectCode=${"@subjectCode"}&paperCode=${"@paperCode"}&examCode=${"@examCode"}"
+                                                           class="btn btn-sm btn-outline-secondary me-1">
+                                                            <i class="fa fa-users"></i> Change Team
+                                                        </a>
+                                                                                                  
+                                                                                        <a href="/Examiner/EditExaminer?idNumber=${row.idNumber}&activity=${"@activity"}&examCode=${"@examCode"}&subjectCode=${"@subjectCode"}&paperCode=${"@paperCode"}&examCode=${"@examCode"}"
+                                                           class="btn btn-sm btn-outline-success me-1">
+                                                            <i class="fa fa-edit"></i>Edit
+                                                        </a>
+                                    </div>
+                                `;
+                    }
+                }
+            ],
+
+        });
+
+    </script>
+
+    }
+}
+
+
+@if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin"))
+{
+
+
+
+    @section Scripts {
+
+    <script>
+
+
+
+
+        $('#examinersTable').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "lengthMenu": [
+                [10, 25, 50, 100, 250, 500, 1000],
+                [10, 25, 50, 100, 250, 500, 1000]
+            ],
+            "pageLength": 10,
+            "dom": '<"row mb-3"<"col-md-4"l><"col-md-4 text-center"B><"col-md-4"f>>' +
+                '<t>' +
+                '<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
+            "buttons": [
+                {
+                    extend: 'excelHtml5',
+                    className: 'btn btn-sm btn-success',
+                    text: '<i class="fa fa-file-excel" style="color: #28a745;"></i> Excel'
+                },
+                {
+                    extend: 'csvHtml5',
+                    className: 'btn btn-sm btn-info',
+                    text: '<i class="fa fa-file-csv" style="color: #17a2b8;"></i> CSV'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    className: 'btn btn-sm btn-danger',
+                    text: '<i class="fa fa-file-pdf" style="color: #dc3545;"></i> PDF'
+                }
+            ],
+            "ajax": {
+                url: "/Examiner/GetTransactionData",
+                type: "POST",
+                data: function (d) {
+                    // Add your custom parameters here
+                    d.examCode = "@examCode"; // Pass examCode from ViewBag
+                    d.subjectCode = "@subjectCode"; // Pass subjectCode from ViewBag
+                    d.paperCode = "@paperCode"; // Pass paperCode from ViewBag
+                    d.activity = "@activity"; // Pass activity from ViewBag
+                    d.regionCode = "@regionCode"; // Pass regionCode from ViewBag
+
+                }
+            },
+            "columns": [
+                { "data": "examinerNumber", "name": "ExaminerNumber", "autoWidth": true },
+                { "data": "lastName", "name": "LastName", "autoWidth": true },
+                { "data": "firstName", "name": "FirstName", "autoWidth": true },
+                { "data": "idNumber", "name": "IDNumber", "autoWidth": true },
+                { "data": "category", "name": "Category", "autoWidth": true },
+                { "data": "bms", "name": "BMS", "autoWidth": true },
+
+                {
+                    "render": function (data, type, row) {
+                        return `
+                                            <div class="btn-group" role="group">
+                                                         <a href="/Examiner/ChangeRole?idNumber=${row.idNumber}&activity=${"@activity"}&examCode=${"@examCode"}&subjectCode=${"@subjectCode"}&paperCode=${"@paperCode"}&examCode=${"@examCode"}"
+                                                                   class="btn btn-sm btn-outline-primary me-1">
+                                                                    <i class="fa fa-edit"></i> Change Role
+                                                                </a>
+                                                                                                <a href="/Examiner/ChangeTeam?idNumber=${row.idNumber}&activity=${"@activity"}&examCode=${"@examCode"}&subjectCode=${"@subjectCode"}&paperCode=${"@paperCode"}&examCode=${"@examCode"}"
+                                                                   class="btn btn-sm btn-outline-secondary me-1">
+                                                                    <i class="fa fa-users"></i> Change Team
+                                                                </a>
+
+                                                                                                        <a href="/Examiner/EditExaminer?idNumber=${row.idNumber}&activity=${"@activity"}&examCode=${"@examCode"}&subjectCode=${"@subjectCode"}&paperCode=${"@paperCode"}&examCode=${"@examCode"}"
+                                                                   class="btn btn-sm btn-outline-success me-1">
+                                                                    <i class="fa fa-edit"></i>Edit
+                                                                </a>
+                                                               
+                                            </div>
+                                        `;
+                    }
+                }
+            ],
+
+        });
+
+    </script>
+
+
+
+    }
+}
+
+
+
+
+

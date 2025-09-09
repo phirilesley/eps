@@ -1,0 +1,118 @@
+﻿@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@inject Microsoft.Extensions.Options.IOptions<AppInfo> AppInfo
+
+<ul class="navbar-nav align-items-center">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <!-- User avatar with first letter - clickable without dropdown icon -->
+        <li class="nav-item dropdown pe-2">
+            <a class="nav-link p-0" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="avatar-circle" style="background-color: #2a5a8a;">
+                    @User.Identity?.Name?.Substring(0, 1).ToUpper()
+                </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                <!-- User info -->
+                <li class="dropdown-item-text px-3 py-2">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-circle me-2" style="background-color: #2a5a8a;">
+                            @User.Identity?.Name?.Substring(0, 1).ToUpper()
+                        </div>
+                        <div>
+                            <div class="fw-bold">@User.Identity?.Name</div>
+                            <div>
+                                @foreach (var role in User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value))
+                                {
+                                    <span class="badge bg-primary me-1">@role</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form class="form-inline px-2" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                        <button type="submit" class="btn btn-sm btn-danger w-100">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+
+    
+        <!-- Login link -->
+        <li class="nav-item">
+            <a class="nav-link text-white" asp-area="Identity" asp-page="/Account/Login">
+                <i class="fas fa-sign-in-alt me-1"></i>Login
+            </a>
+        </li>
+    }
+</ul>
+
+<style>
+    /* Avatar circle style */
+    .avatar-circle {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+    }
+
+        .avatar-circle:hover {
+            transform: scale(1.1);
+        }
+
+    /* Remove default dropdown caret */
+    .dropdown-toggle::after {
+        display: none !important;
+    }
+
+    /* Custom styles for login partial */
+    .dropdown-menu-dark {
+        background-color: #1a3f6a;
+        border: none;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .dropdown-item-text {
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.8);
+    }
+
+    .badge {
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+
+    /* Mobile adjustments */
+    @@media (max-width: 991.98px) {
+        .navbar-nav {
+            padding-top: 0.5rem;
+        }
+
+        .dropdown-menu {
+            position: static !important;
+            transform: none !important;
+            margin-top: 0;
+            width: 100%;
+        }
+
+        .avatar-circle {
+            width: 32px;
+            height: 32px;
+            font-size: 0.9rem;
+        }
+    }
+</style>

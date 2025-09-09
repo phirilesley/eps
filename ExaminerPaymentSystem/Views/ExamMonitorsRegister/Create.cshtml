@@ -1,0 +1,604 @@
+﻿@model ExaminerPaymentSystem.Models.ExamMonitorRegisterViewModel
+@inject SignInManager<ApplicationUser> SignInManager
+@{
+    ViewData["Title"] = "Register";
+    var user = await SignInManager.UserManager.GetUserAsync(User);
+    var today = DateTime.Today;
+}
+<link href="/css/monitorlist.css" rel="stylesheet" />
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .daily-advance-entry {
+        transition: all 0.3s ease;
+        border-left: 3px solid #153355;
+        ;
+    }
+
+        .daily-advance-entry:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.1);
+        }
+
+    .form-control-sm {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.875rem;
+        border-width: 1px;
+    }
+
+    .day-total-display {
+        font-size: 0.9rem;
+        min-height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+    }
+
+    .grand-totals {
+        background: linear-gradient(135deg, #e2eaeb, #e2eaeb);
+    }
+
+    .total-amount {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        min-width: 70px;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .text-uppercase {
+        letter-spacing: 0.5px;
+    }
+
+    /* Mobile responsiveness */
+    @@media (max-width: 768px) {
+        .daily-advance-entry {
+            padding: 0.75rem;
+        }
+
+        .top-section, .bank-section {
+            flex-direction: column;
+        }
+
+        .form-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .reference-section {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .examiner-details, .bank-accounts {
+            flex-direction: column;
+        }
+
+        .personal-info, .address-info, .bank-account {
+            padding: 10px 0;
+        }
+
+        .zimsec-claim-form {
+            border: none;
+        }
+
+        .calculation-row {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .multiply-symbol {
+            padding: 0;
+            transform: rotate(90deg);
+        }
+    }
+
+    /* ZIMSEC Official Styling */
+    .zimsec-claim-form {
+        margin: 0 auto;
+        border: 2px solid #153355; /* ZIMSEC green */
+        font-family: 'Times New Roman', serif;
+        background: white;
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        background-color: #f8f8f8;
+        border-bottom: 2px solid #153355;
+    }
+
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .logo {
+        height: 70px;
+        width: auto;
+    }
+
+    .header-text {
+        line-height: 1.2;
+    }
+
+    .organization {
+        font-weight: bold;
+        font-size: 16px;
+        color: #153355;
+        text-transform: uppercase;
+    }
+
+    .form-title {
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .reference-section {
+        text-align: right;
+        font-size: 12px;
+    }
+
+    .reference-number {
+        font-weight: bold;
+    }
+
+    .examiner-details {
+        display: flex;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .personal-info, .address-info {
+        flex: 1;
+        padding: 0 10px;
+    }
+
+    .bank-accounts {
+        display: flex;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+        gap: 15px;
+    }
+
+    .bank-account {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .usd-account {
+        border-left: 3px solid #153355;
+    }
+
+    .zig-account {
+        border-left: 3px solid #153355;
+    }
+
+    .account-header {
+        font-weight: bold;
+        color: black;
+        padding: 5px;
+        margin: -10px -10px 10px -10px;
+        text-align: center;
+    }
+
+    .usd-account .account-header {
+        background-color: #e2eaeb; /* Blue for USD */
+    }
+
+    .zig-account .account-header {
+        background-color: #e2eaeb; /* Green for ZIG */
+    }
+
+    .detail-row {
+        margin-bottom: 8px;
+        display: flex;
+    }
+
+    .detail-label {
+        font-weight: bold;
+        min-width: 120px;
+        color: #153355;
+    }
+
+    .detail-value {
+        border-bottom: 1px dotted #999;
+        flex: 1;
+        padding-left: 5px;
+    }
+    .empty-comment {
+        border-color: #dc3545 !important;
+        background-color: #fff5f5 !important;
+    }
+
+    .future-date {
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+
+        .future-date input {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+    .btn-custom {
+        background-color: #153355;
+        color: white;
+        border: 1px solid #153355;
+    }
+
+        .btn-custom:hover {
+            background-color: #0f2642;
+            border-color: #0f2642;
+            color: white;
+        }
+
+    .btn-outline-custom {
+        color: #153355;
+        border-color: #153355;
+        background-color: transparent;
+    }
+
+        .btn-outline-custom:hover {
+            color: white;
+            background-color: #153355;
+            border-color: #153355;
+        }
+</style>
+
+
+@* @if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success" role="alert">
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @TempData["ErrorMessage"]
+    </div>
+}
+ *@
+<script>
+    $(document).ready(function () {
+    @if (TempData["SuccessMessage"] != null)
+    {
+            <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: '@TempData["SuccessMessage"]',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+            </text>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+            <text>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                            text: '@TempData["ErrorMessage"]',
+                        showConfirmButton: true
+                    });
+            </text>
+    }
+            });
+</script>
+
+@* <div class="container-fluid px-4 mt-3">
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-2">
+        <div>
+            <div class="header-container mb-4">
+                <h5 class="fw-bold text-gradient mb-1">
+                      @ViewData["Title"]
+         
+                </h5>
+                <div class="accent-line"></div>
+            </div>
+        </div>
+    </div> *@
+
+<div class="zimsec-claim-form mt-3">
+    <div class="form-header">
+        <div class="logo-section">
+            <img src="~/Images/logo.jpeg" alt="ZIMSEC Logo" class="logo">
+            <div class="header-text">
+                <div class="organization">ZIMBABWE SCHOOL EXAMINATIONS COUNCIL</div>
+                <div class="form-title">@Model.Role.ToUpper() ?? "N/A" 'S  DAILY REGISTER</div>
+            </div>
+        </div>
+        <div class="reference-section">
+            <div class="reference-number">Ref: ZIMSEC/DAILY/2025/</div>
+            <div class="date-claimed">Date: <span id="current-date"></span></div>
+        </div>
+    </div>
+
+    <div class="examiner-details">
+        <div class="personal-info">
+            <div class="detail-row">
+                <span class="detail-label">Name:</span>
+                <span class="detail-value">@Model.FullName </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">National ID:</span>
+                <span class="detail-value">@Model.NationalId </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value">@Model.Role </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Centre Attached:</span>
+                <span class="detail-value">@Model.CentreName</span>
+            </div>
+        </div>
+
+        <div class="address-info">
+            <div class="detail-row">
+                <span class="detail-label">Phone:</span>
+                <span class="detail-value">@Model.Phone</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Cluster:</span>
+                <span class="detail-value">@Model.ClusterName</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">District:</span>
+                <span class="detail-value">@Model.District</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Region:</span>
+                <span class="detail-value">@Model.Region</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bank Accounts Section -->
+    <div class="bank-accounts">
+        <div class="bank-account usd-account">
+            <div class="account-header">USD ACCOUNT DETAILS</div>
+            <div class="detail-row">
+                <span class="detail-label">Bank Name:</span>
+                <span class="detail-value">@Model.BankNameUsd</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Branch:</span>
+                <span class="detail-value">@Model.BranchUsd</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Account Number:</span>
+                <span class="detail-value">@Model.AccountNumberUsd</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Account Type:</span>
+                <span class="detail-value">USD</span>
+            </div>
+        </div>
+
+        <div class="bank-account zig-account">
+            <div class="account-header">ZIG ACCOUNT DETAILS</div>
+            <div class="detail-row">
+                <span class="detail-label">Bank Name:</span>
+                <span class="detail-value">@Model.BankNameZwg</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Branch:</span>
+                <span class="detail-value">@Model.BranchZwg </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Account Number:</span>
+                <span class="detail-value">@Model.AccountNumberZwg </span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Account Type:</span>
+                <span class="detail-value">ZIG</span>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="card shadow-sm">
+        
+        <div class="card-body">
+          
+
+            <form asp-action="Create" method="post" id="registerForm">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <!-- Hidden Fields -->
+                <input type="hidden" asp-for="SubKey" />
+                <input type="hidden" asp-for="NationalId" />
+                <input type="hidden" asp-for="Role" />
+                <input type="hidden" asp-for="FullName" />
+                <input type="hidden" asp-for="Region" />
+                <input type="hidden" asp-for="CentreName" />
+                <input type="hidden" asp-for="Phone" />
+                <input type="hidden" asp-for="ClusterName" />
+                <input type="hidden" asp-for="District" />
+
+                <!-- Bank Accounts -->
+                <input type="hidden" asp-for="BankNameUsd" />
+                <input type="hidden" asp-for="BranchUsd" />
+                <input type="hidden" asp-for="AccountNumberUsd" />
+          
+
+                <input type="hidden" asp-for="BankNameZwg" />
+                <input type="hidden" asp-for="BranchZwg" />
+                <input type="hidden" asp-for="AccountNumberZwg" />
+             
+
+
+            @*     <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label class="small font-weight-bold">Cluster Name</label>
+                            <input asp-for="ClusterName" class="form-control form-control-sm" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label class="small font-weight-bold">Centre Name(Attached)</label>
+                            <input asp-for="CentreName" class="form-control form-control-sm"  readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label class="small font-weight-bold">District</label>
+                            <input asp-for="District" class="form-control form-control-sm" readonly />
+                        </div>
+                    </div>
+                </div> *@
+
+            @*     <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                               @if (User.IsInRole("ResidentMonitor"))
+                    {
+                            <label class="small font-weight-bold">Resident Monitor 's Name</label>
+                    }
+                       @if (User.IsInRole("ClusterManager"))
+                    {
+                            <label class="small font-weight-bold">Cluster Manager 's Name</label>
+                    }
+                       @if (User.IsInRole("AssistantClusterManager"))
+                    {
+                            <label class="small font-weight-bold">Assistant Cluster Manager 's Name</label>
+                    }
+                            <input asp-for="FullName" class="form-control form-control-sm" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label class="small font-weight-bold">Centre Name</label>
+                            <input asp-for="CentreAttached" class="form-control form-control-sm" readonly />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group mb-0">
+                            <label class="small font-weight-bold">Phase</label>
+                            <input asp-for="PhaseName" class="form-control form-control-sm" readonly />
+                        </div>
+                    </div>
+                </div> *@
+
+                <h5 class="border-bottom pb-2 mb-3">Exam Dates and Comments</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th style="width: 160px;">Date</th>
+                                <th>Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.ExamDates.Count; i++)
+                            {
+                                var isFutureDate = Model.ExamDates[i].Date > today;
+                                <tr class="@(isFutureDate ? "future-date" : "")">
+                                    <td class="align-middle small">
+                                        @Model.ExamDates[i].Date.ToString("dd/MM/yyyy")
+                                        <input type="hidden" asp-for="@Model.ExamDates[i].Date" />
+                                    </td>
+                                    <td>
+                                        @if (isFutureDate)
+                                        {
+                                            <input asp-for="@Model.ExamDates[i].Comment" class="form-control form-control-sm" readonly />
+                                        }
+                                        else
+                                        {
+                                            <input asp-for="@Model.ExamDates[i].Comment" class="form-control form-control-sm" />
+                                            <span asp-validation-for="@Model.ExamDates[i].Comment" class="text-danger"></span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="btn btn-custom  px-4" id="submitButton">
+                        <i class="fas fa-check-circle mr-2"></i>Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <script>
+        $(document).ready(function () {
+            
+            $('.future-date input').prop('disabled', true);
+
+            
+            $('#registerForm').submit(function(e) {
+                
+                $('.text-danger').text('');
+                $('.empty-comment').removeClass('empty-comment');
+
+                let isValid = true;
+                let firstError = null;
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                
+                $('input[name*="Comment"]').each(function() {
+                    const dateStr = $(this).closest('tr').find('td:first').text().trim();
+                    const dateParts = dateStr.split('/');
+                    const rowDate = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+                    rowDate.setHours(0, 0, 0, 0);
+
+                    if (rowDate <= today && !$(this).val().trim()) {
+                        $(this).addClass('empty-comment');
+                        $(this).closest('td').find('.text-danger').text('Comment is required');
+                        isValid = false;
+
+                        if (!firstError) {
+                            firstError = $(this);
+                        }
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    if (firstError) {
+                        $('html, body').animate({
+                            scrollTop: firstError.offset().top - 100
+                        }, 500);
+                    }
+                    return false;
+                }
+
+                return true; 
+            });
+        });
+    </script>
+}
+
+

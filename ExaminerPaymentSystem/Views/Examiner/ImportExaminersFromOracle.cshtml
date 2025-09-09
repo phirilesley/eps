@@ -1,0 +1,25 @@
+﻿@model bool?
+
+@if (Model is null)
+{
+    <div class="col-md-4">
+        <div class="card p-6 mt-3 shadow-sm border-1">
+            <div class="card-body">
+                <div class="card-title"> Import Examiners from Oracle</div>
+                <form id="examLevel" method="post" action="@Url.Action("ImportExaminersFromOracle", "Examiner")">
+                    <div class="form-group ">
+                        <label for=" " class="text-black">Exam Level:</label>
+                        <select id="examLevel" name="examLevel" class="form-control col-md-4" required>
+                            <option value="">-- Select Exam Level --</option>
+                            <option value="O">Ordinary Level</option>
+                            <option value="A">Advanced Level</option>
+                            <option value="7">Grade Seven</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" value="Import Examiners" class="btn btn-primary btn-sm mt-3">Import Examiners</button>
+                </form>
+            </div>
+        </div>
+    </div>
+}

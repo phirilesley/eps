@@ -1,0 +1,178 @@
+﻿@model ExaminerRecruitmentAssessmentViewModel
+
+@{
+    ViewData["Title"] = "Examiner Details";
+}
+
+<div class="container mt-4" id="contentToConvert">
+    <h2 class="text-center">Trainee Assesment Details For: <span class="text-warning">@Model.ExaminerName</span></h2>
+
+    <div class="shadow p-3 rounded">
+
+        <div class="row">
+            <!-- Examiner Information -->
+            <div class="col-md-6" style="margin-right:-20px;">
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-header bg-light text-black">
+                        <h5>Examiner Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Examiner Name:</strong> @Model.ExaminerName @Model.LastName</p>
+                        <p><strong>Examiner Code:</strong> @Model.ExaminerCode</p>
+                        <p><strong>Gender:</strong> @Model.Gender</p>
+                        <p><strong>ID:</strong> @Model.CemId</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Information -->
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-3 border-0">
+                    <div class="card-header bg-light text-black">
+                        <h5>Assessment Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Grade:</strong> @Model.Grade</p>
+                        <p><strong>Paper Code:</strong> @Model.PaperCode</p>
+                        <p><strong>Subject:</strong> @Model.Subject</p>
+                        <p><strong>Level:</strong> @Model.Qualification</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Contact Information -->
+            <div class="col-md-4" style="margin-right:-20px;">
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-header bg-light text-black">
+                        <h5>Contact Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Email:</strong> @Model.EmailAddress</p>
+                        <p><strong>Cell Number:</strong> @Model.PhoneHome</p>
+                        <p><strong>Phone Business:</strong> @Model.PhoneBusiness</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recruitment Status -->
+            <div class="col-md-4" style="margin-right:-20px;">
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-header bg-light text-black">
+                        <h5>Work Address</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>School:</strong> @Model.WorkAdrress</p>
+                        <p><strong>Number:</strong> @Model.WorkAdress2</p>
+                        <p><strong>Town/City:</strong> @Model.WorkAddress3</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experience -->
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-header bg-light text-black">
+                        <h5>Qualification</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Professional Qualification:</strong> @Model.ProfessionalQualification</p>
+                        <p><strong>Academic Qualification:</strong> @Model.Qualification</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- Back Button -->
+        <div class="text-center mt-3">
+         
+            <a asp-controller="ExaminerRecruitmentAssessment" asp-action="AssesmentIndex" id="backToList" class="btn btn-secondary">Back to List</a>
+            <button id="downloadPdf" class="btn btn-primary">Download PDF</button>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        function generatePDF() {
+            // Get the content you want to convert to PDF, excluding buttons
+            const element = document.getElementById('contentToConvert');
+            const originalButtons = element.querySelectorAll('#downloadPdf, #backToList'); // Assuming 'Back to List' uses btn-secondary class
+
+            // Temporarily remove buttons from DOM
+            originalButtons.forEach(button => button.style.display = 'none');
+
+            // Create a new jsPDF instance
+            const doc = new jspdf.jsPDF({
+                orientation: 'p',
+                unit: 'px',
+                format: 'a4'
+            });
+
+            // Convert HTML to canvas with a moderate scale for balanced quality and size
+            html2canvas(element, {
+                scale: 1.5, // Moderate scale for better quality while keeping file size reasonable
+                scrollX: 0,
+                scrollY: 0,
+                width: element.offsetWidth,
+                height: element.offsetHeight
+            }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png', 0.8); // Moderate quality compression
+
+                // Restore buttons to DOM
+                originalButtons.forEach(button => button.style.display = '');
+
+                const imgProps = doc.getImageProperties(imgData);
+                const pdfWidth = doc.internal.pageSize.getWidth();
+                const pdfHeight = doc.internal.pageSize.getHeight();
+                const imgWidth = imgProps.width;
+                const imgHeight = imgProps.height;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                // Calculate the scale factor based on width
+                const scaleFactor = pdfWidth / imgProps.width;
+                const pageHeight = pdfHeight / scaleFactor; // Height available in one page at that scale
+
+                // Loop over pages
+                while (heightLeft > 0) {
+                    let currentHeight = pageHeight;
+                    if (heightLeft < pageHeight) {
+                        currentHeight = heightLeft;
+                    }
+
+                    // Add image to page
+                    doc.addImage(imgData, 'PNG', 0, -position * scaleFactor, pdfWidth, currentHeight * scaleFactor);
+
+                    heightLeft -= currentHeight;
+                    position++;
+
+                    if (heightLeft > 0) {
+                        doc.save();
+                        doc.addPage();
+                    }
+                }
+
+                // Save the PDF
+                doc.save('ExaminerDetails.pdf');
+            });
+        }
+
+        // Add a click event listener to the button or link that will trigger PDF download
+        document.addEventListener('DOMContentLoaded', () => {
+            const downloadButton = document.getElementById('downloadPdf');
+            if (downloadButton) {
+                downloadButton.addEventListener('click', generatePDF);
+            }
+        });
+    </script>
+}

@@ -1,0 +1,120 @@
+﻿@{
+    ViewBag.Title = "Activity List";
+}
+
+
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Activity</h4>
+        <a class="btn btn-primary" asp-action="Create" asp-controller="Activities">
+            <i class="fas fa-plus me-1"></i> Add Activity
+        </a>
+    </div>
+
+    <table id="venueTable" class="table table-bordered table-striped">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+            $('#venueTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '@Url.Action("GetData", "Activities")',
+                    type: 'POST'
+                },
+                columns: [
+                    { data: 'text', name: 'Text' },
+                    { data: 'value', name: 'Value' },
+                    { data: 'status', name: 'Status' },
+                          {
+            data: 'id',
+            render: function (data, type, row) {
+                let statusButton = '';
+                if (row.status === 'Active') {
+                    statusButton = `<button class="btn btn-sm btn-warning toggle-status-btn" data-value="${row.value}" data-status="Deactivated" data-name="${row.name}">Deactivate</button>`;
+                } else {
+                    statusButton = `<button class="btn btn-sm btn-success toggle-status-btn" data-value="${row.value}" data-status="Active" data-name="${row.name}">Activate</button>`;
+                }
+
+                return `
+
+
+                    ${statusButton}`;
+            },
+            orderable: false,
+            searchable: false
+        },
+
+
+                ]
+            });
+        });
+
+
+    </script>
+
+    <script>
+                let selectedVenueId;
+        let newStatus;
+
+        $(document).on('click', '.toggle-status-btn', function () {
+            selectedVenueId = $(this).data('value');
+            newStatus = $(this).data('status');
+            const venueName = $(this).data('name');
+
+            $('#statusModalText').text(`Are you sure you want to set "${venueName}" as ${newStatus}?`);
+            $('#statusModal').modal('show');
+        });
+
+        $('#confirmStatusBtn').on('click', function () {
+            $.ajax({
+                url: '/Activities/ToggleStatus',
+                method: 'POST',
+                data: { value: selectedVenueId, status: newStatus },
+                success: function () {
+                    $('#statusModal').modal('hide');
+                    $('#venueTable').DataTable().ajax.reload();
+                },
+                error: function () {
+                    alert('Error updating status.');
+                }
+            });
+        });
+
+    </script>
+}
+
+
+<!-- Status Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="statusModalLabel">Change Activity Status</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="statusModalText"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmStatusBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+

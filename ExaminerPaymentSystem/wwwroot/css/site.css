@@ -1,0 +1,235 @@
+html {
+    font-size: 14px;
+    /*font-family: Roboto, sans-serif;*/
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use a suitable font family */
+    font-size: 12px; /* Adjust size as needed */
+    line-height: 1.5;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Use a suitable font family */
+}
+
+.image-reround {
+    width: 70px;
+    height: 75px;
+}
+
+
+.logo {
+    max-width: 200px;
+    height: auto;
+}
+
+.welcome-text {
+    margin-top: 20px;
+}
+
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
+}
+
+
+.percentage-details {
+    max-width: 100%;
+}
+
+.progress-bar-container {
+    /* This container helps in managing the width of the progress bar */
+    width: 100%;
+    max-width: 1060px; /* Optional: caps the width on larger screens */
+    margin: 0 auto; /* Centers the container */
+}
+
+.progress-bar {
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    width: 100%; /* Makes the progress bar stretch to its container width */
+    overflow: hidden;
+}
+
+.progressa {
+    background-color: #153355;
+    height: 12px;
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+@media (max-width: 767.98px) {
+    .progress-bar {
+        /* If needed, adjust for smaller screens */
+        height: 10px; /* Example: Reduce height on mobile */
+    }
+
+    .progressa {
+        /* Adjust transition or other properties for mobile if necessary */
+    }
+}
+
+
+/* Navbar container constraints */
+.navbar {
+    min-height: 56px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Scrollable navbar content for mobile */
+.navbar-scrollable {
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+/* Desktop layout */
+@media (min-width: 992px) {
+    .navbar-scrollable {
+        display: flex;
+        flex-grow: 1;
+        overflow-y: visible;
+        max-height: none;
+    }
+
+    .navbar-nav {
+        flex-wrap: wrap;
+        max-width: 100%;
+    }
+
+    .nav-item {
+        white-space: nowrap;
+    }
+}
+
+/* Mobile layout */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #153355;
+        z-index: 1000;
+        padding: 0 16px;
+    }
+
+    .navbar-nav {
+        padding: 8px 0;
+    }
+}
+
+/* Dropdown styling */
+.dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+}
+
+/* Nav items */
+.nav-link {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+.navbar-brand {
+    padding: 4px 0;
+}
+
+.modal-backdrop {
+    display: none !important;
+}
+
+
+.swal2-popup.swal2-icon-warning {
+    background-color: #fff8e1 !important;
+    border-left: 6px solid #ffc107 !important;
+}
+
+
+/* Show dropdown menu on hover */
+.nav-item.dropdown:hover > .dropdown-menu {
+    display: block;
+    transition: opacity 0.3s ease;
+    opacity: 1;
+}
+
+/* Flicker animation */
+.swal2-flicker {
+    animation: flicker 0.5s infinite alternate;
+}
+
+/* Pulsing title */
+.swal2-title-danger {
+    animation: pulse 0.8s infinite alternate;
+}
+
+@keyframes flicker {
+    0% {
+        box-shadow: 0 0 5px 2px rgba(220, 53, 69, 0.3);
+    }
+
+    100% {
+        box-shadow: 0 0 20px 8px rgba(220, 53, 69, 0.6);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1.02);
+        color: #dc3545;
+    }
+}
+
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0, 100;
+    }
+}
+
+.btn-now {
+    background: linear-gradient(135deg, #153355, #2a5a8a);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    /*transition: all 0.3s ease;*/
+    /* animation: pulse 1.5s infinite; */
+}
+
+.btn-outline-custom {
+    border-color: #153355;
+    background-color: transparent;
+    transition: background-color 0.3s ease;
+}
+
+    .btn-outline-custom:hover {
+        background-color: #153355;
+        color: #fff;
+    }

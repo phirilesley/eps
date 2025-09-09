@@ -1,0 +1,254 @@
+﻿@using ExaminerPaymentSystem.ViewModels.Examiners
+@model CombinedMaterialCategoryViewModel
+
+@{
+    ViewData["Title"] = "Material Transaction and Examiner Details";
+    string examCode = ViewBag.ExamCode ?? "";
+    string subjectCode = ViewBag.SubjectCode ?? "";
+    string paperCode = ViewBag.PaperCode ?? "";
+    string regionCode = ViewBag.RegionCode ?? "";
+    string activity = ViewBag.Activity ?? "";
+}
+
+<div class="text-center mb-4 mt-4">
+    <div class="d-flex align-items-center justify-content-center gap-2">
+        <i class="fas fa-users" style="color: #2a5a8a;"></i>
+        <h4 class="fw-bold mb-0" style="color: #153355;">
+            Select Material :
+            <span style="color: #2a5a8a;">@subjectCode / @paperCode</span>
+        </h4>
+    </div>
+    <hr style="
+        border-top: 1px solid black;
+        width: 100px;
+        margin: 8px auto;
+    ">
+</div>
+
+<form id="apportionScriptsForm" asp-action="ProcessMaterialAndCategory" method="post">
+    <input type="hidden" name="examCode" value="@Model.ExamCode" />
+    <input type="hidden" name="subjectCode" value="@Model.SubjectCode" />
+    <input type="hidden" name="paperCode" value="@Model.PaperCode" />
+    <input type="hidden" name="regionCode" value="@ViewBag.RegionCode" />
+    <input type="hidden" name="activity" value="@ViewBag.Activity" />
+
+    <!-- Section 1: Examiner Category Check-In/Check-Out Dates -->
+    <div class="card mb-4">
+        <div class="card-header text-white" style="background-color: #153355;">
+            <h6>Please enter Check-In/Check-Out Dates</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Examiner Category</th>
+                            <th>Check-In Date</th>
+                            <th>Check-Out Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var categories = new List<(string Name, string Value)>
+                        {
+                        ("PMS", "PMS"),
+                        ("RPMS", "RPMS"),
+                        ("DPMS", "DPMS"),
+                        ("BMS", "BMS"),
+                        ("EXAMINERS", "E"),
+                        ("MARK CAPTURERS", "CAPTURERS")
+                        };
+
+                            for (int i = 0; i < categories.Count; i++)
+                            {
+                                var category = categories[i];
+                                var existingDate = Model.CategoryDates?.FirstOrDefault(c => c.Category == category.Value);
+                                <tr>
+                                    <td>@category.Name</td>
+                                    <td>
+                                        <input type="date" class="form-control"
+                                               name="CategoryDates[@i].CheckIn"
+                                               value="@existingDate?.CheckIn?.ToString()" />
+                                    </td>
+                                    <td>
+                                        <input type="date" class="form-control"
+                                               name="CategoryDates[@i].CheckOut"
+                                               value="@existingDate?.CheckOut?.ToString()" />
+                                    </td>
+                                    <input type="hidden" name="CategoryDates[@i].Category" value="@category.Value" />
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Materials -->
+    <div class="card">
+        <div class="card-header text-white" style="background-color: #153355;">
+            <h6>Please state in the spaces provided the materials that must be supplied to examiners during marking session</h6>
+        </div>
+        <div class="card-body">
+            <div id="materialRows">
+                @if (Model.Materials != null && Model.Materials.Any())
+                {
+                    for (int i = 0; i < Model.Materials.Count; i++)
+                    {
+                        <div class="materialRow row mb-3">
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label>Material</label>
+                                    <select class="form-control" name="Materials[@i].MaterialName">
+                                        <option value="">Select Material</option>
+                                        @foreach (var material in ViewBag.Materials as SelectList)
+                                        {
+                                            <option value="@material.Value"
+                                                    selected="@(material.Value == Model.Materials[i].MaterialName)">
+                                                @material.Text
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label>Quantity</label>
+                                    <input type="number" class="form-control"
+                                           name="Materials[@i].Quantity" min="1" required
+                                           value="@Model.Materials[i].Quantity" />
+                                </div>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger btn-sm remove-row"
+                                @(i == 0 ? "disabled" : "")>
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="materialRow row mb-3">
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>Material</label>
+                                <select class="form-control" name="Materials[0].MaterialName">
+                                    <option value="">Select Material</option>
+                                    @foreach (var material in ViewBag.Materials as SelectList)
+                                    {
+                                        <option value="@material.Value">@material.Text</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" class="form-control"
+                                       name="Materials[0].Quantity" min="1" required />
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger btn-sm remove-row" disabled>
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <button type="button" class="btn text-white" style="background-color: #153355;" id="addRowBtn">
+                <i class="fas fa-plus"></i> Add Material
+            </button>
+        </div>
+    </div>
+
+    <div class="text-center mt-3">
+        <button type="submit" class="btn px-4 text-white" style="background-color: #153355;">
+            <i class="bi bi-save-fill me-2"></i>
+            Submit</button>
+        <a href="@Url.Action("SelectTeam")" class="btn btn-outline-danger px-4">
+            <i class="bi bi-x-circle-fill me-2"></i>
+            Cancel
+        </a>
+        <button id="btnDownloadCard" type="button" class="btn px-4 text-white" style="background-color: #153355;">
+            <i class="bi bi-file-earmark-pdf-fill me-2"></i>
+            Download Report
+        </button>
+    </div>
+</form>
+
+
+<script>
+    document.getElementById('addRowBtn').addEventListener('click', function () {
+        var materialRows = document.getElementById('materialRows');
+        var rowCount = materialRows.children.length;
+        var templateRow = materialRows.querySelector('.materialRow').cloneNode(true);
+
+        // Update the index in the name attributes
+        var inputs = templateRow.querySelectorAll('[name]');
+        inputs.forEach(function (input) {
+            var name = input.getAttribute('name');
+            input.setAttribute('name', name.replace(/\[\d+\]/, '[' + rowCount + ']'));
+        });
+
+        // Clear the values
+        templateRow.querySelector('select').selectedIndex = 0;
+        templateRow.querySelector('input[type="number"]').value = '';
+
+        // Enable delete button for new rows
+        templateRow.querySelector('.remove-row').disabled = false;
+
+        // Add the new row
+        materialRows.appendChild(templateRow);
+    });
+
+    // Event delegation for delete buttons
+    document.getElementById('materialRows').addEventListener('click', function (e) {
+        if (e.target.closest('.remove-row')) {
+            var row = e.target.closest('.materialRow');
+            if (document.querySelectorAll('.materialRow').length > 1) {
+                row.remove();
+                // Re-index remaining rows
+                document.querySelectorAll('.materialRow').forEach((row, index) => {
+                    var inputs = row.querySelectorAll('[name]');
+                    inputs.forEach(input => {
+                        var name = input.getAttribute('name');
+                        input.setAttribute('name', name.replace(/\[\d+\]/, '[' + index + ']'));
+                    });
+                });
+            }
+        }
+    });
+</script>
+
+
+<script>
+    $('#btnDownloadCard').click(function (e) {
+        e.preventDefault();
+
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Generating...');
+
+        // Create hidden iframe for download
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+
+        // Submit form directly to iframe
+        var form = $('#apportionScriptsForm')[0];
+        form.target = iframe.name = 'downloadFrame';
+        form.action = '@Url.Action("DownloadMaterialCard", "ManageTeams")';
+        form.method = 'POST';
+        form.submit();
+
+        // Clean up after delay
+        setTimeout(function () {
+            $btn.prop('disabled', false).html(' Download Report');
+            document.body.removeChild(iframe);
+        }, 3000);
+    });
+</script>
