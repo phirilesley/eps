@@ -1,0 +1,60 @@
+@model ExaminerPaymentSystem.ViewModels.Layout.LayoutNavigationModel
+
+@if (Model.Roles.Has("RegionalManager"))
+{
+
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">
+                                    <i class="fas fa-home fa-sm me-1"></i>Dashboard
+                                </a>
+                            </li>
+
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/ExamMonitorsTransactions/Index">
+                                    <i class="fas fa-check-circle fa-sm me-1"></i>Deployed  Monitors
+                                </a>
+                            </li>
+
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/ExamMonitorApproval/RegisterIndex">
+                                    <i class="fas fa-clipboard-check fa-sm me-1"></i>Approve Registers
+                                </a>
+                            </li>
+                      
+
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/ExamMonitorsTandSs/Generate">
+                                    <i class="fas fa-check-circle fa-sm me-1"></i>Send Claims
+                                </a>
+                            </li>
+
+                         
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/Centres/Index">
+                                    <i class="fas fa-university fa-sm me-1"></i>Manage Centres
+                                </a>
+                            </li>
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/Districts/Index">
+                                    <i class="fas fa-sitemap fa-sm me-1"></i>Districts 
+                                </a>
+                            </li>
+
+
+                             <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/Users/IndexExamMonitors">
+                                    <i class="fas fa-sitemap fa-sm me-1"></i>User Profiles
+                                </a>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-chart-bar me-1"></i>Reports
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="reportsDropdown">
+                                    <li><a class="dropdown-item text-white" href="/ExamMonitorsReports/AssignmentReport"><i class="fas fa-file-excel me-2"></i>Deployment Report</a></li>
+                                    <li><a class="dropdown-item text-white" href="/ExamMonitorsReports/ClusterReport"><i class="fas fa-file-excel me-2"></i>Centres Report</a></li>
+                                </ul>
+                            </li>
+
+}

@@ -1,0 +1,1638 @@
+@model ExaminerPaymentSystem.ViewModels.Layout.LayoutNavigationModel
+
+                    <div class="modal fade" id="exListModal" tabindex="-1" aria-labelledby="exListLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="exListLabel">Select Session, Subject, Paper, and Region</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="exListForm" method="post" action="@Url.Action("ExaminerList", "Examiner")">
+                                        <div class="mb-3">
+                                            <label for="exListExamCode" class="form-label text-black">Exam Level and Session:</label>
+                                            <select id="exListExamCode" name="examCode" class="form-select" required>
+                                                <option value="">-- Select Session --</option>
+                                                
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out int examYear) && examCode.ACTIVATED_SESSION == "Activated")
+                                                    {
+                                                        <option value="@examCode.EXM_EXAM_CODE">
+                                                            @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                        </option>
+                                                
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="exListSubject" class="form-label text-black">Subject:</label>
+                                            <select id="exListSubject" name="subjectCode" class="form-select" required>
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="exListPaperCode" class="form-label text-black">Paper Code:</label>
+                                            <select id="exListPaperCode" name="paperCode" class="form-select" required>
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="venuePaperCode2" class="text-black">Activity:</label>
+                                            <select id="exListPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3" id="exListregionCodeContainer" style="display: none;">
+                                            <label for="regionCode" class="text-black">Choose Region:</label>
+                                            <select id="exListregionCode" name="regionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="exListForm" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="modal fade" id="exTListModal" tabindex="-1" aria-labelledby="exTListLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="exListLabel">Select Session, Subject, Paper, and Region</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="exTListForm" method="post" action="@Url.Action("Assignments", "Examiner")">
+                                        <div class="mb-3">
+                                            <label for="exTListExamCode" class="form-label text-black">Exam Level and Session:</label>
+                                            <select id="exTListExamCode" name="examCode" class="form-select" required>
+                                                <option value="">-- Select Session --</option>
+                                                
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out int examYear) && examCode.ACTIVATED_SESSION == "Activated")
+                                                    {
+                                                        <option value="@examCode.EXM_EXAM_CODE">
+                                                            @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                        </option>
+                                                
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="exTListSubject" class="form-label text-black">Subject:</label>
+                                            <select id="exTListSubject" name="subjectCode" class="form-select" required>
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="exTListPaperCode" class="form-label text-black">Paper Code:</label>
+                                            <select id="exTListPaperCode" name="paperCode" class="form-select" required>
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="venuePaperCode2" class="text-black">Activity:</label>
+                                            <select id="exTListPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3" id="exTListregionCodeContainer" style="display: none;">
+                                            <label for="regionCode" class="text-black">Choose Region:</label>
+                                            <select id="exTListregionCode" name="regionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="exTListForm" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+                    <div class="modal fade" id="usersModal" tabindex="-1" aria-labelledby="usersLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="usersLabel">Select Session, Subject, Paper, and Region</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="usersForm" method="post" action="@Url.Action("Index", "Users")">
+                                        <div class="form-group">
+                                            <label for="usersExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="usersExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="usersSubject" class="text-black">Subject:</label>
+                                            <select id="usersSubject" name="subjectCode" class="form-control" required>
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="usersPaperCode" class="text-black">Paper Code:</label>
+                                            <select id="usersPaperCode" name="paperCode" class="form-control" required>
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="usersPaperCode" class="text-black">Activity:</label>
+                                            <select id="usersPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3" id="usersregionCodeContainer" style="display: none;">
+                                            <label for="regionCode" class="text-black">Choose Region:</label>
+                                            <select id="usersregionCode" name="regionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="usersForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="modal fade" id="transUsersModal" tabindex="-1" aria-labelledby="usersLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="usersLabel">Select Session, Subject, Paper, and Region</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="transUsersForm" method="post" action="@Url.Action("TranscribersUsers", "Transcribers")">
+                                        <div class="form-group">
+                                            <label for="usersExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="usersExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+
+                                        <div class="form-group mt-3">
+                                            <label for="usersPaperCode" class="text-black">Activity:</label>
+                                            <select id="usersPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                  
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="transUsersForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="transSelectedModal" tabindex="-1" aria-labelledby="usersLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="usersLabel">Select Session, Subject, Paper, and Region</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="transSelectedForm" method="post" action="@Url.Action("SelectedTranscribers", "Transcribers")">
+                                        <div class="form-group">
+                                            <label for="usersExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="usersExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+
+                                        <div class="form-group mt-3">
+                                            <label for="usersPaperCode" class="text-black">Activity:</label>
+                                            <select id="usersPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                  
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="transSelectedForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                        <div class="modal fade" id="transRegisterModal" tabindex="-1" aria-labelledby="usersLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="usersLabel">Select Session, Subject, Paper, and Region</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="transRegisterForm" method="post" action="@Url.Action("TranscribersRegister", "Transcribers")">
+                                        <div class="form-group">
+                                            <label for="usersExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="usersExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+
+                                        <div class="form-group mt-3">
+                                            <label for="usersPaperCode" class="text-black">Activity:</label>
+                                            <select id="usersPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                  
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="transRegisterForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                    <div class="modal fade" id="tandsApprovalModal" tabindex="-1" aria-labelledby="tandsApprovalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="tandsApprovalLabel">Select Session, Subject, Paper, and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="tandsApprovalForm" method="post" action="@Url.Action("ApprovalList", "TandS")">
+                                        <div class="form-group">
+                                            <label for="Venue" class="text-black">Venue:</label>
+                                            <select id="Venue" name="venue" class="form-control" required>
+                                                <option value="">-- Select Venue --</option>
+                                                
+                                                @foreach (var venue in Model.Venues)
+                                                {
+                                                    if (venue.Status == "Active")
+                                                    {
+                                                        <option value="@venue.Name">@venue.Name</option>
+                                                
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+                                            <div class="form-group mt-3">
+                                                <label for="venuePaperCode2" class="text-black">Activity:</label>
+                                                <select id="PurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                    <option value="">--Select Activity--</option>
+                                                
+                                                    @foreach (var activity in Model.Activities)
+                                                    {
+                                                        <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                    }
+                                                </select>
+                                            </div>
+                                        <div class="form-group mt-3">
+                                            <label for="tandsApprovalExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="tandsApprovalExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) )
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="tandsApprovalSubject" class="text-black">Subject:</label>
+                                            <select id="tandsApprovalSubject" name="subjectCode" class="form-control" >
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="tandsApprovalPaperCode" class="text-black">Paper Code:</label>
+                                            <select id="tandsApprovalPaperCode" name="paperCode" class="form-control" >
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+
+
+                                        <div class="form-group mt-3" id="atregionCodeContainer" style="display: none;">
+                                            <label for="atregionCode" class="text-black">Choose Region:</label>
+                                            <select id="atregionCode" name="regionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="tandsApprovalForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                     <div class="modal fade" id="tandsApprovalModal2" tabindex="-1" aria-labelledby="tandsApprovalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="tandsApprovalLabel">Select Session, Subject, Paper, and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="tandsApproval2Form" method="post" action="@Url.Action("ApprovalList", "TandS")">
+                                        <div class="form-group">
+                                            <label for="Venue" class="text-black">Venue:</label>
+                                            <select id="Venue" name="venue" class="form-control" required>
+                                                <option value="">-- Select Venue --</option>
+                                                
+                                                @foreach (var venue in Model.Venues)
+                                                {
+                                                    if (venue.Status == "Active")
+                                                    {
+                                                        <option value="@venue.Name">@venue.Name</option>
+                                                
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+                                            <div class="form-group mt-3">
+                                                <label for="venuePaperCode2" class="text-black">Activity:</label>
+                                                <select id="PurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                    <option value="">--Select Activity--</option>
+                                                
+                                                    @foreach (var activity in Model.Activities)
+                                                    {
+                                                        <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                    }
+                                                </select>
+                                            </div>
+                                        <div class="form-group mt-3">
+                                            <label for="tandsApproval2ExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="tandsApproval2ExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) )
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="tandsApproval2Subject" class="text-black">Subject:</label>
+                                            <select id="tandsApproval2Subject" name="subjectCode" class="form-control" required >
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="tandsApproval2PaperCode" class="text-black">Paper Code:</label>
+                                            <select id="tandsApproval2PaperCode" name="paperCode" class="form-control" required>
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+
+
+                                        <div class="form-group mt-3" id="at2regionCodeContainer" style="display: none;">
+                                            <label for="at2regionCode" class="text-black">Choose Region:</label>
+                                            <select id="at2regionCode" name="regionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="tandsApproval2Form" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="registerModalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+
+                                    <form id="registerForm" method="post" action="@Url.Action("Index", "ExaminerRegister")">
+                                        <div class="form-group">
+                                            <label for="registerExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="registerExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+
+
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                
+                                                        }
+                                                    }
+                                                }
+
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="registerSubject" class="text-black">Subject:</label>
+                                            <select id="registerSubject" name="subjectCode" class="form-control" required>
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="registerPaperCode" class="text-black">Paper Code:</label>
+                                            <select id="registerPaperCode" name="paperCode" class="form-control" required>
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="venuePaperCode2" class="text-black">Activity:</label>
+                                            <select id="PurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3" id="regionCodeContainer" style="display: none;">
+                                            <label for="regionCode" class="text-black">Choose Region:</label>
+                                            <select id="regionCode" name="regionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+
+
+                                    </form>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="registerForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="teamModalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+
+                                    <form id="teamForm" method="post" action="@Url.Action("SelectTeam", "ManageTeams")">
+                                        <div class="form-group">
+                                            <label for="teamExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="teamExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+
+
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                
+                                                        }
+                                                    }
+                                                }
+
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="teamSubject" class="text-black">Subject:</label>
+                                            <select id="teamSubject" name="subjectCode" class="form-control" required>
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="teamPaperCode" class="text-black">Paper Code:</label>
+                                            <select id="teamPaperCode" name="paperCode" class="form-control" required>
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3">
+                                            <label for="teamPaperCode2" class="text-black">Activity:</label>
+                                            <select id="teamPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="form-group mt-3" id="teamregionCodeContainer" style="display: none;">
+                                            <label for="teamregionCode" class="text-black">Choose Region:</label>
+                                            <select id="teamregionCode" name="regionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+
+
+                                    </form>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="teamForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                      <div class="modal fade" id="transTeamModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="teamModalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+
+                                    <form id="transTeamForm" method="post" action="@Url.Action("SelectTranscribers", "Transcribers")">
+                                        <div class="form-group">
+                                            <label for="teamExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="teamExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+
+
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                
+                                                        }
+                                                    }
+                                                }
+
+                                            </select>
+                                        </div>
+
+                              
+
+                                        <div class="form-group mt-3">
+                                            <label for="teamPaperCode2" class="text-black">Activity:</label>
+                                            <select id="teamPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                       
+
+
+
+                                    </form>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="transTeamForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                      <div class="modal fade" id="transListModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="teamModalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+
+                                    <form id="transListForm" method="post" action="@Url.Action("TranscribersList", "Transcribers")">
+                                        <div class="form-group">
+                                            <label for="teamExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="teamExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+
+
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                
+                                                        }
+                                                    }
+                                                }
+
+                                            </select>
+                                        </div>
+
+                              
+
+                                        <div class="form-group mt-3">
+                                            <label for="teamPaperCode2" class="text-black">Activity:</label>
+                                            <select id="teamPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                       
+
+
+
+                                    </form>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="transListForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    
+                    
+                      <div class="modal fade" id="transUsersModal" tabindex="-1" aria-labelledby="teamModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="teamModalLabel">Select Session ,Subject ,Paper and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+
+                                    <form id="transUsersForm" method="post" action="@Url.Action("SelectTranscribers", "Transcribers")">
+                                        <div class="form-group">
+                                            <label for="teamExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="teamExamCode" name="examCode" class="form-control" required>
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+
+
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">@examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR</option>
+                                                
+                                                        }
+                                                    }
+                                                }
+
+                                            </select>
+                                        </div>
+
+                              
+
+                                        <div class="form-group mt-3">
+                                            <label for="teamPaperCode2" class="text-black">Activity:</label>
+                                            <select id="teamPurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                <option value="">--Select Activity--</option>
+                                                
+                                                @foreach (var activity in Model.Activities)
+                                                {
+                                                    <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                }
+                                            </select>
+                                        </div>
+
+                                       
+
+
+
+                                    </form>
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="transUsersForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="modal fade" id="exampleVenue" tabindex="-1" aria-labelledby="exampleVenueModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="exampleVenueModalLabel">Select Session, Subject, Paper, and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="venueForm" method="post" action="@Url.Action("TandSList", "TandS")">
+                                        <div class="form-group">
+                                            <label for="Venue" class="text-black">Venue:</label>
+                                            <select id="Venue" name="venue" class="form-control" required>
+                                                <option value="">-- Select Venue --</option>
+                                                
+                                                @foreach (var venue in Model.Venues)
+                                                {
+                                                    if (venue.Status == "Active")
+                                                    {
+                                                        <option value="@venue.Name">@venue.Name</option>
+                                                
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                            <div class="form-group mt-3">
+                                                <label for="venuePaperCode2" class="text-black">Activity:</label>
+                                                <select id="PurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                    <option value="">--Select Activity--</option>
+                                                
+                                                    @foreach (var activity in Model.Activities)
+                                                    {
+                                                        <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                    }
+                                                </select>
+                                            </div>
+                                        <div class="form-group">
+                                            <label for="venueExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="venueExamCode" name="examCode" class="form-control">
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear) )
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="venueSubject" class="text-black">Subject:</label>
+                                            <select id="venueSubject" name="subjectCode" class="form-control" >
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="venuePaperCode" class="text-black">Paper Code:</label>
+                                            <select id="venuePaperCode" name="paperCode" class="form-control" >
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                      
+
+                                        <div class="form-group mt-3" id="tregionCodeContainer" style="display: none;">
+                                            <label for="tregionCode" class="text-black">Choose Region:</label>
+                                            <select id="tregionCode" name="tregionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="venueForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="modal fade" id="exampleVenue2" tabindex="-1" aria-labelledby="exampleVenueModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="exampleVenue2ModalLabel">Select Session, Subject, Paper, and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="venueForm2" method="post" action="@Url.Action("TandSFullList", "TandS")">
+                                        <div class="form-group">
+                                            <label for="Venue2" class="text-black">Venue:</label>
+                                            <select id="Venue2" name="venue" class="form-control">
+                                                <option value="">-- Select Venue --</option>
+                                                
+                                                @foreach (var venue in Model.Venues)
+                                                {
+                                                    if (venue.Status == "Active")
+                                                    {
+                                                        <option value="@venue.Name">@venue.Name</option>
+                                                
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+
+                                            <div class="form-group mt-3">
+                                                <label for="venuePaperCode2" class="text-black">Activity:</label>
+                                                <select id="PurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                    <option value="">--Select Activity--</option>
+                                                
+                                                    @foreach (var activity in Model.Activities)
+                                                    {
+                                                        <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                    }
+                                                </select>
+                                            </div>
+                                        <div class="form-group">
+                                            <label for="venueExamCode2" class="text-black">Exam Level and Session:</label>
+                                            <select id="venueExamCode2" name="examCode" class="form-control">
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="venueSubject2" class="text-black">Subject:</label>
+                                            <select id="venueSubject2" name="subjectCode" class="form-control" >
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="venuePaperCode2" class="text-black">Paper Code:</label>
+                                            <select id="venuePaperCode2" name="paperCode" class="form-control" >
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                       
+
+                                        <div class="form-group mt-3" id="ftregionCodeContainer" style="display: none;">
+                                            <label for="ftregionCode" class="text-black">Choose Region:</label>
+                                            <select id="ftregionCode" name="regionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                    
+
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="venueForm2" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+                    <div class="modal fade" id="exampleeeVenue" tabindex="-1" aria-labelledby="exampleeeVenueModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="exampleeeVenueModalLabel">Select Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="venueeeForm" method="post" action="@Url.Action("TandSAccountsList", "Transcribers")">
+                                        <div class="form-group">
+                                            <label for="Venue" class="text-black">Venue:</label>
+                                            <select id="Venue" name="venue" class="form-control" required>
+                                                <option value="">-- Select Venue --</option>
+                                                
+                                                @foreach (var venue in Model.Venues)
+                                                {
+                                                    if (venue.Status == "Active")
+                                                    {
+                                                        <option value="@venue.Name">@venue.Name</option>
+                                                
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                         <div class="form-group mt-3">
+                                                <label for="venuePaperCode2" class="text-black">Activity:</label>
+                                                <select id="PurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                    <option value="">--Select Activity--</option>
+                                                
+                                                    @foreach (var activity in Model.Activities)
+                                                    {
+                                                        <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                    }
+                                                </select>
+                                            </div>
+                                        <div class="form-group">
+                                            <label for="venueExamCode2" class="text-black">Exam Level and Session:</label>
+                                            <select id="venueExamCode2" name="examCode" class="form-control">
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="venueeeForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="modal fade" id="transTandS" tabindex="-1" aria-labelledby="exaVenueModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="exaVenueModalLabel">Select Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="venueeForm" method="post" action="@Url.Action("TranscribersTandS", "Transcribers")">
+                                        <div class="form-group">
+                                            <label for="Venue" class="text-black">Venue:</label>
+                                            <select id="Venue" name="venue" class="form-control" required>
+                                                <option value="">-- Select Venue --</option>
+                                                
+                                                @foreach (var venue in Model.Venues)
+                                                {
+                                                    if (venue.Status == "Active")
+                                                    {
+                                                        <option value="@venue.Name">@venue.Name</option>
+                                                
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                         <div class="form-group mt-3">
+                                                <label for="venuePaperCode2" class="text-black">Activity:</label>
+                                                <select id="PurposeOfJourney" class="form-select form-select-sm" name="activity" required>
+                                                    <option value="">--Select Activity--</option>
+                                                
+                                                    @foreach (var activity in Model.Activities)
+                                                    {
+                                                        <option value="@activity.Value">@activity.Text</option>
+                                                
+                                                    }
+                                                </select>
+                                            </div>
+                                        <div class="form-group">
+                                            <label for="venueExamCode2" class="text-black">Exam Level and Session:</label>
+                                            <select id="venueExamCode2" name="examCode" class="form-control">
+                                                <option value="">-- Select Session --</option>
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+                                                    int examYear;
+                                                    if (int.TryParse(examCode.EXM_EXAM_YEAR, out examYear))
+                                                    {
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="venueeForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                      <div class="modal fade" id="approveScripts" tabindex="-1" aria-labelledby="approveScriptsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="approveScripts2ModalLabel">Select Session, Subject, Paper, and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="approveScriptsForm" method="post" action="@Url.Action("Approval", "ExaminerScriptsMarked")">
+                                      
+                                        <div class="form-group">
+                                            <label for="approveScriptsExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="approveScriptsExamCode" name="examCode" class="form-control">
+                                                <option value="">-- Select Session --</option>
+                                                
+                                           
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+   
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="approveScriptsSubject" class="text-black">Subject:</label>
+                                            <select id="approveScriptsSubject" name="subjectCode" class="form-control" >
+                                                <option value="">-- Select Subject --</option>
+                                                
+                                            </select>
+                                        </div>
+                                        <div class="form-group mt-3">
+                                            <label for="approveScriptsPaperCode" class="text-black">Paper Code:</label>
+                                            <select id="approveScriptsPaperCode" name="paperCode" class="form-control" >
+                                                <option value="">-- Select Paper Code --</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                       
+
+                                        <div class="form-group mt-3" id="approveScriptsregionCodeContainer" style="display: none;">
+                                            <label for="approveScriptsregionCode" class="text-black">Choose Region:</label>
+                                            <select id="approveScriptsregionCode" name="regionCode" class="form-control">
+                                                <option value="">--- Select Region Code ---</option>
+                                                
+                                                <option value="01">01-Harare</option>
+                                                
+                                                <option value="02">02-Manicaland</option>
+                                                
+                                                <option value="03">03-Mashonaland East</option>
+                                                
+                                                <option value="04">04-Matabeleland North</option>
+                                                
+                                                <option value="05">05-Midlands</option>
+                                                
+                                                <option value="06">06-Masvingo</option>
+                                                
+                                                <option value="07">07-Mashonaland Central</option>
+                                                
+                                                <option value="08">08-Mashonaland West</option>
+                                                
+                                                <option value="09">09-Matabeleland South</option>
+                                                
+                                                <option value="10">10-Bulawayo</option>
+                                                
+                                            </select>
+                                        </div>
+
+                                    
+
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="approveScriptsForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                      <div class="modal fade" id="approveScriptsTransModal" tabindex="-1" aria-labelledby="approveScriptsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="approveScripts2ModalLabel">Select Session, Subject, Paper, and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="approveScriptsTransForm" method="post" action="@Url.Action("ScriptsTranscibedApproval", "Transcribers")">
+                                      
+                                        <div class="form-group">
+                                            <label for="approveScriptsExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="approveScriptsExamCode" name="examCode" class="form-control">
+                                                <option value="">-- Select Session --</option>
+                                                
+                                           
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+   
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    
+                                                }
+                                            </select>
+                                        </div>
+
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="approveScriptsTransForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                                 <div class="modal fade" id="scriptsTransModal" tabindex="-1" aria-labelledby="approveScriptsModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title text-black" id="approveScripts2ModalLabel">Select Session, Subject, Paper, and Venue</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="scriptsTransForm" method="post" action="@Url.Action("ScriptsTranscribed", "Transcribers")">
+                                      
+                                        <div class="form-group">
+                                            <label for="approveScriptsExamCode" class="text-black">Exam Level and Session:</label>
+                                            <select id="approveScriptsExamCode" name="examCode" class="form-control">
+                                                <option value="">-- Select Session --</option>
+                                                
+                                           
+                                                @foreach (var examCode in Model.ExamCodes)
+                                                {
+   
+                                                        if (examCode.ACTIVATED_SESSION == "Activated")
+                                                        {
+                                                            <option value="@examCode.EXM_EXAM_CODE">
+                                                                @examCode.EXM_EXAM_LEVEL @examCode.EXM_EXAM_SESSION @examCode.EXM_EXAM_YEAR
+                                                            </option>
+                                                
+                                                        }
+                                                    
+                                                }
+                                            </select>
+                                        </div>
+
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn" style="background-color:red;color:white;" data-bs-dismiss="modal">Close</button>
+                                    <button type="submit" form="scriptsTransForm" class="btn" style="background-color: #153355;color:white;">Submit</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+              </ul>
+            </div>
+            
+            <!-- Login partial aligned to right -->
+            <div class="d-flex ms-auto">
+                @await Html.PartialAsync("_LoginPartial")
+            </div>
+        </div>
+    </div>
+</nav>

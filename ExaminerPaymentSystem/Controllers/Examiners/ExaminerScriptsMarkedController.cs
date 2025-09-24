@@ -1,6 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Office2013.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml.Wordprocessing;
 using ExaminerPaymentSystem.Data;
 using ExaminerPaymentSystem.Extensions;
 using ExaminerPaymentSystem.Interfaces.Major;
@@ -9,18 +8,12 @@ using ExaminerPaymentSystem.Interfaces.Transcribers;
 using ExaminerPaymentSystem.Models.Common;
 using ExaminerPaymentSystem.Models.Major;
 using ExaminerPaymentSystem.Models.Other;
-using ExaminerPaymentSystem.Repositories;
 using ExaminerPaymentSystem.ViewModels.Examiners;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Pqc.Crypto.Lms;
 using System;
-using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -65,64 +58,49 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
         [Authorize]
         public async Task<IActionResult> Index(string examCode, string subjectCode, string paperCode, string searchBmsCode)
         {
-         
-     
+            var viewModel = new ExaminerScriptsMarkedIndexPageViewModel();
+            ViewData["Title"] = "Examiner Scripts Marked";
+
             ApplicationUser currentUser = await _signInManager.UserManager.GetUserAsync(User);
-   
+            var userRoles = await _userManager.GetRolesAsync(currentUser);
 
-                var userRoles = await _userManager.GetRolesAsync(currentUser);
-
-
-                if (userRoles != null && userRoles.Contains("PMS") || userRoles.Contains("DPMS") || userRoles.Contains("RPMS") || userRoles.Contains("BMS"))
+            if (userRoles != null && (userRoles.Contains("PMS") || userRoles.Contains("DPMS") || userRoles.Contains("RPMS") || userRoles.Contains("BMS")))
+            {
+                var examiner = await _examinerRepository.GetExaminerRecord(currentUser.IDNumber);
+                if (examiner != null)
                 {
-                    var examiner = await _examinerRepository.GetExaminerRecord(currentUser.IDNumber);
-                    if (examiner != null)
-                    {
-
                     var transaction = examiner.ExaminerScriptsMarkeds.FirstOrDefault(a => a.EMS_SUBKEY == currentUser.EMS_SUBKEY);
 
-                    if(transaction == null)
+                    if (transaction == null)
                     {
-                        // Store SweetAlert configuration in TempData
                         TempData["SweetAlert"] = JsonConvert.SerializeObject(new
                         {
-                            icon = "warning",  // Changed to warning icon
+                            icon = "warning",
                             title = "ACCESS DENIED!",
                             text = "You are not authorized for this activity. Please check your account credentials. You will be logged out for security reasons.",
                             showConfirmButton = true,
-                            confirmButtonColor = "#ffc107", // Warning color
-                                                            //timer = 5000, // Auto-close after 5 seconds
+                            confirmButtonColor = "#ffc107",
                             timerProgressBar = true,
                             customClass = new
                             {
-                                container = "swal2-flicker", // Applies to the entire modal
-                                title = "swal2-title-danger" // Applies only to the title
+                                container = "swal2-flicker",
+                                title = "swal2-title-danger"
                             }
                         });
-
-
 
                         await _signInManager.SignOutAsync();
                         return Redirect("/Identity/Account/Login");
                     }
 
-              
-                        var examcode = transaction.EMS_SUBKEY.Substring(0, 3);
-                        var subjectcode = transaction.EMS_SUB_SUB_ID.Substring(3);
-                        var papercode = transaction.EMS_PAPER_CODE;
-                        var bms = transaction.EMS_EXAMINER_NUMBER;
-
-                        ViewBag.SubjectCode = subjectcode;
-                        ViewBag.ExamCode = examcode;
-                        ViewBag.PaperCode = papercode;
-                        ViewBag.BMS = bms;
-
-                    
-                    }
-
+                    viewModel.ExamCode = transaction.EMS_SUBKEY.Substring(0, 3);
+                    viewModel.SubjectCode = transaction.EMS_SUB_SUB_ID.Substring(3);
+                    viewModel.PaperCode = transaction.EMS_PAPER_CODE;
+                    viewModel.BmsCode = transaction.EMS_EXAMINER_NUMBER;
+                    viewModel.SupervisorName = examiner.EMS_EXAMINER_NAME + " " + examiner.EMS_LAST_NAME;
                 }
-         
-                    return View();
+            }
+
+            return View(viewModel);
         }
 
      
@@ -449,20 +427,19 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
  
         [Authorize(Roles = "PMS,DPMS,RPMS,SubjectManager,CentreSupervisor")]
-        public async Task<IActionResult> Approval(string examCode, string subjectCode, string paperCode,string regionCode)
+        public async Task<IActionResult> Approval(string examCode, string subjectCode, string paperCode, string regionCode)
         {
-
+            var viewModel = new ExaminerScriptsMarkedApprovalPageViewModel();
 
             ApplicationUser currentUser = await _signInManager.UserManager.GetUserAsync(User);
             var userRoles = await _userManager.GetRolesAsync(currentUser);
 
             var userSession = new SessionModel();
-            if (userRoles != null &&   userRoles.Contains("PMS") || userRoles.Contains("DPMS") || userRoles.Contains("RPMS"))
+            if (userRoles != null && (userRoles.Contains("PMS") || userRoles.Contains("DPMS") || userRoles.Contains("RPMS")))
             {
                 var examiner = await _examinerRepository.GetExaminerRecord(currentUser.IDNumber);
                 if (examiner != null)
                 {
-
                     var transaction = examiner.ExaminerScriptsMarkeds.FirstOrDefault(a => a.EMS_SUBKEY == currentUser.EMS_SUBKEY && a.EMS_NATIONAL_ID == examiner.EMS_NATIONAL_ID);
 
                     if (transaction != null)
@@ -482,10 +459,9 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
                         HttpContext.Session.SetObjectAsJson("Session", userSession);
                     }
                 }
-
             }
 
-            if (userRoles != null && userRoles.Contains("SubjectManager") || userRoles.Contains("CentreSupervisor"))
+            if (userRoles != null && (userRoles.Contains("SubjectManager") || userRoles.Contains("CentreSupervisor")))
             {
                 if (!string.IsNullOrEmpty(examCode) && !string.IsNullOrEmpty(subjectCode) && !string.IsNullOrEmpty(paperCode))
                 {
@@ -505,47 +481,38 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
                 else
                 {
                     userSession = HttpContext.Session.GetObjectFromJson<SessionModel>("Session");
-
                 }
-
             }
-
 
             if (userSession != null)
             {
-                ViewBag.ExamCode = userSession.ExamCode;
-                ViewBag.SubjectCode = userSession.SubjectCode;
-                ViewBag.PaperCode = userSession.PaperCode;
-                ViewBag.RegionCode = string.IsNullOrEmpty(regionCode) ? "" : userSession.RegionCode;
+                viewModel.ExamCode = userSession.ExamCode;
+                viewModel.SubjectCode = userSession.SubjectCode;
+                viewModel.PaperCode = userSession.PaperCode;
+                viewModel.RegionCode = string.IsNullOrEmpty(regionCode) ? string.Empty : userSession.RegionCode;
             }
             else
             {
-                // Store SweetAlert configuration in TempData
                 TempData["SweetAlert"] = JsonConvert.SerializeObject(new
                 {
-                    icon = "warning",  // Changed to warning icon
+                    icon = "warning",
                     title = "ACCESS DENIED!",
                     text = "You are not authorized for this activity. Please check your account credentials. You will be logged out for security reasons.",
                     showConfirmButton = true,
-                    confirmButtonColor = "#ffc107", // Warning color
-                                                    //timer = 5000, // Auto-close after 5 seconds
+                    confirmButtonColor = "#ffc107",
                     timerProgressBar = true,
                     customClass = new
                     {
-                        container = "swal2-flicker", // Applies to the entire modal
-                        title = "swal2-title-danger" // Applies only to the title
+                        container = "swal2-flicker",
+                        title = "swal2-title-danger"
                     }
                 });
-
-
 
                 await _signInManager.SignOutAsync();
                 return Redirect("/Identity/Account/Login");
             }
 
-
-
-            return View();
+            return View(viewModel);
         }
 
 

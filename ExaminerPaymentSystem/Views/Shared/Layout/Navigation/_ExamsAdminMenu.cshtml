@@ -1,0 +1,82 @@
+@model ExaminerPaymentSystem.ViewModels.Layout.LayoutNavigationModel
+
+@if (Model.Roles.Has("ExamsAdmin"))
+{
+
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">
+                                    <i class="fas fa-home fa-sm me-1"></i>Home
+                                </a>
+                            </li>
+                              <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2" href="/Venue/Index" >
+                                    <i class="fas fa-map-marker-alt fa-sm me-1"></i>Maintain Venues
+                                </a>
+                            </li>
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2" href="/Activities/Index">
+                                    <i class="fas fa-map-marker-alt fa-sm me-1"></i>Maintain Activities
+                                </a>
+                            </li>
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2" href="/SubjectVenue/Index">
+                                    <i class="fas fa-map-marker-alt fa-sm me-1"></i>Subject Venues
+                                </a>
+                            </li>
+
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2" href="/Materials/Index">
+                                    <i class="fas fa-map-marker-alt fa-sm me-1"></i>Material Master
+                                </a>
+                            </li>
+
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2" href="/CheckInCheckOut/Index">
+                                    <i class="fas fa-map-marker-alt fa-sm me-1"></i>Check Out Check In
+                                </a>
+                            </li>
+
+                            <li class="nav-item dropdown compact-nav-item">
+                                <a class="nav-link dropdown-toggle px-2" href="#" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-cog fa-sm me-1"></i>Export To Oracle
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-dark">
+                                 
+                                    <a class="dropdown-item" asp-area="" asp-controller="Examiner" asp-action="ExportExaminersToOracle">
+                                        <i class="fas fa-braille fa-sm me-2"></i>Export Examiners To Oracle
+                                    </a>
+                                    <a class="dropdown-item" asp-area="" asp-controller="Examiner" asp-action="ImportExaminersFromOracle">
+                                        <i class="fas fa-user-tie fa-sm me-2"></i>Import Examiners From Oracle
+                                    </a>
+                                    <a class="dropdown-item" asp-area="" asp-controller="Transaction" asp-action="ExportExaminerRefCatToOracle">
+                                        <i class="fas fa-braille fa-sm me-2"></i>Export Share PanelsTo Oracle
+                                    </a>
+                                    <a class="dropdown-item" asp-area="" asp-controller="Transaction" asp-action="ExportExaminerTransactionToOracle">
+                                        <i class="fas fa-user-tie fa-sm me-2"></i>Export Selected Examiners To Oracle
+                                    </a>
+
+                                  
+                                </div>
+                            </li>
+
+                            <li class="nav-item dropdown compact-nav-item">
+                                <a class="nav-link dropdown-toggle px-2" href="#" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-cog fa-sm me-1"></i> Reports
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-dark">
+                               @*      <a class="dropdown-item" asp-area="" asp-controller="ManageTeams" asp-action="Report">
+                                        <i class="fas fa-braille fa-sm me-2"></i>Report
+                                    </a> *@
+                                    <a class="dropdown-item" asp-area="" asp-controller="ManageTeams" asp-action="Report2">
+                                        <i class="fas fa-braille fa-sm me-2"></i>Selected Examiners (Subject)
+                                    </a>
+                                    <a class="dropdown-item" asp-area="" asp-controller="ManageTeams" asp-action="Report3">
+                                        <i class="fas fa-braille fa-sm me-2"></i>Selected Examiners Report
+                                    </a>
+                                    <a class="dropdown-item" asp-area="" asp-controller="ManageTeams" asp-action="Report4">
+                                        <i class="fas fa-braille fa-sm me-2"></i> Check Progress Report
+                                    </a>
+                                </div>
+                            </li>
+
+}

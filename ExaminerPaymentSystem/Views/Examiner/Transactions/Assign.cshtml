@@ -1,11 +1,8 @@
-﻿@model Examiner
-
+@model ExaminerPaymentSystem.ViewModels.Examiners.ExaminerTransactionViewModel
 @inject ISubjectsRepository subjectRepo
 @inject IExamCodesRepository examCodeRepo
-@inject IPaperMarkingRateRepository papercodesRepo
-Repo
 @{
-    ViewBag.Title = "Add To Transaction";
+    ViewData["Title"] = "Assign Examiner";
 
     IEnumerable<Subjects> subjects = await subjectRepo.GetAllPaperCodes();
     IEnumerable<ExamCodes> examCodes = await examCodeRepo.GetAllExamCodes();
@@ -45,15 +42,23 @@ Repo
 </script>
 
 
-<h1 class="mb-3 text-center" style="color:#123255;">Add To Transactions</h1>
+<div class="page-header page-header--center">
+    <span class="page-header__icon">
+        <i class="fas fa-clipboard-user"></i>
+    </span>
+    <div>
+        <h1 class="page-header__title">Assign Examiner To Activity</h1>
+        <p class="page-header__subtitle">Link an examiner to their session, subject, and activity in a single step.</p>
+    </div>
+</div>
 
-<form asp-action="AddNewExaminerTransaction" class="needs-validation mb-5" novalidate>
+<form asp-action="Assign" class="needs-validation mb-5" novalidate>
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <input asp-for="EMS_EXAMINER_CODE" type="hidden" />
-   
-    <div class="border rounded p-4 mb-3 position-relative" style="border-width: 2px;">
-        <div class="position-absolute bg-white px-3"
-             style="top: -12px; left: 15px; z-index: 1; color:#123255;">
-            @*  <h4 class="mb-0">Personal Details</h4> *@
+
+    <section class="form-section position-relative">
+        <div class="form-section__title">
+            Examiner &amp; Activity Details
         </div>
         <div class="row mb-3">
             <div class="col-12 col-md-4 mb-3">
@@ -195,7 +200,7 @@ Repo
             <div class="col-12 col-md-6 mb-3">
                 <div class="form-floating">
                     
-                    <select class="form-select form-select-sm" name="activity" required>
+                    <select asp-for="Activity" class="form-select form-select-sm" required>
                         <option value="">--Select purpose of invitation--</option>
                         <option value="BEM">BELT MARKING</option>
                         <option value="CAP">CAPTURING</option>
@@ -206,8 +211,8 @@ Repo
                         <option value="MOD">MODERATION</option>
                         <option value="ITW">ITEM WRITING</option>
                     </select>
-                    <label >Activity</label>
-                    <span  class="text-danger d-none">Please select the purpose of invitation.</span>
+                    <label asp-for="Activity">Activity</label>
+                    <span asp-validation-for="Activity" class="text-danger"></span>
                 </div>
             </div>
 
@@ -219,18 +224,18 @@ Repo
 
     <div class="row mb-3">
         <div class="col-12 col-md-6 mb-3">
-            <button class="btn text-white w-100" type="submit" style="background-color: #153355;">
-                <i class="fas fa-save mr-2"></i>
+            <button class="btn btn-primary w-100" type="submit">
+                <i class="fas fa-save me-2"></i>
                 Save
             </button>
         </div>
         <div class="col-12 col-md-6 mb-3">
-            <a class="btn btn-danger w-100" href="@Url.Action("ExaminerList", "Examiner")">
-                <i class="fas fa-times mr-2"></i>
+            <a class="btn btn-outline-secondary w-100" href="@Url.Action("ExaminerList", "Examiner")">
+                <i class="fas fa-times me-2"></i>
                 Cancel
             </a>
         </div>
-    </div>
+    </section>
 
 </form>
 

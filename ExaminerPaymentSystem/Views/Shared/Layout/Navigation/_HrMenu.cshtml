@@ -1,0 +1,46 @@
+@model ExaminerPaymentSystem.ViewModels.Layout.LayoutNavigationModel
+
+@if (Model.Roles.Has("HR"))
+{
+
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">
+                                    <i class="fas fa-home fa-sm me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/ExamMonitors/Recruitment">
+                                    <i class="fas fa-user-tie fa-sm me-1"></i>Applications
+                                </a>
+                            </li>
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/ExamMonitors/Index">
+                                    <i class="fas fa-user-tie fa-sm me-1"></i>Shortlisted Monitors
+                                </a>
+                            </li>
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/ExamMonitorsTransactions/Index">
+                                    <i class="fas fa-check-circle fa-sm me-1"></i>Deployed Monitors
+                                </a>
+                            </li>
+
+                            <li class="nav-item compact-nav-item">
+                                <a class="nav-link px-2 text-white" href="/Phases/Index">
+                                    <i class="fas fa-sitemap fa-sm me-1"></i>Phases
+                                </a>
+                            </li>
+
+                        
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-chart-bar me-1"></i>Reports
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="reportsDropdown">
+                                    <li><a class="dropdown-item text-white" href="/ExamMonitorsReports/ExamMonitorsReport"><i class="fas fa-file-excel me-2"></i>Exam Monitors Report</a></li>
+                                    <li><a class="dropdown-item text-white" href="/ExamMonitorsReports/AssignmentReport"><i class="fas fa-file-excel me-2"></i>Deployment Report</a></li>
+                                      <li><a class="dropdown-item text-white" href="/ExamMonitorsReports/ClusterReport"><i class="fas fa-file-excel me-2"></i>Centres Report</a></li>
+                                </ul>
+                            </li>
+
+}
