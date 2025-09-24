@@ -1,18 +1,18 @@
-﻿@inject SignInManager<ApplicationUser> SignInManager
+﻿@model ExaminerPaymentSystem.ViewModels.Examiners.ExaminerScriptsMarkedApprovalPageViewModel
+@inject SignInManager<ApplicationUser> SignInManager
 @inject ISubjectsRepository subjectRepo
 @inject IExamCodesRepository examCodeRepo
 @inject IPaperMarkingRateRepository papercodesRepo
 @inject IVenueRepository venueRepo
 
 @{
-    ViewBag.Title = "Approve Scripts Marked";
+    ViewData["Title"] = "Approve Scripts Marked";
 
-
-
-    string examCode = ViewBag.ExamCode ?? "";
-    string subjectCode = ViewBag.SubjectCode ?? "";
-    string paperCode = ViewBag.PaperCode ?? "";
-    string regionCode = ViewBag.RegionCode ?? "";
+    string examCode = Model?.ExamCode ?? string.Empty;
+    string subjectCode = Model?.SubjectCode ?? string.Empty;
+    string paperCode = Model?.PaperCode ?? string.Empty;
+    string regionCode = Model?.RegionCode ?? string.Empty;
+    string subjectDisplay = subjectCode.Length > 3 ? subjectCode.Substring(3) : subjectCode;
 }
 
 
@@ -178,7 +178,7 @@
     <div class="d-flex align-items-center justify-content-center gap-2">
         <i class="fas fa-file-signature" style="color: #2a5a8a;"></i>
         <h5 class="fw-bold mb-0" style="color: #153355;">
-            Approve Script Marked  :     <span style="color: #2a5a8a;">@subjectCode.Substring(3) / @paperCode</span>
+            Approve Script Marked  :     <span style="color: #2a5a8a;">@subjectDisplay / @paperCode</span>
             
         </h5>
     </div>

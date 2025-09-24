@@ -408,7 +408,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
             if (!isSuccess && !string.IsNullOrEmpty(message))
             {
-                TempData["ErrorMessage"] = message;
+                TempData["Error"] = message;
 
             }
 
@@ -441,7 +441,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
             if (!isSuccess && !string.IsNullOrEmpty(message))
             {
-                TempData["ErrorMessage"] = message;
+                TempData["Error"] = message;
 
             }
 
@@ -651,7 +651,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
                     });
                 }
 
-                return RedirectToAction("ExaminerTransactionList", new { isSuccess = true, message = "Updated Successfully" });
+                return RedirectToAction(nameof(Assignments), new { isSuccess = true, message = "Updated Successfully" });
             }
             catch (Exception ex)
             {
@@ -731,7 +731,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
             if (!isSuccess && !string.IsNullOrEmpty(message))
             {
-                TempData["ErrorMessage"] = message;
+                TempData["Error"] = message;
 
             }
             return View(examiner);
@@ -1015,7 +1015,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
                     });
                 }
 
-                return RedirectToAction("ExaminerTransactionList", new { isSuccess = true, message = "Record Updated Successfully" });
+                return RedirectToAction(nameof(Assignments), new { isSuccess = true, message = "Record Updated Successfully" });
             }
             catch (Exception ex)
             {
@@ -1261,7 +1261,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
         [Authorize(Roles = "SuperAdmin,Admin,SubjectManager,CentreSupervisor,PMS, BMS,DPMS,RPMS")]
         [HttpGet]
-        public async Task<IActionResult> AddNewExaminerTransction(string idNumber = "", bool isSuccess = false, string message = "")
+        public async Task<IActionResult> Assign(string idNumber = "", bool isSuccess = false, string message = "")
         {
             var examiner = await _examinerRepository.GetExaminerRecord(idNumber);
             if (examiner == null)
@@ -1271,36 +1271,53 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
             if (!isSuccess && !string.IsNullOrEmpty(message))
             {
-                TempData["ErrorMessage"] = message;
+                TempData["Error"] = message;
 
             }
-            return View(examiner);
+
+            var viewModel = new ExaminerTransactionViewModel
+            {
+                EMS_EXAMINER_CODE = examiner.EMS_EXAMINER_CODE,
+                EMS_NATIONAL_ID = examiner.EMS_NATIONAL_ID,
+                EMS_EXAMINER_NAME = examiner.EMS_EXAMINER_NAME,
+                EMS_LAST_NAME = examiner.EMS_LAST_NAME,
+                EMS_SUB_SUB_ID = examiner.EMS_SUB_SUB_ID,
+                EMS_PAPER_CODE = examiner.EMS_PAPER_CODE,
+                EMS_EXAMINER_NUMBER = examiner.EMS_EXAMINER_NUMBER,
+                EMS_EXM_SUPERORD = examiner.EMS_EXM_SUPERORD,
+                EMS_ECT_EXAMINER_CAT_CODE = examiner.EMS_ECT_EXAMINER_CAT_CODE,
+                EMS_MARKING_REG_CODE = examiner.EMS_MARKING_REG_CODE,
+                Activity = string.Empty
+            };
+
+            return View("Transactions/Assign", viewModel);
         }
 
         [Authorize(Roles = "SuperAdmin,Admin,SubjectManager,CentreSupervisor")]
         [HttpPost]
-        public async Task<IActionResult> AddNewExaminerTransaction(Examiner examiner, string activity)
+        public async Task<IActionResult> Assign(ExaminerTransactionViewModel model)
         {
-
-
-
+            if (!ModelState.IsValid)
+            {
+                return View("Transactions/Assign", model);
+            }
 
             ApplicationUser currentUser = await _signInManager.UserManager.GetUserAsync(User);
-            var subkey = examiner.EMS_SUB_SUB_ID + examiner.EMS_PAPER_CODE + activity + examiner.EMS_NATIONAL_ID;
+            var subkey = model.EMS_SUB_SUB_ID + model.EMS_PAPER_CODE + model.Activity + model.EMS_NATIONAL_ID;
 
             var newTransction = new ExaminerScriptsMarked()
             {
 
-                EMS_NATIONAL_ID = examiner.EMS_NATIONAL_ID,
-                EMS_EXAMINER_CODE = examiner.EMS_EXAMINER_CODE,
-                EMS_ECT_EXAMINER_CAT_CODE = examiner.EMS_ECT_EXAMINER_CAT_CODE,
-                EMS_EXAMINER_NUMBER = examiner.EMS_EXAMINER_NUMBER,
-                EMS_EXM_SUPERORD = examiner.EMS_EXM_SUPERORD,
-                EMS_SUB_SUB_ID = examiner.EMS_SUB_SUB_ID,
-                EMS_PAPER_CODE = examiner.EMS_PAPER_CODE,
-                EMS_ACTIVITY = activity,
+                EMS_NATIONAL_ID = model.EMS_NATIONAL_ID,
+                EMS_EXAMINER_CODE = model.EMS_EXAMINER_CODE,
+                EMS_ECT_EXAMINER_CAT_CODE = model.EMS_ECT_EXAMINER_CAT_CODE,
+                EMS_EXAMINER_NUMBER = model.EMS_EXAMINER_NUMBER,
+                EMS_EXM_SUPERORD = model.EMS_EXM_SUPERORD,
+                EMS_SUB_SUB_ID = model.EMS_SUB_SUB_ID,
+                EMS_PAPER_CODE = model.EMS_PAPER_CODE,
+                EMS_ACTIVITY = model.Activity,
                 EMS_SUBKEY = subkey,
-                EMS_MARKING_REG_CODE = examiner.EMS_MARKING_REG_CODE,
+                EMS_MARKING_REG_CODE = model.EMS_MARKING_REG_CODE,
                 IsPresent = false,
                 RegisterStatus = "Absent",
                 RegisterStatusBy = currentUser.UserName,
@@ -1319,7 +1336,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
             if (!result.Success)
             {
-                return RedirectToAction("AddNewExaminerTransction", new { isSuccess = false, message = result.Message, idNumber = examiner.EMS_NATIONAL_ID });
+                return RedirectToAction(nameof(Assign), new { isSuccess = false, message = result.Message, idNumber = model.EMS_NATIONAL_ID });
             }
 
             return RedirectToAction("ExaminerList", new { isSuccess = true, message = result.Message });
@@ -1540,21 +1557,19 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
 
         [Authorize]
-        public async Task<IActionResult> ExaminerTransactionList(string examCode = "", string subjectCode = "", string paperCode = "", string activity = "", string regionCode = "", bool isSuccess = false, string message = "")
+        public async Task<IActionResult> Assignments(string examCode = "", string subjectCode = "", string paperCode = "", string activity = "", string regionCode = "", bool isSuccess = false, string message = "")
         {
-
+            var viewModel = new ExaminerAssignmentsPageViewModel();
 
             ApplicationUser currentUser = await _signInManager.UserManager.GetUserAsync(User);
             var userRoles = await _userManager.GetRolesAsync(currentUser);
             var userSession = new SessionModel();
-            if (userRoles != null && userRoles.Contains("BMS") || userRoles.Contains("PMS") || userRoles.Contains("DPMS") || userRoles.Contains("RPMS"))
+
+            if (userRoles != null && (userRoles.Contains("BMS") || userRoles.Contains("PMS") || userRoles.Contains("DPMS") || userRoles.Contains("RPMS")))
             {
-
-
                 var examiner = await _examinerRepository.GetExaminerRecord(currentUser.IDNumber);
                 if (examiner != null)
                 {
-
                     var transaction = examiner.ExaminerScriptsMarkeds.FirstOrDefault(a => a.EMS_SUBKEY == currentUser.EMS_SUBKEY && a.EMS_NATIONAL_ID == examiner.EMS_NATIONAL_ID);
 
                     if (transaction != null)
@@ -1575,14 +1590,10 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
                         HttpContext.Session.SetObjectAsJson("Session", userSession);
                     }
                 }
-
             }
 
-            if (userRoles != null && userRoles.Contains("SubjectManager") || userRoles.Contains("CentreSupervisor") || userRoles.Contains("Admin") || userRoles.Contains("SuperAdmin"))
+            if (userRoles != null && (userRoles.Contains("SubjectManager") || userRoles.Contains("CentreSupervisor") || userRoles.Contains("Admin") || userRoles.Contains("SuperAdmin")))
             {
-
-
-
                 if (!string.IsNullOrEmpty(examCode) && !string.IsNullOrEmpty(subjectCode) && !string.IsNullOrEmpty(paperCode))
                 {
                     userSession = new SessionModel()
@@ -1594,7 +1605,6 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
                     };
 
-
                     if (!string.IsNullOrEmpty(regionCode))
                     {
                         userSession.RegionCode = regionCode;
@@ -1604,61 +1614,50 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
                 else
                 {
                     userSession = HttpContext.Session.GetObjectFromJson<SessionModel>("Session");
-
-
                 }
-
             }
+
             if (userSession != null)
             {
-                ViewBag.ExamCode = userSession.ExamCode;
-                ViewBag.SubjectCode = userSession.SubjectCode;
-                ViewBag.PaperCode = userSession.PaperCode;
-                ViewBag.Activity = userSession.Activity;
-
-                ViewBag.RegionCode = string.IsNullOrEmpty(regionCode) ? "" : userSession.RegionCode;
+                viewModel.ExamCode = userSession.ExamCode;
+                viewModel.SubjectCode = userSession.SubjectCode;
+                viewModel.PaperCode = userSession.PaperCode;
+                viewModel.ActivityCode = userSession.Activity;
+                viewModel.RegionCode = string.IsNullOrEmpty(regionCode) ? string.Empty : userSession.RegionCode;
             }
             else
             {
-                // Store SweetAlert configuration in TempData
                 TempData["SweetAlert"] = JsonConvert.SerializeObject(new
                 {
-                    icon = "warning",  // Changed to warning icon
+                    icon = "warning",
                     title = "ACCESS DENIED!",
                     text = "You are not authorized for this activity. Please check your account credentials. You will be logged out for security reasons.",
                     showConfirmButton = true,
-                    confirmButtonColor = "#ffc107", // Warning color
-                                                    //timer = 5000, // Auto-close after 5 seconds
+                    confirmButtonColor = "#ffc107",
                     timerProgressBar = true,
                     customClass = new
                     {
-                        container = "swal2-flicker", // Applies to the entire modal
-                        title = "swal2-title-danger" // Applies only to the title
+                        container = "swal2-flicker",
+                        title = "swal2-title-danger"
                     }
                 });
-
-
 
                 await _signInManager.SignOutAsync();
                 return Redirect("/Identity/Account/Login");
             }
 
-
             if (isSuccess && !string.IsNullOrEmpty(message))
             {
                 TempData["SuccessMessage"] = message;
-
             }
 
             if (!isSuccess && !string.IsNullOrEmpty(message))
             {
                 TempData["Error"] = message;
-
             }
 
-            return View();
+            return View("Transactions/Index", viewModel);
         }
-
 
         [Authorize]
         public async Task<IActionResult> GetData(string examCode = "", string subjectCode = "", string paperCode = "", string activity = "", string regionCode = "")
@@ -1771,7 +1770,8 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
 
         [Authorize]
-        public async Task<IActionResult> GetTransactionData(string examCode = "", string subjectCode = "", string paperCode = "", string activity = "", string regionCode = "")
+        [HttpPost]
+        public async Task<IActionResult> GetAssignments(string examCode = "", string subjectCode = "", string paperCode = "", string activity = "", string regionCode = "")
         {
 
             ApplicationUser currentUser = await _signInManager.UserManager.GetUserAsync(User);
@@ -1888,11 +1888,13 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
             ViewBag.NewExaminerCode = newexaminercode.ToString();
 
-            var newExaminer = new Examiner();
-            newExaminer.EMS_EXAMINER_CODE = newexaminercode.ToString();
-
-            newExaminer.EMS_SUB_SUB_ID = examCode + subjectCode;
-            newExaminer.EMS_PAPER_CODE = paperCode;
+            var viewModel = new ReplaceExaminerViewModel
+            {
+                EMS_EXAMINER_CODE = newexaminercode.ToString(),
+                EMS_SUB_SUB_ID = string.Concat(examCode, subjectCode ?? string.Empty),
+                EMS_PAPER_CODE = paperCode ?? string.Empty,
+                Activity = string.Empty
+            };
 
 
 
@@ -1902,7 +1904,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
             }
 
-            return View(newExaminer);
+            return View(viewModel);
         }
 
 
@@ -1910,17 +1912,28 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
         [Authorize(Roles = "SuperAdmin,Admin,SubjectManager,CentreSupervisor,OfficerSpecialNeeds,PMS, BMS,DPMS,RPMS")]
         [HttpPost]
-        public async Task<IActionResult> AddOrReplaceExaminer(Examiner examiner, string activity)
+        public async Task<IActionResult> AddOrReplaceExaminer(ReplaceExaminerViewModel model)
         {
 
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    ViewBag.NewExaminerCode = model.EMS_EXAMINER_CODE;
+                    return View(model);
+                }
+
                 ApplicationUser currentUser = await _signInManager.UserManager.GetUserAsync(User);
 
+                var examiner = model.ToExaminer();
                 examiner.CreatedBy = currentUser.UserName;
                 examiner.CreatedDate = DateTime.Now.ToString();
-                examiner.EMS_SUBKEY = examiner.EMS_SUB_SUB_ID + examiner.EMS_PAPER_CODE + activity + examiner.EMS_NATIONAL_ID;
-                examiner.EMS_SUB_SUB_ID = examiner.EMS_SUB_SUB_ID.Substring(3);
+                examiner.EMS_SUBKEY = model.EMS_SUB_SUB_ID + model.EMS_PAPER_CODE + model.Activity + model.EMS_NATIONAL_ID;
+
+                var examCode = model.EMS_SUB_SUB_ID?.Length >= 3 ? model.EMS_SUB_SUB_ID.Substring(0, 3) : string.Empty;
+                var subjectCode = model.EMS_SUB_SUB_ID?.Length > 3 ? model.EMS_SUB_SUB_ID.Substring(3) : string.Empty;
+
+                examiner.EMS_SUB_SUB_ID = subjectCode;
                 var result = await _examinerRepository.AddOrReplaceExaminer(examiner, currentUser.Id);
 
                 if (result.Success)
@@ -1979,7 +1992,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
                                 Activated = true,
                                 LockoutEnabled = true,
                                 EmailConfirmed = true,
-                                Activity = activity
+                                Activity = model.Activity
                             };
 
 
@@ -2126,7 +2139,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
                         EMS_EXM_SUPERORD = examiner.EMS_EXM_SUPERORD,
                         EMS_SUB_SUB_ID = examiner.EMS_SUB_SUB_ID,
                         EMS_PAPER_CODE = examiner.EMS_PAPER_CODE,
-                        EMS_ACTIVITY = activity,
+                        EMS_ACTIVITY = model.Activity,
                         EMS_SUBKEY = subKey,
                         EMS_MARKING_REG_CODE = examiner.EMS_MARKING_REG_CODE,
                         IsPresent = false,
@@ -2153,8 +2166,8 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
                     return RedirectToAction("AddOrReplaceExaminer", new
                     {
-                        examCode = examiner.EMS_SUBKEY.Substring(0, 3),
-                        subjectCode = examiner.EMS_SUB_SUB_ID,
+                        examCode,
+                        subjectCode,
                         paperCode = examiner.EMS_PAPER_CODE,
                         isSuccess = false,
                         message = result.Message,
@@ -2171,15 +2184,9 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
                 ElmahExtensions.RaiseError(ex);
                 TempData["Error"] = "Examiner Details could not be Created" + ex.Message;
-                return RedirectToAction("AddOrReplaceExaminer", new
-                {
-                    examCode = examiner.EMS_SUBKEY.Substring(0, 3),
-                    subjectCode = examiner.EMS_SUB_SUB_ID,
-                    paperCode = examiner.EMS_PAPER_CODE,
-                    isSuccess = false,
-                    message = ex.Message,
-
-                });
+                ModelState.AddModelError(string.Empty, ex.Message);
+                ViewBag.NewExaminerCode = model.EMS_EXAMINER_CODE;
+                return View(model);
             }
         }
 
@@ -2192,21 +2199,21 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
             {
                 var newexaminercode = await InitializeNextTrainingCode();
                 ViewBag.NewExaminerCode = newexaminercode.ToString();
-                var newExaminer = new Examiner();
-                newExaminer.EMS_EXAMINER_CODE = newexaminercode.ToString();
+                var viewModel = new AddExaminerViewModel
+                {
+                    EMS_EXAMINER_CODE = newexaminercode.ToString(),
+                    EMS_SUB_SUB_ID = subjectCode ?? string.Empty,
+                    EMS_PAPER_CODE = paperCode ?? string.Empty,
+                    ExamCode = examCode ?? string.Empty,
+                    Activity = activity ?? string.Empty
+                };
 
                 if (activity != "BEM")
                 {
-                    newExaminer.EMS_EXM_SUPERORD = "1001";
-                    newExaminer.EMS_EXAMINER_NUMBER = "1001";
+                    viewModel.EMS_EXM_SUPERORD = "1001";
+                    viewModel.EMS_EXAMINER_NUMBER = "1001";
 
                 }
-
-
-                newExaminer.EMS_SUB_SUB_ID = subjectCode;
-                newExaminer.EMS_PAPER_CODE = paperCode;
-                ViewBag.ExamCode = examCode;
-                ViewBag.Activity = activity;
 
                 if (!isSuccess && !string.IsNullOrEmpty(message))
                 {
@@ -2214,7 +2221,7 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
                 }
 
-                return View(newExaminer);
+                return View(viewModel);
             }
             catch (Exception ex)
             {
@@ -2252,32 +2259,34 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
 
         [Authorize(Roles = "SuperAdmin,Admin,SubjectManager,CentreSupervisor")]
         [HttpPost]
-        public async Task<IActionResult> AddNewExaminer(Examiner examiner, string activity, string examCode)
+        public async Task<IActionResult> AddNewExaminer(AddExaminerViewModel model)
         {
             try
             {
 
-                if (examiner is null)
+                if (!ModelState.IsValid)
                 {
-                    ModelState.AddModelError("Examiner", "Examiner details required");
-                    return View(examiner);
+                    ViewBag.NewExaminerCode = model.EMS_EXAMINER_CODE;
+                    return View(model);
                 }
 
 
 
                 ApplicationUser currentUser = await _signInManager.UserManager.GetUserAsync(User);
 
-                if (!IsValidZimbabweNationalId(examiner.EMS_NATIONAL_ID))
+                if (!IsValidZimbabweNationalId(model.EMS_NATIONAL_ID))
                 {
                     ModelState.AddModelError("EMS_NATIONAL_ID",
                         "Invalid Zimbabwe National ID format. Examples: 08123456D53");
-                    return View(examiner);
+                    ViewBag.NewExaminerCode = model.EMS_EXAMINER_CODE;
+                    return View(model);
                 }
 
+                var examiner = model.ToExaminer();
                 examiner.CreatedBy = currentUser.UserName;
                 examiner.CreatedDate = DateTime.Now.ToString();
 
-                var subkey = examCode + examiner.EMS_SUB_SUB_ID + examiner.EMS_PAPER_CODE + activity + examiner.EMS_NATIONAL_ID;
+                var subkey = model.ExamCode + examiner.EMS_SUB_SUB_ID + examiner.EMS_PAPER_CODE + model.Activity + examiner.EMS_NATIONAL_ID;
                 examiner.EMS_SUBKEY = subkey;
 
 
@@ -2338,9 +2347,10 @@ namespace ExaminerPaymentSystem.Controllers.Examiners
                     TempData["Error"] = result.Message;
                     return RedirectToAction("AddNewExaminer", new
                     {
-                        examCode,
+                        examCode = model.ExamCode,
                         subjectCode = examiner.EMS_SUB_SUB_ID,
                         paperCode = examiner.EMS_PAPER_CODE,
+                        activity = model.Activity,
                         isSuccess = false,
                         message = result.Message,
 

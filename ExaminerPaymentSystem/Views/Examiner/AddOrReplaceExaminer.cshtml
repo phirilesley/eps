@@ -1,6 +1,4 @@
-﻿@model Examiner
-
-
+@model ExaminerPaymentSystem.ViewModels.Examiners.ReplaceExaminerViewModel
 
 @{
     ViewBag.Title = "Replace Examiner";
@@ -43,6 +41,7 @@
 <h1 class="mb-3 text-center" style="color:#123255;">Replace  Examiner</h1>
 
 <form asp-action="AddOrReplaceExaminer" class="needs-validation mb-5" novalidate>
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
     <input asp-for="EMS_EXAMINER_CODE" type="hidden" />
     <input asp-for="EMS_SUB_SUB_ID" type="hidden" />
     <input asp-for="EMS_PAPER_CODE" type="hidden" />
@@ -182,7 +181,7 @@
             <div class="col-12 col-md-3 mb-3">
                 <div class="form-floating">
 
-                    <select class="form-select form-select-sm" name="activity" required>
+                    <select asp-for="Activity" class="form-select form-select-sm" required>
                         <option value="">--Select Activity---</option>
                         <option value="BEM">BELT MARKING</option>
                         <option value="CAP">CAPTURING</option>
@@ -193,8 +192,8 @@
                         <option value="MOD">MODERATION</option>
                         <option value="ITW">ITEM WRITING</option>
                     </select>
-                    <label>Activity</label>
-                    <span class="text-danger d-none">Please select the purpose of invitation.</span>
+                    <label asp-for="Activity">Activity</label>
+                    <span asp-validation-for="Activity" class="text-danger"></span>
                 </div>
             </div>
         </div>

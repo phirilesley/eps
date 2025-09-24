@@ -1,0 +1,31 @@
+@model ExaminerPaymentSystem.ViewModels.Layout.LayoutNavigationModel
+
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background-color:#153355;">
+    <div class="container-fluid px-3">
+        <!-- Logo -->
+        <a class="navbar-brand py-1 me-3" href="#">
+            <img src="~/Images/logo.jpeg" alt="Logo" style="height: 36px;">
+        </a>
+
+        <!-- Mobile toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar content with scrollable wrapper -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <div class="navbar-scrollable">
+                <ul class="navbar-nav me-auto text-white">
+                    @foreach (var module in Model.NavigationModules)
+                    {
+                        @await Html.PartialAsync(module.PartialViewPath, Model)
+                    }
+                </ul>
+            </div>
+
+            <div class="d-flex ms-auto">
+                @await Html.PartialAsync("_LoginPartial")
+            </div>
+        </div>
+    </div>
+</nav>

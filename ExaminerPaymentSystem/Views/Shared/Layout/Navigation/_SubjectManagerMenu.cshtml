@@ -1,0 +1,86 @@
+@model ExaminerPaymentSystem.ViewModels.Layout.LayoutNavigationModel
+
+@if (Model.Roles.HasAny("SubjectManager", "CentreSupervisor"))
+{
+    <li class="nav-item">
+        <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">
+            <i class="fas fa-home me-1"></i>Home
+        </a>
+    </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white" href="#" id="maintainExaminersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-edit me-1"></i>Maintain Examiners
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="maintainExaminersDropdown">
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#exTListModal"><i class="fas fa-envelope me-2"></i>Present Examiners</a></li>
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#exListModal"><i class="fas fa-users me-2"></i>All Examiners</a></li>
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#usersModal"><i class="fas fa-user-cog me-2"></i>User Profiles</a></li>
+        </ul>
+    </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white" href="#" id="approvalsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-check-double me-1"></i>Approvals
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="approvalsDropdown">
+            @if (Model.Roles.Has("CentreSupervisor"))
+            {
+                <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#tandsApprovalModal"><i class="fas fa-clipboard-check me-2"></i>T and S</a></li>
+            }
+            @if (Model.Roles.Has("SubjectManager"))
+            {
+                <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#tandsApprovalModal2"><i class="fas fa-list-ol me-2"></i>T and S</a></li>
+            }
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#approveScripts"><i class="fas fa-file-signature me-2"></i>Scripts Marked</a></li>
+        </ul>
+    </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white" href="#" id="brailleTranscribersDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-braille me-1"></i>Braille Transcribers
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="brailleTranscribersDropdown">
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#transTeamModal"><i class="fas fa-users me-2"></i>Select Transcribers</a></li>
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#transListModal"><i class="fas fa-users me-2"></i>Transcribers</a></li>
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#transSelectedModal"><i class="fas fa-users me-2"></i>Selected</a></li>
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#transRegisterModal"><i class="fas fa-calendar-check me-2"></i>Attendance Register</a></li>
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#transTandS"><i class="fas fa-list-ul me-2"></i>Transcribers T n S</a></li>
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#transUsersModal"><i class="fas fa-user-tie me-2"></i>Transcribers (Users)</a></li>
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#scriptsTransModal"><i class="fas fa-file-alt me-2"></i>Scripts Transcribed</a></li>
+            <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#approveScriptsTransModal"><i class="fas fa-check-circle me-2"></i>Approve Scripts Transcribed</a></li>
+        </ul>
+    </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white" href="#" id="scriptsDataDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-database me-1"></i>Scripts Captured
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="scriptsDataDropdown">
+            <li><a class="dropdown-item text-white" href="/MarksCaptured/Index"><i class="fas fa-marker me-2"></i>Marks Captured</a></li>
+        </ul>
+    </li>
+    @if (Model.Roles.Has("SubjectManager"))
+    {
+        <li class="nav-item">
+            <a class="nav-link text-white" data-bs-toggle="modal" data-bs-target="#registerModal">
+                <i class="fas fa-clipboard-list me-1"></i>Attendance Register
+            </a>
+        </li>
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-white" href="#" id="teamDataDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-users-cog me-1"></i>Manage Teams
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="teamDataDropdown">
+                <li><a class="dropdown-item text-white" data-bs-toggle="modal" data-bs-target="#teamModal"><i class="fas fa-sitemap me-2"></i>Team Structure</a></li>
+            </ul>
+        </li>
+    }
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white" href="#" id="reportsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-chart-bar me-1"></i>Reports
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="reportsDropdown">
+            <li><a class="dropdown-item text-white" asp-area="" asp-controller="Reports" asp-action="TandSCheckReport"><i class="fas fa-file-excel me-2"></i>T and S Reporting</a></li>
+            <li><a class="dropdown-item text-white" asp-area="" asp-controller="Reports" asp-action="ScriptsMarkedCheckReport"><i class="fas fa-file-csv me-2"></i>Script Marked Reporting</a></li>
+            <li><a class="dropdown-item text-white" asp-area="" asp-controller="Reports" asp-action="ReportRegister"><i class="fas fa-file-pdf me-2"></i>Register Report</a></li>
+            <li><a class="dropdown-item text-white" asp-area="" asp-controller="Reports" asp-action="CheckList"><i class="fas fa-file-excel me-2"></i>Clear Me</a></li>
+        </ul>
+    </li>
+}

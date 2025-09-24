@@ -1,18 +1,17 @@
-﻿@using ExaminerPaymentSystem.Data
+﻿@model ExaminerPaymentSystem.ViewModels.Examiners.ExaminerScriptsMarkedIndexPageViewModel
+@using ExaminerPaymentSystem.Data
 @using Microsoft.AspNetCore.Identity
 @using ExaminerPaymentSystem.Interfaces
 @inject SignInManager<ApplicationUser> SignInManager
 
 
 @{
-    ViewBag.Title = "Examiner Scripts Marked";
+    ViewData["Title"] = "Examiner Scripts Marked";
 
-    string examCode = ViewBag.ExamCode ?? "";
-    string subjectCode = ViewBag.SubjectCode ?? "";
-    string paperCode = ViewBag.PaperCode ?? "";
-    string bms = ViewBag.BMS ?? "";
-    string Name = ViewBag.Name ?? "";
-
+    string examCode = Model?.ExamCode ?? string.Empty;
+    string subjectCode = Model?.SubjectCode ?? string.Empty;
+    string paperCode = Model?.PaperCode ?? string.Empty;
+    string bms = Model?.BmsCode ?? string.Empty;
 }
 
 <style>

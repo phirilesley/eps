@@ -1,0 +1,176 @@
+@model ExaminerPaymentSystem.ViewModels.Examiners.ExaminerAssignmentsPageViewModel
+@using System.Linq
+@{
+    ViewData["Title"] = "Examiner Assignments";
+
+    var examCode = Model?.ExamCode ?? string.Empty;
+    var subjectCode = Model?.SubjectCode ?? string.Empty;
+    var paperCode = Model?.PaperCode ?? string.Empty;
+    var activityCode = Model?.ActivityCode ?? string.Empty;
+    var regionCode = Model?.RegionCode ?? string.Empty;
+
+    var canChangeRole = User.IsInRole("PMS") || User.IsInRole("DPMS") || User.IsInRole("RPMS") ||
+                        User.IsInRole("SubjectManager") || User.IsInRole("CentreSupervisor") ||
+                        User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+    var canChangeTeam = canChangeRole || User.IsInRole("BMS");
+    var canEditExaminer = User.IsInRole("SubjectManager") || User.IsInRole("CentreSupervisor") ||
+                          User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
+
+    var headerParts = new List<string>();
+    var subjectAndPaper = string.Join(" / ", new[] { subjectCode, paperCode }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+    if (!string.IsNullOrWhiteSpace(subjectAndPaper))
+    {
+        headerParts.Add(subjectAndPaper);
+    }
+
+    if (!string.IsNullOrWhiteSpace(activityCode))
+    {
+        headerParts.Add($"Activity: {activityCode}");
+    }
+
+    if (!string.IsNullOrWhiteSpace(regionCode))
+    {
+        headerParts.Add($"Region: {regionCode}");
+    }
+
+    var headerSubtitle = headerParts.Count > 0
+        ? string.Join(" · ", headerParts)
+        : "Select a context to load examiner assignments";
+}
+
+<div class="page-header page-header--center">
+    <span class="page-header__icon">
+        <i class="fas fa-users-cog"></i>
+    </span>
+    <div>
+        <h1 class="page-header__title">Examiner Assignments</h1>
+        <p class="page-header__subtitle">@headerSubtitle</p>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@successMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>@errorMessage
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card eps-card border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="assignmentsTable" class="table table-modern table-striped align-middle w-100">
+                <thead>
+                    <tr>
+                        <th>E. Number</th>
+                        <th>Last Name</th>
+                        <th>First Name</th>
+                        <th>National ID</th>
+                        <th>Category</th>
+                        <th>BMS Code</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const examCode = '@examCode';
+            const subjectCode = '@subjectCode';
+            const paperCode = '@paperCode';
+            const activityCode = '@activityCode';
+            const regionCode = '@regionCode';
+            const canChangeRole = @canChangeRole.ToString().ToLower();
+            const canChangeTeam = @canChangeTeam.ToString().ToLower();
+            const canEditExaminer = @canEditExaminer.ToString().ToLower();
+
+            const changeRoleUrl = '@Url.Action("ChangeRole", "Examiner")';
+            const changeTeamUrl = '@Url.Action("ChangeTeam", "Examiner")';
+            const editExaminerUrl = '@Url.Action("EditExaminer", "Examiner")';
+
+            function buildActionLinks(row) {
+                const params = new URLSearchParams({
+                    idNumber: row.idNumber,
+                    activity: activityCode,
+                    examCode: examCode,
+                    subjectCode: subjectCode,
+                    paperCode: paperCode
+                });
+
+                if (regionCode) {
+                    params.append('regionCode', regionCode);
+                }
+
+                const links = [];
+
+                if (canChangeRole) {
+                    links.push(`<a class="btn btn-sm btn-outline-primary me-2" href="${changeRoleUrl}?${params.toString()}"><i class="fas fa-id-badge me-2"></i>Change Role</a>`);
+                }
+
+                if (canChangeTeam) {
+                    links.push(`<a class="btn btn-sm btn-outline-secondary me-2" href="${changeTeamUrl}?${params.toString()}"><i class="fas fa-users me-2"></i>Change Team</a>`);
+                }
+
+                if (canEditExaminer) {
+                    links.push(`<a class="btn btn-sm btn-outline-primary" href="${editExaminerUrl}?${params.toString()}"><i class="fas fa-user-edit me-2"></i>Edit</a>`);
+                }
+
+                if (!links.length) {
+                    return '';
+                }
+
+                return `<div class="d-flex flex-wrap gap-2 justify-content-center">${links.join('')}</div>`;
+            }
+
+            $('#assignmentsTable').DataTable({
+                processing: true,
+                serverSide: true,
+                lengthMenu: [[10, 25, 50, 100, 250, 500, 1000], [10, 25, 50, 100, 250, 500, 1000]],
+                pageLength: 25,
+                ajax: {
+                    url: '@Url.Action("GetAssignments", "Examiner")',
+                    type: 'POST',
+                    data: function (d) {
+                        d.examCode = examCode;
+                        d.subjectCode = subjectCode;
+                        d.paperCode = paperCode;
+                        d.activity = activityCode;
+                        d.regionCode = regionCode;
+                    }
+                },
+                columns: [
+                    { data: 'examinerNumber', name: 'ExaminerNumber', autoWidth: true },
+                    { data: 'lastName', name: 'LastName', autoWidth: true },
+                    { data: 'firstName', name: 'FirstName', autoWidth: true },
+                    { data: 'idNumber', name: 'IDNumber', autoWidth: true },
+                    { data: 'category', name: 'Category', autoWidth: true },
+                    { data: 'bms', name: 'BMS', autoWidth: true },
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        className: 'text-center',
+                        render: function (data, type, row) {
+                            return buildActionLinks(row);
+                        }
+                    }
+                ]
+            });
+        })();
+    </script>
+}

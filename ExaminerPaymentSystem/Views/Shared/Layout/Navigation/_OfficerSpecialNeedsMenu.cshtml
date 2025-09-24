@@ -1,0 +1,34 @@
+@model ExaminerPaymentSystem.ViewModels.Layout.LayoutNavigationModel
+
+@if (Model.Roles.Has("OfficerSpecialNeeds"))
+{
+    <li class="nav-item">
+        <a class="nav-link px-2" asp-area="" asp-controller="Home" asp-action="Index">
+            <i class="fas fa-home fa-sm me-1"></i>Home
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link px-2" asp-area="" asp-controller="ExaminerScriptsMarked" asp-action="AandTList">
+            <i class="fas fa-list fa-sm me-1"></i>Transcribers
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link px-2" asp-area="" asp-controller="Users" asp-action="IndexTranscribers">
+            <i class="fas fa-users-cog fa-sm me-1"></i>Users
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link px-2" asp-area="" asp-controller="ExaminerRegister" asp-action="IndexT">
+            <i class="fas fa-clipboard-list fa-sm me-1"></i>Register
+        </a>
+    </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle px-2" href="#" data-bs-toggle="dropdown">
+            <i class="fas fa-file-alt fa-sm me-1"></i>Scripts
+        </a>
+        <ul class="dropdown-menu dropdown-menu-dark">
+            <li><a class="dropdown-item" asp-action="TranscriberApproval"><i class="fas fa-check-circle fa-sm me-2"></i>Approval</a></li>
+            <li><a class="dropdown-item" asp-action="Transcriber"><i class="fas fa-file-contract fa-sm me-2"></i>Transcribed</a></li>
+        </ul>
+    </li>
+}
